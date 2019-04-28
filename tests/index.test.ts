@@ -48,32 +48,41 @@ describe('Result.Ok', () => {
     expect(mapErrorFunc).not.toHaveBeenCalledTimes(1)
   })
 
-  it('Flattens to a new Ok', () => {
-    const okVal = ok(12)
-
-    const flattened = okVal.extend((_number) => {
-      // ...
-      // complex logic
-      // ... 
-      return ok({ data: 'why not' })
+  describe('andThen', () => {
+    it('Maps to an Ok', () => {
+      const okVal = ok(12)
+    
+      const flattened = okVal.andThen((_number) => {
+        // ...
+        // complex logic
+        // ... 
+        return ok({ data: 'why not' })
+      })
+    
+      expect(flattened.isOk()).toBe(true)
+      expect(flattened._unsafeUnwrap()).toStrictEqual({ data: 'why not' })
     })
 
-    expect(flattened.isOk()).toBe(true)
-    expect(flattened._unsafeUnwrap()).toStrictEqual({ data: 'why not' })
-  })
+    it('Maps to an Err', () => {
+      const okval = ok(12)
+  
+      const flattened = okval.andThen((_number) => {
+        // ...
+        // complex logic
+        // ... 
+        return err('Whoopsies!')
+      })
+  
+      expect(flattened.isOk()).toBe(false)
 
-  it('Flattens to an Err', () => {
-    const okval = ok(12)
+      const nextFn = jest.fn((_val) => ok('noop'))
 
-    const flattened = okval.extend((_number) => {
-      // ...
-      // complex logic
-      // ... 
-      return err('Whoopsies!')
+      flattened.andThen(nextFn)
+
+      expect(nextFn).not.toHaveBeenCalled()
     })
-
-    expect(flattened.isOk()).toBe(false)
   })
+
 
   it('Maps to a promise', async () => {
     const asyncMapper = jest.fn((_val) => {
@@ -158,14 +167,14 @@ describe('Result.Err', () => {
     expect(mapped._unsafeUnwrapErr()).not.toEqual(errVal._unsafeUnwrapErr())
   })
 
-  it('Skips over extend', () => {
+  it('Skips over andThen', () => {
     const errVal = err('Yolo')
 
     const mapper = jest.fn(
       (_val) => ok<string, string>('yooyo')
     )
 
-    const hopefullyNotFlattened = errVal.extend(mapper)
+    const hopefullyNotFlattened = errVal.andThen(mapper)
 
     expect(hopefullyNotFlattened.isErr()).toBe(true)
     expect(mapper).not.toHaveBeenCalled()

@@ -37,7 +37,7 @@ export class Ok<T, E> {
   // add info on how this is really useful for converting a
   // Result<Result<T, E2>, E1>
   // into a Result<T, E2>
-  extend<U>(f: (t: T) => Result<U, E>): Result<U, E> {
+  andThen<U>(f: (t: T) => Result<U, E>): Result<U, E> {
     return f(this.value)
   }
 
@@ -88,7 +88,7 @@ export class Err<T, E> {
     return err(f(this.error))
   }
 
-  extend<U>(_f: (t: T) => Result<U, E>): Result<U, E> {
+  andThen<U>(_f: (t: T) => Result<U, E>): Result<U, E> {
     return err(this.error)
   }
 
