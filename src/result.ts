@@ -59,6 +59,10 @@ export class Ok<T, E> {
   _unsafeUnwrap(): T {
     return this.value
   }
+
+  _unsafeUnwrapErr(): E {
+    throw new Error('Called `_unsafeUnwrapErr` on an Ok')
+  }
 }
 
 export class Err<T, E> {
@@ -100,7 +104,11 @@ export class Err<T, E> {
   }
 
   _unsafeUnwrap(): T {
-    throw new Error('Unwrapped an Err variant of Result')
+    throw new Error('Called `_unsafeUnwrap` on an Err')
+  }
+
+  _unsafeUnwrapErr(): E {
+    return this.error
   }
 }
 
