@@ -9,11 +9,18 @@ This program contains a Result type that represents either success (Ok) or failu
 
 This package works for both JS and TypeScript. However, the types that this package provides will allow you to get compile-time guarantees around error handling if you are using TypeScript.
 
+`neverthrow` draws inspiration from [Rust](https://doc.rust-lang.org/std/result/enum.Result.html), and [Elm](https://package.elm-lang.org/packages/elm/core/latest/Result). It is also a great companion to [fp-ts](https://gcanti.github.io/fp-ts/).
+
+
 ## Installation
 
 ```sh
 > npm install neverthrow
 ```
+
+
+
+
 
 ## Usage
 
@@ -32,6 +39,16 @@ const mappedYes = yesss.map(doingSuperUsefulStuff)
 ```
 
 > more documentation coming soon :) ... the source code + tests are pretty self-explanatory though!
+
+
+### Wrapping a Dependency that throws
+
+> incomplete ... 
+> Examples to come soon
+
+- axios
+- knex
+
 
 
 ## A note on the Package Name
