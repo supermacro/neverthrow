@@ -132,6 +132,88 @@ describe('Result.Err', () => {
     expect(errVal).toBeInstanceOf(Err)
   })
 
+  it('Skips `map`', () => {
+    const errVal = err('I am your father')
+
+    const mapper = jest.fn((_value) => 'noooo')
+
+    const hopefullyNotMapped = errVal.map(mapper)
+
+    expect(hopefullyNotMapped.isErr()).toBe(true)
+    expect(mapper).not.toHaveBeenCalled()
+    expect(hopefullyNotMapped._unsafeUnwrapErr()).toEqual(errVal._unsafeUnwrapErr())
+  })
+
+  it('Maps over an Err', () => {
+    const errVal = err('Round 1, Fight!')
+
+    const mapper = jest.fn(
+      (error: string) => error.replace('1', '2')
+    )
+
+    const mapped = errVal.mapErr(mapper)
+
+    expect(mapped.isErr()).toBe(true)
+    expect(mapper).toHaveBeenCalledTimes(1)
+    expect(mapped._unsafeUnwrapErr()).not.toEqual(errVal._unsafeUnwrapErr())
+  })
+
+  it('Skips over extend', () => {
+    const errVal = err('Yolo')
+
+    const mapper = jest.fn(
+      (_val) => ok<string, string>('yooyo')
+    )
+
+    const hopefullyNotFlattened = errVal.extend(mapper)
+
+    expect(hopefullyNotFlattened.isErr()).toBe(true)
+    expect(mapper).not.toHaveBeenCalled()
+    expect(errVal._unsafeUnwrapErr()).toEqual('Yolo')
+  })
+
+  it('Does not invoke callback within `asyncMap`', async () => {
+    const asyncMapper = jest.fn((_val) => {
+      // ...
+      // complex logic
+      // ..
+
+      // db queries
+      // network calls
+      // disk io
+      // etc ...
+      return Promise.resolve(
+        ok('Very Nice!')
+      )
+    })
+
+    const errVal = err('nooooooo')
+
+    const promise = errVal.asyncMap(asyncMapper)
+
+    expect(promise).toBeInstanceOf(Promise)
+
+    const sameResult = await promise
+
+    expect(sameResult.isErr()).toBe(true)
+    expect(asyncMapper).not.toHaveBeenCalled()
+    expect(sameResult._unsafeUnwrapErr()).toEqual(errVal._unsafeUnwrapErr())
+  })
+
+  it('Matches on an Err', () => {
+    const okMapper = jest.fn((_val) => 'weeeeee')
+    const errMapper = jest.fn((_val) => 'wooooo')
+
+    const matched = err(12).match(
+      okMapper,
+      errMapper
+    )
+
+    expect(matched).toBe('wooooo')
+    expect(okMapper).not.toHaveBeenCalled()
+    expect(errMapper).toHaveBeenCalledTimes(1)
+  })
+
   it('Throws when you unwrap an Err', () => {
     const errVal = err('woopsies')
 
@@ -140,6 +222,9 @@ describe('Result.Err', () => {
     }).toThrowError()
   })
 
-  test.todo('Maps over an Err')
-  test.todo('Skips `map`')
+  it('Unwraps without issue', () => {
+    const okVal = err(12)
+
+    expect(okVal._unsafeUnwrapErr()).toBe(12)    
+  })
 })
