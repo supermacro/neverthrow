@@ -1,0 +1,32 @@
+{
+  "name": "neverthrow",
+  "version": "0.1.1-alpha",
+  "description": "Stop throwing errors, and instead return Results!",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "jest",
+    "clean": "rm -rf ./dist",
+    "build": "npm run clean && tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gDelgado14/result-ts.git"
+  },
+  "author": "Giorgio Delgado",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gDelgado14/result-ts/issues"
+  },
+  "homepage": "https://github.com/gDelgado14/result-ts#readme",
+  "devDependencies": {
+    "@babel/core": "^7.4.3",
+    "@babel/preset-env": "^7.4.3",
+    "@babel/preset-typescript": "^7.3.3",
+    "@types/jest": "^24.0.11",
+    "babel-jest": "^24.7.1",
+    "jest": "^24.7.1",
+    "ts-jest": "^24.0.2",
+    "typescript": "3.4.2"
+  },
+  "keywords": ["typescript", "functional", "fp", "error"]
+}
