@@ -102,7 +102,7 @@ err<T, E>(err:  E):  Err<T, E> { ... }
 ```typescript
 import { err } from 'neverthrow'
 
-const myResult = err('Oh noooo') // instance of `Ok`
+const myResult = err('Oh noooo') // instance of `Err`
 
 myResult.isOk() // false
 myResult.isErr() // true
