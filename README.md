@@ -12,6 +12,8 @@ This package works for both JS and TypeScript. However, the types that this pack
 `neverthrow` draws inspiration from [Rust](https://doc.rust-lang.org/std/result/enum.Result.html), and [Elm](https://package.elm-lang.org/packages/elm/core/latest/Result). It is also a great companion to [fp-ts](https://gcanti.github.io/fp-ts/).
 
 
+> Need to see real-life examples of how to leverage this package for error handling? See this repo: https://github.com/parlez-vous/server
+
 ## Installation
 
 ```sh
