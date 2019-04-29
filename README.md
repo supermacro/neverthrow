@@ -345,8 +345,6 @@ const twelve = result._unsafeUnwrapErr()
 
 ---
 
-Source available at: https://github.com/gdelgado14/neverthrow
-
 
 ## Wrapping a Dependency that throws
 
