@@ -1,6 +1,6 @@
 {
   "name": "neverthrow",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Stop throwing errors, and instead return Results!",
   "main": "dist/index.js",
   "scripts": {
