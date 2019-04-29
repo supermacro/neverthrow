@@ -5,7 +5,7 @@
 
 Encode failure into your program.
 
-This package contains a Result type that represents either success (Ok) or failure (Err).
+This package contains a `Result` type that represents either success (`Ok`) or failure (`Err`).
 
 This package works for both JS and TypeScript. However, the types that this package provides will allow you to get compile-time guarantees around error handling if you are using TypeScript.
 
@@ -48,6 +48,7 @@ type  Result<T, E>
 ```
 
 `Ok<T, E>`: contains the success value of type `T`
+
 `Err<T, E>`: contains the failure value of type `E`
 
 ## Top-Level API
@@ -61,7 +62,7 @@ type  Result<T, E>
 - `Result` type - only available in TypeScript
 
 ```typescript
-import { ok, Ok, err, Err, Result } from 'neverthrow
+import { ok, Ok, err, Err, Result } from 'neverthrow'
 ```
 
 
@@ -210,7 +211,7 @@ Same idea as `map` above. Except you must return a new `Result`.
 
 This is useful for when you need to do a subsequent computation using the inner `T` value, but that computation might fail.
 
-`andThen` is really useful as a tool to flatten a `Result<Result<A, E2>, E1>` into a `Result<A, E2` (see example below).
+`andThen` is really useful as a tool to flatten a `Result<Result<A, E2>, E1>` into a `Result<A, E2>` (see example below).
 
 **Signature:**
 ```typescript
