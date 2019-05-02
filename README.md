@@ -7,6 +7,9 @@ Encode failure into your program.
 
 This package contains a `Result` type that represents either success (`Ok`) or failure (`Err`).
 
+[Read the blog post](https://gdelgado.ca/type-safe-error-handling-in-typescript.html#title) which explains *why you'd want to use this package*.
+
+
 This package works for both JS and TypeScript. However, the types that this package provides will allow you to get compile-time guarantees around error handling if you are using TypeScript.
 
 `neverthrow` draws inspiration from [Rust](https://doc.rust-lang.org/std/result/enum.Result.html), and [Elm](https://package.elm-lang.org/packages/elm/core/latest/Result). It is also a great companion to [fp-ts](https://gcanti.github.io/fp-ts/).
