@@ -3,6 +3,7 @@
   "version": "1.0.2",
   "description": "Stop throwing errors, and instead return Results!",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest",
     "clean": "rm -rf ./dist",
