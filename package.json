@@ -29,5 +29,10 @@
     "ts-jest": "^24.0.2",
     "typescript": "3.4.2"
   },
-  "keywords": ["typescript", "functional", "fp", "error"]
+  "keywords": [
+    "typescript",
+    "functional",
+    "fp",
+    "error"
+  ]
 }
