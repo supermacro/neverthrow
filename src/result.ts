@@ -22,7 +22,7 @@ export class Ok<T, E> {
     return true
   }
 
-  isErr(): this is Ok<T, E> {
+  isErr(): this is Err<T, E> {
     return !this.isOk()
   }
 
@@ -72,7 +72,7 @@ export class Err<T, E> {
     this.error = error
   }
 
-  isOk(): this is Err<T, E> {
+  isOk(): this is Ok<T, E> {
     return false
   }
 
