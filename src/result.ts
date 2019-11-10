@@ -47,15 +47,13 @@ export class Ok<T, E> {
     return ok(newInner)
   }
 
-  // talk about match can be used to unwrap values in a typesafe way
-  match = <U, A>(
-    ok: (t: T) => U,
+  match = <A>(
+    ok: (t: T) => A,
     _err: (e: E) => A
-  ): U => {
+  ): A => {
     return ok(this.value)
   }
 
-  // talk about how unwrapping defeats the purpose of Results
   _unsafeUnwrap(): T {
     return this.value
   }
@@ -96,8 +94,8 @@ export class Err<T, E> {
     return err(this.error)
   }
 
-  match = <U, A>(
-    _ok: (t: T) => U,
+  match = <A>(
+    _ok: (t: T) => A,
     err: (e: E) => A
   ): A => {
     return err(this.error)
