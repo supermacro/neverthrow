@@ -12,11 +12,7 @@ export const err = <T, E>(err: E): Err<T, E> => new Err(err)
 
 
 export class Ok<T, E> {
-  private value: T
-
-  constructor(value: T) {
-    this.value = value
-  }
+  constructor(readonly value: T) { }
 
   isOk(): this is Ok<T, E> {
     return true
@@ -64,11 +60,7 @@ export class Ok<T, E> {
 }
 
 export class Err<T, E> {
-  private error: E
-
-  constructor(error: E) {
-    this.error = error
-  }
+  constructor(readonly error: E) { }
 
   isOk(): this is Ok<T, E> {
     return false

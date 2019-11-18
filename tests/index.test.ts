@@ -1,4 +1,4 @@
-import { ok, err, Ok, Err } from '../src'
+import { ok, err, Ok, Err, Result } from '../src'
 
 describe('Result.Ok', () => {
   it('Creates an Ok value', () => {
@@ -129,6 +129,17 @@ describe('Result.Ok', () => {
     const okVal = ok(12)
 
     expect(okVal._unsafeUnwrap()).toBe(12)
+  })
+
+  it('Can read the value after narrowing', () => {
+    const fallible: () => Result<string, number> = () => ok('safe to read');
+    const val = fallible();
+
+    // After this check we val is narrowed to Ok<string, number>. Without this
+    // line TypeScript will not allow accessing val.value.
+    if (val.isErr()) return;
+
+    expect(val.value).toBe('safe to read');
   })
 })
 
