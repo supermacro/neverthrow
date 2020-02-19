@@ -254,37 +254,6 @@ const notNested = nested.andThen(innerResult => innerResult)
 
 ---
 
-### `Result.match` (method)
-
-Given 2 functions (one for the `Ok` variant and one for the `Err` variant) execute the function that matches the `Result` variant.
-
-`match` is sort of like combining `map` and `mapErr`.
-
-
-
-**Signature:**
-```typescript
-match<U, A>(
-  okFn: (t:  T) =>  U,
-  errFn: (e:  E) =>  A
-):  U | A => { ... }
-```
-
-
-**Example:**
-
-```typescript
-const result = computationThatMightFail()
-
-const matched = result.match(
-  (innerOkValue) => { return 'Yey' },
-  (innerErrValue) => { return 'OhNooo' }
-)
-```
-
-
----
-
 ### `Result.asyncMap` (method)
 
 Similar to `map` except for two things:
@@ -347,6 +316,39 @@ import { err } from 'neverthrow'
 const result = err(12)
 
 const twelve = result._unsafeUnwrapErr()
+```
+
+
+---
+
+### `Result.match` (method)
+
+Given 2 functions (one for the `Ok` variant and one for the `Err` variant) execute the function that matches the `Result` variant.
+
+Both functions will unwrap the `Result` object and must have the same return type.
+
+`match` is sort of like combining `_unsafeUnwrap` and `_unsafeUnwrapErr`.
+
+
+
+**Signature:**
+```typescript
+match<A>(
+  okFn: (t:  T) =>  A,
+  errFn: (e:  E) =>  A
+): A => { ... }
+```
+
+
+**Example:**
+
+```typescript
+const result = computationThatMightFail()
+
+const matched = result.match(
+  (innerOkValue) => { return 'Yey' },
+  (innerErrValue) => { return 'OhNooo' }
+)
 ```
 
 ---
