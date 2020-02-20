@@ -258,17 +258,18 @@ const notNested = nested.andThen(innerResult => innerResult)
 
 Given 2 functions (one for the `Ok` variant and one for the `Err` variant) execute the function that matches the `Result` variant.
 
-`match` is sort of like combining `map` and `mapErr`.
-
-
+Match callbacks do not necessitate to return a `Result`, however you can return a `Result` if you want to.
 
 **Signature:**
 ```typescript
-match<U, A>(
-  okFn: (t:  T) =>  U,
+match<A>(
+  okFn: (t:  T) =>  A,
   errFn: (e:  E) =>  A
-):  U | A => { ... }
+): A => { ... }
 ```
+
+
+`match` is like chaining `map` and `mapErr`, with the distinction that with `match` both functions must have the same return type.
 
 
 **Example:**
@@ -276,9 +277,29 @@ match<U, A>(
 ```typescript
 const result = computationThatMightFail()
 
-const matched = result.match(
-  (innerOkValue) => { return 'Yey' },
-  (innerErrValue) => { return 'OhNooo' }
+const successCallback = (someNumber: number) => {
+  console.log('> number is: ', someNumber)
+}
+
+const failureCallback = (someFailureValue: string) => {
+  console.log('> boooooo')
+}
+
+// method chaining api
+// note that you DONT have to append mapErr
+// after map which means that you are not required to do
+// error handling
+result
+  .map(successCallback)
+  .mapErr(failureCallback)
+
+
+// match api
+// works exactly the same as above,
+// except, now you HAVE to do error handling :)
+myval.match(
+  successCallback,
+  failureCallback
 )
 ```
 
@@ -348,6 +369,7 @@ const result = err(12)
 
 const twelve = result._unsafeUnwrapErr()
 ```
+
 
 ---
 
