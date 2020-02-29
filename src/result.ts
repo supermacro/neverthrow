@@ -1,18 +1,13 @@
+export type Result<T, E> = Ok<T, E> | Err<T, E>
 
-
-export type Result<T, E>
-= Ok<T, E>
-| Err<T, E>
-
-
-
+// eslint-disable-next-line @typescript-eslint/no-use-before-define
 export const ok = <T, E>(value: T): Ok<T, E> => new Ok(value)
 
+// eslint-disable-next-line @typescript-eslint/no-use-before-define
 export const err = <T, E>(err: E): Err<T, E> => new Err(err)
 
-
 export class Ok<T, E> {
-  constructor(readonly value: T) { }
+  constructor(readonly value: T) {}
 
   isOk(): this is Ok<T, E> {
     return true
@@ -26,6 +21,7 @@ export class Ok<T, E> {
     return ok(f(this.value))
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mapErr<U>(_f: (e: E) => U): Result<T, U> {
     return ok(this.value)
   }
@@ -43,10 +39,8 @@ export class Ok<T, E> {
     return ok(newInner)
   }
 
-  match = <A>(
-    ok: (t: T) => A,
-    _err: (e: E) => A
-  ): A => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  match = <A>(ok: (t: T) => A, _err: (e: E) => A): A => {
     return ok(this.value)
   }
 
@@ -60,7 +54,7 @@ export class Ok<T, E> {
 }
 
 export class Err<T, E> {
-  constructor(readonly error: E) { }
+  constructor(readonly error: E) {}
 
   isOk(): this is Ok<T, E> {
     return false
@@ -70,6 +64,7 @@ export class Err<T, E> {
     return !this.isOk()
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   map<A>(_f: (t: T) => A): Result<A, E> {
     return err(this.error)
   }
@@ -78,18 +73,17 @@ export class Err<T, E> {
     return err(f(this.error))
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   andThen<U>(_f: (t: T) => Result<U, E>): Result<U, E> {
     return err(this.error)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async asyncMap<U>(_f: (t: T) => Promise<U>): Promise<Result<U, E>> {
     return err(this.error)
   }
 
-  match = <A>(
-    _ok: (t: T) => A,
-    err: (e: E) => A
-  ): A => {
+  match = <A>(_ok: (t: T) => A, err: (e: E) => A): A => {
     return err(this.error)
   }
 
@@ -101,4 +95,3 @@ export class Err<T, E> {
     return this.error
   }
 }
-

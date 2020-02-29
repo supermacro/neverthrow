@@ -7,6 +7,7 @@
   "scripts": {
     "test": "jest",
     "lint": "eslint ./src --ext .ts",
+    "format": "prettier --write 'src/**/*.ts?(x)' && npm run lint -- --fix",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf ./dist",
     "build": "npm run clean && tsc"

@@ -1,8 +1,1 @@
-
-export {
-  Result,
-  ok,
-  Ok,
-  err,
-  Err
-} from './result'
+export { Result, ok, Ok, err, Err } from './result'
