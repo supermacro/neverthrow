@@ -6,6 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest",
+    "lint": "eslint ./src --ext .ts",
     "clean": "rm -rf ./dist",
     "build": "npm run clean && tsc"
   },
@@ -24,8 +25,14 @@
     "@babel/preset-env": "^7.4.3",
     "@babel/preset-typescript": "^7.3.3",
     "@types/jest": "^24.0.11",
+    "@typescript-eslint/eslint-plugin": "^2.21.0",
+    "@typescript-eslint/parser": "^2.21.0",
     "babel-jest": "^24.7.1",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
     "jest": "^24.7.1",
+    "prettier": "^1.19.1",
     "ts-jest": "^24.0.2",
     "typescript": "3.4.2"
   },
