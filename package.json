@@ -7,6 +7,7 @@
   "scripts": {
     "test": "jest",
     "lint": "eslint ./src --ext .ts",
+    "typecheck": "tsc --noEmit",
     "clean": "rm -rf ./dist",
     "build": "npm run clean && tsc"
   },
