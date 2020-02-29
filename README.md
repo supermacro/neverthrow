@@ -1,5 +1,5 @@
 
-# NeverThrow
+# NeverThrow 🙅
 
 ## Description
 
