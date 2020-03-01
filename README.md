@@ -391,7 +391,7 @@ const twelve = result._unsafeUnwrapErr()
 # 🔗
 ## Chaining API
 
-> Examples can be found in the [tests directory](./tests/index.tests.ts)
+> Examples can be found in the [tests directory](https://github.com/gDelgado14/neverthrow/blob/master/tests/index.test.ts#L235)
 
 The `chain` functions allow you to create sequential execution flows for asynchronous tasks in a very elegant way.
 
