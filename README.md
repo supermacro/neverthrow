@@ -1,6 +1,9 @@
 
 # NeverThrow 🙅
 
+[![Build Status](https://travis-ci.com/gDelgado14/neverthrow.svg?branch=master)](https://travis-ci.com/gDelgado14/neverthrow)
+
+
 ## Description
 
 Encode failure into your program.
