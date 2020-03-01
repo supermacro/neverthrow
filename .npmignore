@@ -1,5 +1,8 @@
 .babelrc
 .gitignore
+.eslintrc.js
+.prettierrc.js
+.travis.yml
 
 src/
 node_modules/
