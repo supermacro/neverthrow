@@ -394,6 +394,8 @@ const twelve = result._unsafeUnwrapErr()
 # 🔗
 ## Chaining API
 
+tldr: `chain` is the `.andThen` equivalent for `Result`s wrapped inside of a `Promise`.
+
 > Examples can be found in the [tests directory](https://github.com/gDelgado14/neverthrow/blob/master/tests/index.test.ts#L235)
 
 The `chain` functions allow you to create sequential execution flows for asynchronous tasks in a very elegant way.
