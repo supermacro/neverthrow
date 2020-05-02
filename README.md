@@ -46,6 +46,17 @@ const yesss = ok(someAesomeValue)
 // moments later ...
 
 const mappedYes = yesss.map(doingSuperUsefulStuff)
+
+// neverthrow uses type-guards to differentiate between Ok and Err instances
+// Mode info: https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types
+if (mappedYes.isOk()) {
+  // using type guards, we can access an Ok instance's `value` field
+  doStuffWith(mappedYes.value)
+} else {
+  // because of type guards
+  // typescript knows that mappedYes is an Err instance and thus has a `error` field
+  doStuffWith(mappedYes.error)
+}
 ```
 
 
@@ -87,6 +98,36 @@ import {
 } from 'neverthrow'
 ```
 
+
+
+## Accessing the value inside of a Result
+
+This library takes advantage of TypeScript's [type-guard feature](https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types).
+
+By simply doing an `if` (using `.isOk` or `.isErr`) check on your result, you can inform the TypeScript compiler of whether you have `Ok` instance, or an `Err` instance, and subsequently you can get access to the `value` or `error` value in the respective instances.
+
+Example:
+
+```typescript
+import { ok, err } from 'neverthrow'
+
+
+const example1 = ok(123)
+const example2 = err('abc')
+
+if (example1.isOk()) {
+  // you now have access to example1.value
+} else {
+  // you now have access to example1.error
+}
+
+
+if (example2.isErr()) {
+  // you now have access to example2.error
+} else {
+  // you now have access to example2.value
+}
+```
 
 
 ## API
@@ -351,44 +392,6 @@ const promise = parseHeaders(rawHeader)
 ```
 
 Note that in the above example if `parseHeaders` returns an `Err` then `.map` and `.asyncMap` will not be invoked, and `promise` variable will contain a `Err` inside of the promise.
-
-
----
-
-
-### `Result._unsafeUnwrap` (method)
-
-Returns the inner `Ok` value.
-
-Try to avoid unwrapping `Result`s, as it defeats the purpose of using `Result`s in the first place.
-
-Ironically, this function will `throw` if the `Result` is an `Err`.
-
-```typescript
-import { ok } from 'neverthrow'
-
-const result = ok(12)
-
-const twelve = result._unsafeUnwrap()
-```
-
-
-### `Result._unsafeUnwrapErr` (method)
-
-Returns the inner `Err` value.
-
-Try to avoid unwrapping `Result`s, as it defeats the purpose of using `Result`s in the first place.
-
-Ironically, this function will `throw` if the `Result` is an `Ok`.
-
-```typescript
-import { err } from 'neverthrow'
-
-const result = err(12)
-
-const twelve = result._unsafeUnwrapErr()
-```
-
 
 ---
 # 🔗
