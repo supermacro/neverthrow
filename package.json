@@ -14,14 +14,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gdelgado14/neverthrow.git"
+    "url": "git+https://github.com/greptail/neverthrow.git"
   },
   "author": "Giorgio Delgado",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/gdelgado14/neverthrow/issues"
+    "url": "https://github.com/greptail/neverthrow/issues"
   },
-  "homepage": "https://github.com/gdelgado14/neverthrow#readme",
+  "homepage": "https://github.com/greptail/neverthrow#readme",
   "devDependencies": {
     "@babel/core": "^7.4.3",
     "@babel/preset-env": "^7.4.3",
