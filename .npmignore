@@ -8,6 +8,7 @@ src/
 node_modules/
 tsconfig.json
 publish.sh
+renovate.json
 
 
 tests/
