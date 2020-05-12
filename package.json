@@ -35,7 +35,7 @@
     "eslint-plugin-prettier": "3.1.2",
     "jest": "24.7.1",
     "prettier": "1.19.1",
-    "ts-jest": "24.0.2",
+    "ts-jest": "25.5.1",
     "typescript": "3.8.3"
   },
   "keywords": [
