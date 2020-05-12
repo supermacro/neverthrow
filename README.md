@@ -1,8 +1,7 @@
 
 # NeverThrow 🙅
 
-[![Build Status](https://travis-ci.com/gDelgado14/neverthrow.svg?branch=master)](https://travis-ci.com/gDelgado14/neverthrow)
-
+[![Build Status](https://travis-ci.com/supermacro/neverthrow.svg?branch=master)](https://travis-ci.com/supermacro/neverthrow)
 
 ## Description
 
