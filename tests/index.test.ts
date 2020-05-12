@@ -1,4 +1,4 @@
-import { ok, err, Ok, Err, Result } from '../src'
+import { ok, err, Ok, Err, Result, ResultAsync, okAsync, errAsync } from '../src'
 import { chain, chain3, chain4, chain5, chain6, chain7, chain8 } from '../src/chain'
 
 describe('Result.Ok', () => {
@@ -79,6 +79,24 @@ describe('Result.Ok', () => {
 
       expect(nextFn).not.toHaveBeenCalled()
     })
+
+    it('Maps to a ResultAsync', async () => {
+      const okVal = ok(12)
+
+      const flattened = okVal.andThen(_number => {
+        // ...
+        // complex async logic
+        // ...
+        return okAsync({ data: 'why not' })
+      })
+
+      expect(flattened).toBeInstanceOf(ResultAsync)
+
+      const newResult = await flattened
+
+      expect(newResult.isOk()).toBe(true)
+      expect(newResult._unsafeUnwrap()).toStrictEqual({ data: 'why not' })
+    })
   })
 
   it('Maps to a promise', async () => {
@@ -98,7 +116,7 @@ describe('Result.Ok', () => {
 
     const promise = okVal.asyncMap(asyncMapper)
 
-    expect(promise).toBeInstanceOf(Promise)
+    expect(promise).toBeInstanceOf(ResultAsync)
 
     const newResult = await promise
 
@@ -180,6 +198,18 @@ describe('Result.Err', () => {
     expect(errVal._unsafeUnwrapErr()).toEqual('Yolo')
   })
 
+  it('Skips over andThen given a ResultAsync function', () => {
+    const errVal = err('Yolo')
+
+    const asyncMapper = jest.fn(_val => okAsync<string, string>('yooyo'))
+
+    const hopefullyNotFlattened = errVal.andThen(asyncMapper)
+
+    expect(hopefullyNotFlattened.isErr()).toBe(true)
+    expect(asyncMapper).not.toHaveBeenCalled()
+    expect(errVal._unsafeUnwrapErr()).toEqual('Yolo')
+  })
+
   it('Does not invoke callback within `asyncMap`', async () => {
     const asyncMapper = jest.fn(_val => {
       // ...
@@ -197,7 +227,7 @@ describe('Result.Err', () => {
 
     const promise = errVal.asyncMap(asyncMapper)
 
-    expect(promise).toBeInstanceOf(Promise)
+    expect(promise).toBeInstanceOf(ResultAsync)
 
     const sameResult = await promise
 
@@ -2367,5 +2397,237 @@ describe('Async Chaining API 🔗', () => {
       expect(computation8).toHaveBeenCalledTimes(1)
       expect(computation8).toHaveBeenCalledWith(['t', 'r', 'u', 'e'].reverse())
     })
+  })
+})
+
+describe('ResultAsync', () => {
+  it('Is awaitable to a Result', async () => {
+    // For an success value
+    const asyncVal = okAsync(12)
+
+    const val = await asyncVal
+
+    expect(val).toBeInstanceOf(Ok)
+    expect(val._unsafeUnwrap()).toEqual(12)
+
+    // For an error
+    const asyncErr = errAsync('Wrong format')
+
+    const err = await asyncErr
+
+    expect(err).toBeInstanceOf(Err)
+    expect(err._unsafeUnwrapErr()).toEqual('Wrong format')
+  })
+
+  describe('map', () => {
+    it('Maps a value using a synchronous function', async () => {
+      const asyncVal = okAsync(12)
+
+      const mapSyncFn = jest.fn(number => number.toString())
+
+      const mapped = asyncVal.map(mapSyncFn)
+
+      expect(mapped).toBeInstanceOf(ResultAsync)
+
+      const newVal = await mapped
+
+      expect(newVal.isOk()).toBe(true)
+      expect(newVal._unsafeUnwrap()).toBe('12')
+      expect(mapSyncFn).toHaveBeenCalledTimes(1)
+    })
+
+    it('Maps a value using an asynchronous function', async () => {
+      const asyncVal = okAsync(12)
+
+      const mapAsyncFn = jest.fn(number => Promise.resolve(number.toString()))
+
+      const mapped = asyncVal.map(mapAsyncFn)
+
+      expect(mapped).toBeInstanceOf(ResultAsync)
+
+      const newVal = await mapped
+
+      expect(newVal.isOk()).toBe(true)
+      expect(newVal._unsafeUnwrap()).toBe('12')
+      expect(mapAsyncFn).toHaveBeenCalledTimes(1)
+    })
+
+    it('Skips an error', async () => {
+      const asyncErr = errAsync<number, string>('Wrong format')
+
+      const mapSyncFn = jest.fn(number => number.toString())
+
+      const notMapped = asyncErr.map(mapSyncFn)
+
+      expect(notMapped).toBeInstanceOf(ResultAsync)
+
+      const newVal = await notMapped
+
+      expect(newVal.isErr()).toBe(true)
+      expect(newVal._unsafeUnwrapErr()).toBe('Wrong format')
+      expect(mapSyncFn).toHaveBeenCalledTimes(0)
+    })
+  })
+
+  describe('mapErr', () => {
+    it('Maps an error using a synchronous function', async () => {
+      const asyncErr = errAsync('Wrong format')
+
+      const mapErrSyncFn = jest.fn(str => 'Error: ' + str)
+
+      const mappedErr = asyncErr.mapErr(mapErrSyncFn)
+
+      expect(mappedErr).toBeInstanceOf(ResultAsync)
+
+      const newVal = await mappedErr
+
+      expect(newVal.isErr()).toBe(true)
+      expect(newVal._unsafeUnwrapErr()).toBe('Error: Wrong format')
+      expect(mapErrSyncFn).toHaveBeenCalledTimes(1)
+    })
+
+    it('Maps an error using an asynchronous function', async () => {
+      const asyncErr = errAsync('Wrong format')
+
+      const mapErrAsyncFn = jest.fn(str => Promise.resolve('Error: ' + str))
+
+      const mappedErr = asyncErr.mapErr(mapErrAsyncFn)
+
+      expect(mappedErr).toBeInstanceOf(ResultAsync)
+
+      const newVal = await mappedErr
+
+      expect(newVal.isErr()).toBe(true)
+      expect(newVal._unsafeUnwrapErr()).toBe('Error: Wrong format')
+      expect(mapErrAsyncFn).toHaveBeenCalledTimes(1)
+    })
+
+    it('Skips a value', async () => {
+      const asyncVal = okAsync(12)
+
+      const mapErrSyncFn = jest.fn(str => 'Error: ' + str)
+
+      const notMapped = asyncVal.mapErr(mapErrSyncFn)
+
+      expect(notMapped).toBeInstanceOf(ResultAsync)
+
+      const newVal = await notMapped
+
+      expect(newVal.isOk()).toBe(true)
+      expect(newVal._unsafeUnwrap()).toBe(12)
+      expect(mapErrSyncFn).toHaveBeenCalledTimes(0)
+    })
+  })
+
+  describe('andThen', () => {
+    it('Maps a value using a function returning a ResultAsync', async () => {
+      const asyncVal = okAsync(12)
+
+      const andThenResultAsyncFn = jest.fn(() => okAsync('good'))
+
+      const mapped = asyncVal.andThen(andThenResultAsyncFn)
+
+      expect(mapped).toBeInstanceOf(ResultAsync)
+
+      const newVal = await mapped
+
+      expect(newVal.isOk()).toBe(true)
+      expect(newVal._unsafeUnwrap()).toBe('good')
+      expect(andThenResultAsyncFn).toHaveBeenCalledTimes(1)
+    })
+
+    it('Maps a value using a function returning a Result', async () => {
+      const asyncVal = okAsync(12)
+
+      const andThenResultFn = jest.fn(() => ok('good'))
+
+      const mapped = asyncVal.andThen(andThenResultFn)
+
+      expect(mapped).toBeInstanceOf(ResultAsync)
+
+      const newVal = await mapped
+
+      expect(newVal.isOk()).toBe(true)
+      expect(newVal._unsafeUnwrap()).toBe('good')
+      expect(andThenResultFn).toHaveBeenCalledTimes(1)
+    })
+
+    it('Skips an Error', async () => {
+      const asyncVal = errAsync<string, string>('Wrong format')
+
+      const andThenResultFn = jest.fn(() => ok<string, string>('good'))
+
+      const notMapped = asyncVal.andThen(andThenResultFn)
+
+      expect(notMapped).toBeInstanceOf(ResultAsync)
+
+      const newVal = await notMapped
+
+      expect(newVal.isErr()).toBe(true)
+      expect(newVal._unsafeUnwrapErr()).toBe('Wrong format')
+      expect(andThenResultFn).toHaveBeenCalledTimes(0)
+    })
+  })
+
+  describe('match', () => {
+    it('Matches on an Ok', async () => {
+      const okMapper = jest.fn(_val => 'weeeeee')
+      const errMapper = jest.fn(_val => 'wooooo')
+
+      const matched = await okAsync(12).match(okMapper, errMapper)
+
+      expect(matched).toBe('weeeeee')
+      expect(okMapper).toHaveBeenCalledTimes(1)
+      expect(errMapper).not.toHaveBeenCalled()
+    })
+
+    it('Matches on an Error', async () => {
+      const okMapper = jest.fn(_val => 'weeeeee')
+      const errMapper = jest.fn(_val => 'wooooo')
+
+      const matched = await errAsync('bad').match(okMapper, errMapper)
+
+      expect(matched).toBe('wooooo')
+      expect(okMapper).not.toHaveBeenCalled()
+      expect(errMapper).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('fromPromise', () => {
+    it('Creates a ResultAsync from a Promise', async () => {
+      const res = ResultAsync.fromPromise(Promise.resolve(12))
+
+      expect(res).toBeInstanceOf(ResultAsync)
+
+      const val = await res
+      expect(val.isOk()).toBe(true)
+      expect(val._unsafeUnwrap()).toEqual(12)
+    })
+  })
+})
+
+describe('okAsync', () => {
+  it('Creates a ResultAsync that resolves to an Ok', async () => {
+    const val = okAsync(12)
+
+    expect(val).toBeInstanceOf(ResultAsync)
+
+    const res = await val
+
+    expect(res.isOk()).toBe(true)
+    expect(res._unsafeUnwrap()).toEqual(12)
+  })
+})
+
+describe('errAsync', () => {
+  it('Creates a ResultAsync that resolves to an Err', async () => {
+    const err = errAsync('bad')
+
+    expect(err).toBeInstanceOf(ResultAsync)
+
+    const res = await err
+
+    expect(res.isErr()).toBe(true)
+    expect(res._unsafeUnwrapErr()).toEqual('bad')
   })
 })

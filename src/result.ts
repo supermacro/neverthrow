@@ -1,3 +1,5 @@
+import { ResultAsync, errAsync } from './'
+
 export type Result<T, E> = Ok<T, E> | Err<T, E>
 
 // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -29,14 +31,14 @@ export class Ok<T, E> {
   // add info on how this is really useful for converting a
   // Result<Result<T, E2>, E1>
   // into a Result<T, E2>
-  andThen<U>(f: (t: T) => Result<U, E>): Result<U, E> {
+  andThen<U>(f: (t: T) => ResultAsync<U, E>): ResultAsync<U, E>
+  andThen<U>(f: (t: T) => Result<U, E>): Result<U, E>
+  andThen<U>(f: (t: T) => Result<U, E> | ResultAsync<U, E>): Result<U, E> | ResultAsync<U, E> {
     return f(this.value)
   }
 
-  async asyncMap<U>(f: (t: T) => Promise<U>): Promise<Result<U, E>> {
-    const newInner = await f(this.value)
-
-    return ok(newInner)
+  asyncMap<U>(f: (t: T) => Promise<U>): ResultAsync<U, E> {
+    return ResultAsync.fromPromise(f(this.value))
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -52,6 +54,15 @@ export class Ok<T, E> {
     throw new Error('Called `_unsafeUnwrapErr` on an Ok')
   }
 }
+// async function fetchApi(): Promise<string> {
+//   return Promise.resolve('haha')
+// }
+
+// function resultsFromApi(): ResultAsync<string, Error> {
+//   return ResultAsync.fromPromise(fetchApi())
+// }
+
+// const res = new Ok<string, Error>('hello').map(async str => str + ' world')
 
 export class Err<T, E> {
   constructor(readonly error: E) {}
@@ -73,14 +84,17 @@ export class Err<T, E> {
     return err(f(this.error))
   }
 
+  andThen<U>(_f: (t: T) => Result<U, E>): Result<U, E>
+  // Since _f is ignored for Err, the return type is always a Result
+  andThen<U>(_f: (t: T) => ResultAsync<U, E>): Result<U, E>
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  andThen<U>(_f: (t: T) => Result<U, E>): Result<U, E> {
+  andThen<U>(_f: (t: T) => Result<U, E> | ResultAsync<U, E>): Result<U, E> {
     return err(this.error)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async asyncMap<U>(_f: (t: T) => Promise<U>): Promise<Result<U, E>> {
-    return err(this.error)
+  asyncMap<U>(_f: (t: T) => Promise<U>): ResultAsync<U, E> {
+    return errAsync<U, E>(this.error)
   }
 
   match = <A>(_ok: (t: T) => A, err: (e: E) => A): A => {
