@@ -1,4 +1,4 @@
-import { ok, err, Ok, Err, Result, ResultAsync, okAsync, errAsync } from '../src'
+import { ok, err, Ok, Err, Result, ResultAsync, okAsync, errAsync, isPromise } from '../src'
 import { chain, chain3, chain4, chain5, chain6, chain7, chain8 } from '../src/chain'
 
 describe('Result.Ok', () => {
@@ -2629,5 +2629,43 @@ describe('errAsync', () => {
 
     expect(res.isErr()).toBe(true)
     expect(res._unsafeUnwrapErr()).toEqual('bad')
+  })
+})
+
+describe('isPromise', () => {
+  it('should return true for a native Promise', () => {
+    expect(isPromise(Promise.resolve(1))).toBe(true)
+  })
+  it('should return true for any thenable', () => {
+    // This looks similar enough to a promise
+    // that promises/A+ says we should treat
+    // it as a promise.
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    const promise = { then: function() {} }
+
+    expect(isPromise(promise)).toBe(true)
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    const fn = () => {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    fn.then = () => {}
+    expect(isPromise(fn)).toBe(true)
+  })
+
+  it('should return false for any other type', () => {
+    expect(isPromise(null)).toBe(false)
+    expect(isPromise(undefined)).toBe(false)
+    expect(isPromise(0)).toBe(false)
+    expect(isPromise(-42)).toBe(false)
+    expect(isPromise(42)).toBe(false)
+    expect(isPromise('')).toBe(false)
+    expect(isPromise('then')).toBe(false)
+    expect(isPromise(false)).toBe(false)
+    expect(isPromise(true)).toBe(false)
+    expect(isPromise({})).toBe(false)
+    expect(isPromise({ then: true })).toBe(false)
+    expect(isPromise([])).toBe(false)
+    expect(isPromise([true])).toBe(false)
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    expect(isPromise(() => {})).toBe(false)
   })
 })

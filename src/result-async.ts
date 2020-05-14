@@ -1,13 +1,5 @@
-import { Result, Ok, Err } from './result'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isPromise<T>(obj: any): obj is Promise<T> {
-  return (
-    !!obj &&
-    (typeof obj === 'object' || typeof obj === 'function') &&
-    typeof obj.then === 'function'
-  )
-}
+import { Result, Ok, Err } from './'
+import { isPromise } from './'
 
 export class ResultAsync<T, E> {
   private _promise: Promise<Result<T, E>>
