@@ -2402,7 +2402,7 @@ describe('Async Chaining API 🔗', () => {
 
 describe('ResultAsync', () => {
   it('Is awaitable to a Result', async () => {
-    // For an success value
+    // For a success value
     const asyncVal = okAsync(12)
 
     const val = await asyncVal
@@ -2417,6 +2417,30 @@ describe('ResultAsync', () => {
 
     expect(err).toBeInstanceOf(Err)
     expect(err._unsafeUnwrapErr()).toEqual('Wrong format')
+  })
+
+  it('Is chainable like any Promise', async () => {
+    // For a success value
+    const asyncValChained = okAsync(12).then(res => {
+      if (res.isOk()) {
+        return res.value + 2
+      }
+    })
+
+    expect(asyncValChained).toBeInstanceOf(Promise)
+    const val = await asyncValChained
+    expect(val).toEqual(14)
+
+    // For an error
+    const asyncErrChained = errAsync('Oops').then(res => {
+      if (res.isErr()) {
+        return res.error + '!'
+      }
+    })
+
+    expect(asyncErrChained).toBeInstanceOf(Promise)
+    const err = await asyncErrChained
+    expect(err).toEqual('Oops!')
   })
 
   describe('map', () => {
