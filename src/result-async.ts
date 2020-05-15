@@ -1,5 +1,4 @@
 import { Result, Ok, Err } from './'
-import { isPromise } from './'
 
 export class ResultAsync<T, E> {
   private _promise: Promise<Result<T, E>>
@@ -16,55 +15,39 @@ export class ResultAsync<T, E> {
     return new ResultAsync(newPromise)
   }
 
-  map<A>(_f: (t: T) => A | Promise<A>): ResultAsync<A, E> {
-    const newPromise: Promise<Result<A, E>> = this._promise.then((res: Result<T, E>) => {
+  map<A>(f: (t: T) => A | Promise<A>): ResultAsync<A, E> {
+    const newPromise = this._promise.then(async (res: Result<T, E>) => {
       if (res.isErr()) {
         return new Err<A, E>(res.error)
       }
 
-      const newValue = _f(res.value)
-
-      if (isPromise(newValue)) {
-        return newValue.then(value => new Ok<A, E>(value))
-      }
-
-      return new Ok<A, E>(newValue)
+      return new Ok<A, E>(await f(res.value))
     })
 
     return new ResultAsync(newPromise)
   }
 
-  mapErr<U>(_f: (e: E) => U | Promise<U>): ResultAsync<T, U> {
-    const newPromise: Promise<Result<T, U>> = this._promise.then((res: Result<T, E>) => {
+  mapErr<U>(f: (e: E) => U | Promise<U>): ResultAsync<T, U> {
+    const newPromise = this._promise.then(async (res: Result<T, E>) => {
       if (res.isOk()) {
         return new Ok<T, U>(res.value)
       }
 
-      const newError = _f(res.error)
-
-      if (isPromise(newError)) {
-        return newError.then(error => new Err<T, U>(error))
-      }
-
-      return new Err<T, U>(newError)
+      return new Err<T, U>(await f(res.error))
     })
 
     return new ResultAsync(newPromise)
   }
 
-  andThen<U>(_f: (t: T) => Result<U, E> | ResultAsync<U, E>): ResultAsync<U, E> {
-    const newPromise = this._promise.then((res: Result<T, E>) => {
+  andThen<U>(f: (t: T) => Result<U, E> | ResultAsync<U, E>): ResultAsync<U, E> {
+    const newPromise = this._promise.then(res => {
       if (res.isErr()) {
         return new Err<U, E>(res.error)
       }
 
-      const newValue = _f(res.value)
+      const newValue = f(res.value)
 
-      if (newValue instanceof ResultAsync) {
-        return newValue._promise
-      }
-
-      return newValue
+      return newValue instanceof ResultAsync ? newValue._promise : newValue
     })
 
     return new ResultAsync(newPromise)
@@ -75,8 +58,8 @@ export class ResultAsync<T, E> {
   }
 
   // Makes ResultAsync awaitable
-  then(_successCallback: (res: Result<T, E>) => void) {
-    this._promise.then(_successCallback)
+  then(successCallback: (res: Result<T, E>) => void) {
+    this._promise.then(successCallback)
   }
 }
 
