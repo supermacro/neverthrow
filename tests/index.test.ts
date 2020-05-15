@@ -2603,6 +2603,16 @@ describe('ResultAsync', () => {
       expect(val.isOk()).toBe(true)
       expect(val._unsafeUnwrap()).toEqual(12)
     })
+
+    it('Accepts an error handler as a second argument', async () => {
+      const res = ResultAsync.fromPromise(Promise.reject('No!'), e => new Error('Oops: ' + e))
+
+      expect(res).toBeInstanceOf(ResultAsync)
+
+      const val = await res
+      expect(val.isErr()).toBe(true)
+      expect(val._unsafeUnwrapErr()).toEqual(Error('Oops: No!'))
+    })
   })
 })
 

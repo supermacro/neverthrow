@@ -8,8 +8,12 @@ export class ResultAsync<T, E> {
     this._promise = res
   }
 
-  static fromPromise<T, E>(promise: Promise<T>): ResultAsync<T, E> {
-    return new ResultAsync(promise.then((value: T) => new Ok<T, E>(value)))
+  static fromPromise<T, E>(promise: Promise<T>, errorFn?: (e: unknown) => E): ResultAsync<T, E> {
+    let newPromise: Promise<Result<T, E>> = promise.then((value: T) => new Ok(value))
+    if (errorFn) {
+      newPromise = newPromise.catch(e => new Err(errorFn(e)))
+    }
+    return new ResultAsync(newPromise)
   }
 
   map<A>(_f: (t: T) => A | Promise<A>): ResultAsync<A, E> {
