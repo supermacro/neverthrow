@@ -11,7 +11,7 @@ export class ResultAsync<T, E> {
   static fromPromise<T, E>(promise: Promise<T>, errorFn?: (e: unknown) => E): ResultAsync<T, E> {
     let newPromise: Promise<Result<T, E>> = promise.then((value: T) => new Ok(value))
     if (errorFn) {
-      newPromise = newPromise.catch(e => new Err(errorFn(e)))
+      newPromise = newPromise.catch(e => new Err<T, E>(errorFn(e)))
     }
     return new ResultAsync(newPromise)
   }
