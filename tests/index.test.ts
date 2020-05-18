@@ -2404,6 +2404,7 @@ describe('ResultAsync', () => {
   it('Is awaitable to a Result', async () => {
     // For a success value
     const asyncVal = okAsync(12)
+    expect(asyncVal).toBeInstanceOf(ResultAsync)
 
     const val = await asyncVal
 
@@ -2412,6 +2413,7 @@ describe('ResultAsync', () => {
 
     // For an error
     const asyncErr = errAsync('Wrong format')
+    expect(asyncErr).toBeInstanceOf(ResultAsync)
 
     const err = await asyncErr
 
@@ -2638,30 +2640,30 @@ describe('ResultAsync', () => {
       expect(val._unsafeUnwrapErr()).toEqual(Error('Oops: No!'))
     })
   })
-})
 
-describe('okAsync', () => {
-  it('Creates a ResultAsync that resolves to an Ok', async () => {
-    const val = okAsync(12)
+  describe('okAsync', () => {
+    it('Creates a ResultAsync that resolves to an Ok', async () => {
+      const val = okAsync(12)
 
-    expect(val).toBeInstanceOf(ResultAsync)
+      expect(val).toBeInstanceOf(ResultAsync)
 
-    const res = await val
+      const res = await val
 
-    expect(res.isOk()).toBe(true)
-    expect(res._unsafeUnwrap()).toEqual(12)
+      expect(res.isOk()).toBe(true)
+      expect(res._unsafeUnwrap()).toEqual(12)
+    })
   })
-})
 
-describe('errAsync', () => {
-  it('Creates a ResultAsync that resolves to an Err', async () => {
-    const err = errAsync('bad')
+  describe('errAsync', () => {
+    it('Creates a ResultAsync that resolves to an Err', async () => {
+      const err = errAsync('bad')
 
-    expect(err).toBeInstanceOf(ResultAsync)
+      expect(err).toBeInstanceOf(ResultAsync)
 
-    const res = await err
+      const res = await err
 
-    expect(res.isErr()).toBe(true)
-    expect(res._unsafeUnwrapErr()).toEqual('bad')
+      expect(res.isErr()).toBe(true)
+      expect(res._unsafeUnwrapErr()).toEqual('bad')
+    })
   })
 })

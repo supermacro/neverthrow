@@ -54,15 +54,6 @@ export class Ok<T, E> {
     throw new Error('Called `_unsafeUnwrapErr` on an Ok')
   }
 }
-// async function fetchApi(): Promise<string> {
-//   return Promise.resolve('haha')
-// }
-
-// function resultsFromApi(): ResultAsync<string, Error> {
-//   return ResultAsync.fromPromise(fetchApi())
-// }
-
-// const res = new Ok<string, Error>('hello').map(async str => str + ' world')
 
 export class Err<T, E> {
   constructor(readonly error: E) {}
