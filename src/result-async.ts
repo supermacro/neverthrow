@@ -12,7 +12,10 @@ export class ResultAsync<T, E> {
     if (errorFn) {
       newPromise = newPromise.catch(e => new Err<T, E>(errorFn(e)))
 
-      if (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'production') {
+      if (
+        typeof process !== 'object' ||
+        (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'production')
+      ) {
         const yellowColor = '\x1b[33m%s\x1b[0m'
 
         const warning = [
