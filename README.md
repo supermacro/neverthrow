@@ -6,10 +6,12 @@
 
 Encode failure into your program.
 
-This package contains a `Result` type that represents either success (`Ok`) or failure (`Err`).  
-It also offers a `ResultAsync` type which wraps a `Promise<Result>` to enable chaining asynchronous tasks.
+This package contains a `Result` type that represents either success (`Ok`) or failure (`Err`).
 
-`neverthrow` also exposes an api for chaining sequential asynchronous tasks ([docs below](#chaining-api)) in a more functionnal manner.
+For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a `Promise<Result>` and enables chaining.  
+`ResultAsync` is `thenable` meaning it behaves exactly like a native `Promise<Result>`: the underlying `Result` can be accessed using the `await` or `.then()` operators.
+
+`neverthrow` also exposes `chain(...)` methods for chaining asynchronous tasks in a functional style ([docs below](#chaining-api)). However, these methods might be deprecated in the future. It is advised to use the `ResultAsync` instead.
 
 [Read the blog post](https://gdelgado.ca/type-safe-error-handling-in-typescript.html#title) which explains _why you'd want to use this package_.
 
@@ -70,13 +72,15 @@ type Result<T, E> = Ok<T, E> | Err<T, E>
 
 Asynchronous methods can return a `ResultAsync` type instead of a `Promise<Result>` in order to enable further chaining.
 
-This is useful for handling asynchronous apis like database queries, timers, http requests, ...
+`ResultAsync` is `thenable` meaning it behaves exactly like a native `Promise<Result>`: the underlying `Result` can be accessed using the `await` or `.then()` operators.
+
+This is useful for handling multiple asynchronous apis like database queries, timers, http requests, ...
 
 Example:
 
 ```typescript
 import { errAsync, ResultAsync } from 'neverthrow'
-import { insertIntoDb } from 'imaginary-database"
+import { insertIntoDb } from 'imaginary-database'
 // Let's assume insertIntoDb has the following signature:
 // insertIntoDb(user: User): Promise<User>
 
@@ -99,7 +103,9 @@ const asyncRes = addUserToDatabase({ name: 'Tom' }) // asyncRes is a `ResultAsyn
 const asyncRes2 = asyncRes.map((user: User) => user.name) // asyncRes2 is a `ResultAsync<string, Error>`
 
 // A ResultAsync acts exactly like a Promise<Result>
-// It can be transformed back into a Result just like a Promise would, using await or .then()
+// It can be transformed back into a Result just like a Promise would:
+
+// using await
 const res = await asyncRes
 // res is a Result<string, Error>
 if (res.isErr()) {
@@ -107,6 +113,16 @@ if (res.isErr()) {
 } else {
   console.log('Successfully inserted user ' + res.value)
 }
+
+// using then
+asyncRes.then(res => {
+  // res is Result<string, Error>
+  if (res.isErr()) {
+    console.log('Oops fail: ' + res.error.message)
+  } else {
+    console.log('Successfully inserted user ' + res.value)
+  }
+})
 ```
 
 ## Top-Level API
@@ -687,6 +703,9 @@ const resultMessage = await validateUser(user)
 # 🔗
 
 ## Chaining API
+
+> Disclaimer: the preferred solution to chaining asynchronous tasks is `ResultAsync`.  
+> The following method might be deprecated in the future.
 
 tldr: `chain` is the `.andThen` equivalent for `Result`s wrapped inside of a `Promise`.
 
