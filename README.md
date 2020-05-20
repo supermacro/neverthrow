@@ -488,7 +488,7 @@ myResult.isErr() // true
 
 Transforms a `Promise<T>` into a `ResultAsync<T, E>`.
 
-The second argument handles the rejection case of the promise. If it is ommited, the code might throw.
+The second argument handles the rejection case of the promise. If it is ommited, **the code might throw** because `neverthrow` does not know if the promise you are passing to `fromPromise` has any promise rejection logic associated to it (via a `.catch` method call or `catch (err) {}` block).
 
 **Signature:**
 
