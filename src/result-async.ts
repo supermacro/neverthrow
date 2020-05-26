@@ -30,8 +30,8 @@ export class ResultAsync<T, E> {
     return new ResultAsync(newPromise)
   }
 
-  map = <A>(f: (t: T) => A | Promise<A>) =>
-    new ResultAsync(
+  map<A>(f: (t: T) => A | Promise<A>): ResultAsync<A, E> {
+    return new ResultAsync(
       this._promise.then(async (res: Result<T, E>) => {
         if (res.isErr()) {
           return new Err<A, E>(res.error)
@@ -40,9 +40,10 @@ export class ResultAsync<T, E> {
         return new Ok<A, E>(await f(res.value))
       }),
     )
+  }
 
-  mapErr = <U>(f: (e: E) => U | Promise<U>) =>
-    new ResultAsync(
+  mapErr<U>(f: (e: E) => U | Promise<U>): ResultAsync<T, U> {
+    return new ResultAsync(
       this._promise.then(async (res: Result<T, E>) => {
         if (res.isOk()) {
           return new Ok<T, U>(res.value)
@@ -51,9 +52,10 @@ export class ResultAsync<T, E> {
         return new Err<T, U>(await f(res.error))
       }),
     )
+  }
 
-  andThen = <U>(f: (t: T) => Result<U, E> | ResultAsync<U, E>) =>
-    new ResultAsync(
+  andThen<U>(f: (t: T) => Result<U, E> | ResultAsync<U, E>): ResultAsync<U, E> {
+    return new ResultAsync(
       this._promise.then(res => {
         if (res.isErr()) {
           return new Err<U, E>(res.error)
@@ -64,11 +66,16 @@ export class ResultAsync<T, E> {
         return newValue instanceof ResultAsync ? newValue._promise : newValue
       }),
     )
+  }
 
-  match = <A>(ok: (t: T) => A, _err: (e: E) => A) => this._promise.then(res => res.match(ok, _err))
+  match<A>(ok: (t: T) => A, _err: (e: E) => A): Promise<A> {
+    return this._promise.then(res => res.match(ok, _err))
+  }
 
   // Makes ResultAsync awaitable
-  then = <A>(successCallback: (res: Result<T, E>) => A) => this._promise.then(successCallback)
+  then<A>(successCallback: (res: Result<T, E>) => A): Promise<A> {
+    return this._promise.then(successCallback)
+  }
 }
 
 export const okAsync = <T, E>(value: T): ResultAsync<T, E> =>
