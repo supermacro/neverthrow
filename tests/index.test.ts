@@ -151,6 +151,54 @@ describe('Result.Ok', () => {
 
     expect(val.value).toBe('safe to read')
   })
+
+  describe('or', () => {
+    it('Specified value wins default', () => {
+      const result = ok(12).or(42)
+
+      expect(result).toBe(12)
+    })
+
+    it('NULL is a valid value', () => {
+      const result = ok<any, Error>(null).or(42)
+
+      expect(result).toBe(null)
+    })
+
+    it('undefined is not a valid value', () => {
+      const result = ok<any, Error>(undefined).or(42)
+
+      expect(result).toBe(42)
+    })
+  })
+
+  describe('orGet', () => {
+    it('Specified value wins default', () => {
+      const result = ok(12).orGet(() => 42)
+
+      expect(result).toBe(12)
+    })
+
+    it('NULL is a valid value', () => {
+      const result = ok<any, Error>(null).orGet(() => 42)
+
+      expect(result).toBe(null)
+    })
+
+    it('undefined is not a valid value', () => {
+      const result = ok<any, Error>(undefined).orGet(() => 42)
+
+      expect(result).toBe(42)
+    })
+  })
+
+  describe('orError', () => {
+    it('On success do nothing', () => {
+      const result = ok(12).orError()
+
+      expect(result).toBe(12)
+    })
+  })
 })
 
 describe('Result.Err', () => {
@@ -259,6 +307,48 @@ describe('Result.Err', () => {
     const okVal = err(12)
 
     expect(okVal._unsafeUnwrapErr()).toBe(12)
+  })
+
+  describe('or', () => {
+    it('Use default value on any err()', () => {
+      const result = err(new Error()).or(42)
+
+      expect(result).toBe(42)
+    })
+  })
+
+  describe('orGet', () => {
+    it('Use supplied result on any err()', () => {
+      const result = err(new Error()).orGet(() => 42)
+
+      expect(result).toBe(42)
+    })
+  })
+
+  describe('orError', () => {
+    it("Throws result's error type", () => {
+      function throwsError () {
+        err(new Error('popa')).orError()
+      }
+
+      expect(throwsError).toThrowError(new Error('popa'))
+    })
+
+    it('Creates an error and throws it', () => {
+      function throwsError () {
+        err('popa').orError((er) => new Error(er))
+      }
+
+      expect(throwsError).toThrowError(new Error('popa'))
+    })
+
+    it("Invalid 'orError' usage example", () => {
+      function throwsError () {
+        err('popa').orError()
+      }
+
+      expect(throwsError).toThrowError(new Error("Invalid 'orError' usage. Error function was not specified and error type is not Error."))
+    })
   })
 })
 
