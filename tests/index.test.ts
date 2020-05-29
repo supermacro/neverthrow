@@ -335,21 +335,19 @@ describe('Result.Err', () => {
     })
 
     it('Creates an error and throws it', () => {
-      function throwsError () {
+      function throwsError() {
         err('popa').orError((er) => new Error(er))
       }
 
       expect(throwsError).toThrowError(new Error('popa'))
     })
 
-    it("Invalid 'orError' usage example", () => {
-      function throwsError () {
+    it("Cast to string the error object", () => {
+      function throwsError() {
         err('popa').orError()
       }
 
-      expect(throwsError).toThrowError(new Error(
-        "Invalid 'orError' usage. Error function was not specified and error type is not Error.",
-      ))
+      expect(throwsError).toThrowError(new Error('popa'))
     })
   })
 })

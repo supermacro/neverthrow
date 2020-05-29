@@ -120,9 +120,8 @@ export class Err<T, E> {
     if (this.error instanceof Error) {
       throw this.error
     }
-    throw new Error(
-      "Invalid 'orError' usage. Error function was not specified and error type is not Error.",
-    )
+    const message = `${this.error}`
+    throw new Error(message)
   }
 
   _unsafeUnwrap(): T {

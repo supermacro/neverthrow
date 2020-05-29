@@ -501,8 +501,8 @@ err('error message').orError((errorResult) => new Error(errorResult))
 // throw new Error('Ooops!')
 err(new Error('Oooops!')).orError()
 
-// INVALID USAGE, unsupported operation
-// throw new Error("Invalid 'orError' usage. Error function was not specified and error type is not Error.")
+// throw new Error('error message'),
+// because the error object casted to string
 err('error message').orError()
 ```
 
