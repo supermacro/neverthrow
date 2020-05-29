@@ -160,13 +160,13 @@ describe('Result.Ok', () => {
     })
 
     it('NULL is a valid value', () => {
-      const result = ok<any, Error>(null).or(42)
+      const result = ok<number | null, Error>(null).or(42)
 
       expect(result).toBe(null)
     })
 
     it('undefined is not a valid value', () => {
-      const result = ok<any, Error>(undefined).or(42)
+      const result = ok<number | undefined, Error>(undefined).or(42)
 
       expect(result).toBe(42)
     })
@@ -180,13 +180,13 @@ describe('Result.Ok', () => {
     })
 
     it('NULL is a valid value', () => {
-      const result = ok<any, Error>(null).orGet(() => 42)
+      const result = ok<number | null, Error>(null).orGet(() => 42)
 
       expect(result).toBe(null)
     })
 
     it('undefined is not a valid value', () => {
-      const result = ok<any, Error>(undefined).orGet(() => 42)
+      const result = ok<number | undefined, Error>(undefined).orGet(() => 42)
 
       expect(result).toBe(42)
     })
@@ -347,7 +347,9 @@ describe('Result.Err', () => {
         err('popa').orError()
       }
 
-      expect(throwsError).toThrowError(new Error("Invalid 'orError' usage. Error function was not specified and error type is not Error."))
+      expect(throwsError).toThrowError(new Error(
+        "Invalid 'orError' usage. Error function was not specified and error type is not Error.",
+      ))
     })
   })
 })
