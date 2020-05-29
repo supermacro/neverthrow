@@ -23,7 +23,7 @@ export const chain = async <T1, T2, E>(
 
   const mapped = await inner.asyncMap(r2)
 
-  return mapped.andThen(inner => inner)
+  return mapped.andThen((inner) => inner)
 }
 
 export const chain3 = async <T1, T2, T3, E>(
@@ -37,7 +37,7 @@ export const chain3 = async <T1, T2, T3, E>(
 
   const mapped = await chained.asyncMap(r3)
 
-  return mapped.andThen(inner => inner)
+  return mapped.andThen((inner) => inner)
 }
 
 export const chain4 = async <T1, T2, T3, T4, E>(
@@ -52,7 +52,7 @@ export const chain4 = async <T1, T2, T3, T4, E>(
 
   const mapped = await chained.asyncMap(r4)
 
-  return mapped.andThen(inner => inner)
+  return mapped.andThen((inner) => inner)
 }
 
 export const chain5 = async <T1, T2, T3, T4, T5, E>(
@@ -68,7 +68,7 @@ export const chain5 = async <T1, T2, T3, T4, T5, E>(
 
   const mapped = await chained.asyncMap(r5)
 
-  return mapped.andThen(inner => inner)
+  return mapped.andThen((inner) => inner)
 }
 
 export const chain6 = async <T1, T2, T3, T4, T5, T6, E>(
@@ -85,7 +85,7 @@ export const chain6 = async <T1, T2, T3, T4, T5, T6, E>(
 
   const mapped = await chained.asyncMap(r6)
 
-  return mapped.andThen(inner => inner)
+  return mapped.andThen((inner) => inner)
 }
 
 export const chain7 = async <T1, T2, T3, T4, T5, T6, T7, E>(
@@ -103,7 +103,7 @@ export const chain7 = async <T1, T2, T3, T4, T5, T6, T7, E>(
 
   const mapped = await chained.asyncMap(r7)
 
-  return mapped.andThen(inner => inner)
+  return mapped.andThen((inner) => inner)
 }
 
 export const chain8 = async <T1, T2, T3, T4, T5, T6, T7, T8, E>(
@@ -122,5 +122,5 @@ export const chain8 = async <T1, T2, T3, T4, T5, T6, T7, T8, E>(
 
   const mapped = await chained.asyncMap(r8)
 
-  return mapped.andThen(inner => inner)
+  return mapped.andThen((inner) => inner)
 }

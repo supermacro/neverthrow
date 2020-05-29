@@ -10,7 +10,7 @@ export class ResultAsync<T, E> {
   static fromPromise<T, E>(promise: Promise<T>, errorFn?: (e: unknown) => E): ResultAsync<T, E> {
     let newPromise: Promise<Result<T, E>> = promise.then((value: T) => new Ok(value))
     if (errorFn) {
-      newPromise = newPromise.catch(e => new Err<T, E>(errorFn(e)))
+      newPromise = newPromise.catch((e) => new Err<T, E>(errorFn(e)))
 
       if (
         typeof process !== 'object' ||
@@ -56,7 +56,7 @@ export class ResultAsync<T, E> {
 
   andThen<U>(f: (t: T) => Result<U, E> | ResultAsync<U, E>): ResultAsync<U, E> {
     return new ResultAsync(
-      this._promise.then(res => {
+      this._promise.then((res) => {
         if (res.isErr()) {
           return new Err<U, E>(res.error)
         }
@@ -69,7 +69,7 @@ export class ResultAsync<T, E> {
   }
 
   match<A>(ok: (t: T) => A, _err: (e: E) => A): Promise<A> {
-    return this._promise.then(res => res.match(ok, _err))
+    return this._promise.then((res) => res.match(ok, _err))
   }
 
   // Makes ResultAsync awaitable
