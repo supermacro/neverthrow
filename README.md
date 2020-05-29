@@ -8,7 +8,7 @@ Encode failure into your program.
 
 This package contains a `Result` type that represents either success (`Ok`) or failure (`Err`).
 
-For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a `Promise<Result>` and enables chaining.  
+For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a `Promise<Result>` and enables chaining.
 `ResultAsync` is `thenable` meaning it behaves exactly like a native `Promise<Result>`: the underlying `Result` can be accessed using the `await` or `.then()` operators.
 
 `neverthrow` also exposes `chain(...)` methods for chaining asynchronous tasks in a functional style ([docs below](#chaining-api)). However, these methods might be deprecated in the future. It is advised to use the `ResultAsync` instead.
@@ -45,7 +45,7 @@ const yesss = ok(someAesomeValue)
 const mappedYes = yesss.map(doingSuperUsefulStuff)
 
 // neverthrow uses type-guards to differentiate between Ok and Err instances
-// Mode info: https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types
+// More info: https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types
 if (mappedYes.isOk()) {
   // using type guards, we can access an Ok instance's `value` field
   doStuffWith(mappedYes.value)
@@ -65,6 +65,24 @@ type Result<T, E> = Ok<T, E> | Err<T, E>
 `Ok<T, E>`: contains the success value of type `T`
 
 `Err<T, E>`: contains the failure value of type `E`
+
+It's also possible to terminate a `Result` with a default value or throw an `Error` in-place:
+
+```javascript
+// returns 42, if result is err or undefined
+result.or(42)
+
+// invokes calculateMyDefaultValue(), if result is err or undefined
+result.orGet(() => calculateMyDefaultValue())
+
+// throws the Error, if result is err
+result.orError(() => new Error('Ooops!'))
+
+// throws the Result's error, if result is err
+const result: Result<any, Error>
+...
+result.orError()
+```
 
 ---
 
@@ -319,7 +337,7 @@ parseResult.isErr() // true
 
 Same idea as `map` above. Except you must return a new `Result` or `ResultAsync`.
 
-If the provided method returns a `Result` the returned value will be a `Result`.  
+If the provided method returns a `Result` the returned value will be a `Result`.
 If the provided method returns a `ResultAsync` the returned value will be a `ResultAsync`.
 
 This is useful for when you need to do a subsequent computation using the inner `T` value, but that computation might fail.
@@ -414,6 +432,78 @@ result.map(successCallback).mapErr(failureCallback)
 // works exactly the same as above,
 // except, now you HAVE to do error handling :)
 myval.match(successCallback, failureCallback)
+```
+
+---
+
+### `Result.or` (method)
+
+A termination operation (unwraps `Result` and returns a real value), which specifies the default value, in case if `Result` is `Err` or returned value is `undefined`. Otherwise it returns a `Result.value`.
+
+**Example:**
+
+```typescript
+import { err, ok } from 'neverthrow'
+
+ok(12).or(42) // 12
+
+ok(null).or(42) // null
+
+ok(undefined).or(42) // 42
+
+err(12).or(42) // 42
+
+err(new Error()).or(42) // 42
+```
+
+---
+
+### `Result.orGet` (method)
+
+A termination operation (unwraps `Result` and returns a real value) specifies a callback, which invokes, in case if `Result` is `Err` or returned value is `undefined`. Otherwise it returns a `Result.value`.
+
+**Example:**
+
+```typescript
+import { err, ok } from 'neverthrow'
+
+ok(12).orGet(() => 42) // 12
+
+ok(null).orGet(() => 42) // null
+
+ok(undefined).orGet(() => 42) // 42
+
+err(12).orGet(() => 42) // 42
+
+err(new Error()).orGet(() => 42) // 42
+```
+
+---
+
+### `Result.orError` (method)
+
+A termination operation (unwraps `Result` and returns a real value) specifies a callback, which creates an `Error`, in case if `Result` is `Err`. Otherwise it returns a `Result.value`.
+
+**Example:**
+
+```typescript
+import { err, ok } from 'neverthrow'
+
+ok(12).orError() // 12
+
+ok(null).orError() // null
+
+ok(undefined).orError() // undefined
+
+// throw new Error('error message')
+err('error message').orError((errorResult) => new Error(errorResult))
+
+// throw new Error('Ooops!')
+err(new Error('Oooops!')).orError()
+
+// INVALID USAGE, unsupported operation
+// throw new Error("Invalid 'orError' usage. Error function was not specified and error type is not Error.")
+err('error message').orError()
 ```
 
 ---
@@ -704,7 +794,7 @@ const resultMessage = await validateUser(user)
 
 ## Chaining API
 
-> Disclaimer: the preferred solution to chaining asynchronous tasks is `ResultAsync`.  
+> Disclaimer: the preferred solution to chaining asynchronous tasks is `ResultAsync`.
 > The following method might be deprecated in the future.
 
 tldr: `chain` is the `.andThen` equivalent for `Result`s wrapped inside of a `Promise`.
