@@ -46,6 +46,23 @@ export class Ok<T, E> {
     return ok(this.value)
   }
 
+  or = (defaultValue: T): T => {
+    return this.value === undefined
+           ? defaultValue
+           : this.value
+  }
+
+  orGet = (supplier: () => T): T => {
+    return this.value === undefined
+           ? supplier()
+           : this.value
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  orError(_f?: (e: E) => Error): T {
+    return this.value
+  }
+
   _unsafeUnwrap(): T {
     return this.value
   }
@@ -90,6 +107,24 @@ export class Err<T, E> {
 
   match = <A>(_ok: (t: T) => A, err: (e: E) => A): A => {
     return err(this.error)
+  }
+
+  or = (defaultValue: T): T => {
+    return defaultValue
+  }
+
+  orGet = (supplier: () => T): T => {
+    return supplier()
+  }
+
+  orError(f?: (e: E) => Error): T {
+    if (f) {
+      throw f(this.error);
+    }
+    if (this.error instanceof Error) {
+      throw this.error;
+    }
+    throw new Error("Invalid 'orError' usage. Error function was not specified and error type is not Error.");
   }
 
   _unsafeUnwrap(): T {
