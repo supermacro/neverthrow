@@ -327,7 +327,7 @@ describe('Result.Err', () => {
 
   describe('orError', () => {
     it("Throws result's error type", () => {
-      function throwsError () {
+      function throwsError() {
         err(new Error('popa')).orError()
       }
 
@@ -342,7 +342,7 @@ describe('Result.Err', () => {
       expect(throwsError).toThrowError(new Error('popa'))
     })
 
-    it("Cast to string the error object", () => {
+    it('Cast to string the error object', () => {
       function throwsError() {
         err('popa').orError()
       }
