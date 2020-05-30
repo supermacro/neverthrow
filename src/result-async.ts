@@ -11,22 +11,21 @@ export class ResultAsync<T, E> {
     let newPromise: Promise<Result<T, E>> = promise.then((value: T) => new Ok(value))
     if (errorFn) {
       newPromise = newPromise.catch(e => new Err<T, E>(errorFn(e)))
+    } else if (
+      typeof process !== 'object' ||
+      (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'production')
+    ) {
+      const yellowColor = '\x1b[33m%s\x1b[0m'
 
-      if (
-        typeof process !== 'object' ||
-        (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'production')
-      ) {
-        const yellowColor = '\x1b[33m%s\x1b[0m'
+      const warning = [
+        '[neverthrow]',
+        '`fromPromise` called without a promise rejection handler',
+        'Ensure that you are catching promise rejections yourself, or pass a second argument to `fromPromsie` to convert a caught exception into an `Err` instance',
+      ].join(' - ')
 
-        const warning = [
-          '[neverthrow]',
-          '`fromPromise` called without a promise rejection handler',
-          'Ensure that you are catching promise rejections yourself, or pass a second argument to `fromPromsie` to convert a caught exception into an `Err` instance',
-        ].join(' - ')
-
-        console.warn(yellowColor, warning)
-      }
+      console.warn(yellowColor, warning)
     }
+
     return new ResultAsync(newPromise)
   }
 
