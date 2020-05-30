@@ -1,5 +1,5 @@
 import { Result, Ok, Err } from './'
-import { logWarning } from '_internals/log'
+import { logWarning } from './_internals/log'
 
 export class ResultAsync<T, E> {
   private _promise: Promise<Result<T, E>>

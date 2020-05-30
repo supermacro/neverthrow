@@ -1,4 +1,4 @@
-import { logWarning } from '_internals/log'
+import { logWarning } from './_internals/log'
 import { Result } from './result'
 
 const toPromise = <T, E>(val: Promise<Result<T, E>> | Result<T, E>): Promise<Result<T, E>> =>
