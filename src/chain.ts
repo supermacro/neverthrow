@@ -1,3 +1,4 @@
+import { logWarning } from '_internals/log'
 import { Result } from './result'
 
 const toPromise = <T, E>(val: Promise<Result<T, E>> | Result<T, E>): Promise<Result<T, E>> =>
@@ -19,6 +20,14 @@ export const chain = async <T1, T2, E>(
   r1: Promise<Result<T1, E>>,
   r2: (v: T1) => Promise<Result<T2, E>>,
 ): Promise<Result<T2, E>> => {
+  const warning = [
+    'DEPRECATION WARNING',
+    'The `chain` API will likely be deprecated in a subsequent version of neverthrow',
+    'Please use the `ResultAsync` API: https://github.com/supermacro/neverthrow/#asynchronous-api',
+  ].join(' - ')
+
+  logWarning(warning)
+
   const inner = await r1
 
   const mapped = await inner.asyncMap(r2)
