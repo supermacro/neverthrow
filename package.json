@@ -23,9 +23,9 @@
   },
   "homepage": "https://github.com/supermacro/neverthrow#readme",
   "devDependencies": {
-    "@babel/core": "7.9.6",
-    "@babel/preset-env": "7.9.6",
-    "@babel/preset-typescript": "7.9.0",
+    "@babel/core": "7.10.2",
+    "@babel/preset-env": "7.10.2",
+    "@babel/preset-typescript": "7.10.1",
     "@types/jest": "25.2.3",
     "@types/node": "14.0.4",
     "@typescript-eslint/eslint-plugin": "3.0.2",
