@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-      "module": "CommonJS",
+      "module": "ES2015",
       "noImplicitAny": true,
       "sourceMap": false,
       "downlevelIteration": true,
