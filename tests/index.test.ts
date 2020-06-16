@@ -79,24 +79,24 @@ describe('Result.Ok', () => {
 
       expect(nextFn).not.toHaveBeenCalled()
     })
+  })
 
-    it('Maps to a ResultAsync', async () => {
-      const okVal = ok(12)
+  it('Maps to a ResultAsync', async () => {
+    const okVal = ok(12)
 
-      const flattened = okVal.andThen(_number => {
-        // ...
-        // complex async logic
-        // ...
-        return okAsync({ data: 'why not' })
-      })
-
-      expect(flattened).toBeInstanceOf(ResultAsync)
-
-      const newResult = await flattened
-
-      expect(newResult.isOk()).toBe(true)
-      expect(newResult._unsafeUnwrap()).toStrictEqual({ data: 'why not' })
+    const flattened = okVal.asyncAndThen(_number => {
+      // ...
+      // complex async logic
+      // ...
+      return okAsync({ data: 'why not' })
     })
+
+    expect(flattened).toBeInstanceOf(ResultAsync)
+
+    const newResult = await flattened
+
+    expect(newResult.isOk()).toBe(true)
+    expect(newResult._unsafeUnwrap()).toStrictEqual({ data: 'why not' })
   })
 
   it('Maps to a promise', async () => {
@@ -198,16 +198,18 @@ describe('Result.Err', () => {
     expect(errVal._unsafeUnwrapErr()).toEqual('Yolo')
   })
 
-  it('Skips over andThen given a ResultAsync function', () => {
+  it('Transforms error into ResultAsync within `asyncAndThen`', async () => {
     const errVal = err('Yolo')
 
     const asyncMapper = jest.fn(_val => okAsync<string, string>('yooyo'))
 
-    const hopefullyNotFlattened = errVal.andThen(asyncMapper)
+    const hopefullyNotFlattened = errVal.asyncAndThen(asyncMapper)
 
-    expect(hopefullyNotFlattened.isErr()).toBe(true)
+    expect(hopefullyNotFlattened).toBeInstanceOf(ResultAsync)
     expect(asyncMapper).not.toHaveBeenCalled()
-    expect(errVal._unsafeUnwrapErr()).toEqual('Yolo')
+
+    const syncResult = await hopefullyNotFlattened
+    expect(syncResult._unsafeUnwrapErr()).toEqual('Yolo')
   })
 
   it('Does not invoke callback within `asyncMap`', async () => {

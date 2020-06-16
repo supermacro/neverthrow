@@ -317,10 +317,9 @@ parseResult.isErr() // true
 
 ### `Result.andThen` (method)
 
-Same idea as `map` above. Except you must return a new `Result` or `ResultAsync`.
+Same idea as `map` above. Except you must return a new `Result`.
 
-If the provided method returns a `Result` the returned value will be a `Result`.  
-If the provided method returns a `ResultAsync` the returned value will be a `ResultAsync`.
+The returned value will be a `Result`.
 
 This is useful for when you need to do a subsequent computation using the inner `T` value, but that computation might fail.
 
@@ -332,9 +331,6 @@ This is useful for when you need to do a subsequent computation using the inner 
 
 type AndThenFunc = (t:  T) => Result<U, E>
 andThen<U>(f: AndThenFunc): Result<U, E> { ... }
-
-type AndThenAsyncFunc = (t:  T) => ResultAsync<U, E>
-andThen<U>(f: AndThenAsyncFunc): ResultAsync<U, E> { ... }
 
 ```
 
@@ -370,6 +366,23 @@ const nested = ok(ok(1234))
 
 // notNested is a Ok(1234)
 const notNested = nested.andThen(innerResult => innerResult)
+```
+
+---
+
+### `Result.asyncAndThen` (method)
+
+Same idea as `andThen` above. Except you must return a new `ResultAsync`.
+
+The returned value will be a `ResultAsync`.
+
+**Signature:**
+
+```typescript
+
+type AndThenAsyncFunc = (t:  T) => ResultAsync<U, E>
+asyncAndThen<U>(f: AndThenAsyncFunc): ResultAsync<U, E> { ... }
+
 ```
 
 ---
