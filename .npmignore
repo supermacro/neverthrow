@@ -5,6 +5,7 @@
 .travis.yml
 
 src/
+tmp/
 node_modules/
 tsconfig.json
 publish.sh
@@ -13,3 +14,4 @@ renovate.json
 
 tests/
 jest.config.js
+rollup.config.js
