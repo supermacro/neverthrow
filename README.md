@@ -280,6 +280,61 @@ newResult.isOk() // true
 
 ---
 
+### `Result.mapOr` (method)
+
+Maps a `Result<T, E>` to `T` by applying a function to a contained `Ok` value, or take the default value if contained `Err`.
+
+**Signature:**
+
+```typescript
+type MapOrFunc = <T>(f: T) => U
+mapOr<U>(fn: MapOrFunc): U { ... }
+```
+
+**Example**:
+
+Example with an `Ok` value
+```typescript
+const { getLines } from 'imaginary-parser'
+// ^ assume getLines has the following signature:
+// getLines(str: string): Result<Array<string>, Error>
+
+// since the formatting is deemed correct by `getLines`
+// then it means that `linesResult` is an Ok
+// containing an Array of strings for each line of code
+const linesResult = getLines('1\n2\n3\n4\n')
+
+// parsedLines is a Array<number>
+const parsedLines = linesResult.mapOr(
+  [],
+  (arr: Array<string>) => arr.map(parseInt)
+)
+
+parsedLines // [1,2,3,4]
+```
+
+Example with an `Err` value
+```typescript
+const { getLines } from 'imaginary-parser'
+// ^ assume getLines has the following signature:
+// getLines(str: string): Result<Array<string>, Error>
+
+// since the formatting is deemed correct by `getLines`
+// then it means that `linesResult` is an Ok
+// containing an Array of strings for each line of code
+const linesResult = getLines(null)
+
+// parsedLines is a Array<number>
+const parsedLines = linesResult.mapOr(
+  [],
+  (arr: Array<string>) => arr.map(parseInt)
+)
+
+parsedLines // []
+```
+
+---
+
 ### `Result.mapErr` (method)
 
 Maps a `Result<T, E>` to `Result<T, F>` by applying a function to a contained `Err` value, leaving an `Ok` value untouched.
