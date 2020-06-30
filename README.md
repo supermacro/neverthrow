@@ -315,6 +315,30 @@ parseResult.isErr() // true
 
 ---
 
+### `Result.unwrapOr` (method)
+
+Unwrap the `Ok` value, or return de default if there is an `Err`
+
+**Signature:**
+
+```typescript
+unwrapOr<T>(v: T):  T { ... }
+```
+
+**Example**:
+
+```typescript
+const myResult = err('Oh noooo')
+
+const multiply = (val: number): number => val * 2
+
+const unwrapped: number = myResult
+  .map(multiply)
+  .unwrapOr(10)
+```
+
+---
+
 ### `Result.andThen` (method)
 
 Same idea as `map` above. Except you must return a new `Result`.
