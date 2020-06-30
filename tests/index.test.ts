@@ -28,7 +28,7 @@ describe('Result.Ok', () => {
 
   it('Maps over an Ok value', () => {
     const okVal = ok(12)
-    const mapFn = jest.fn(number => number.toString())
+    const mapFn = jest.fn((number) => number.toString())
 
     const mapped = okVal.map(mapFn)
 
@@ -37,8 +37,18 @@ describe('Result.Ok', () => {
     expect(mapFn).toHaveBeenCalledTimes(1)
   })
 
+  it('MapsOr over an Ok value', () => {
+    const okVal = ok(12)
+    const mapFn = jest.fn((number) => number.toString())
+
+    const mapped = okVal.mapOr(1, mapFn)
+
+    expect(mapped).toEqual('12')
+    expect(mapFn).toHaveBeenCalledTimes(1)
+  })
+
   it('Skips `mapErr`', () => {
-    const mapErrorFunc = jest.fn(_error => 'mapped error value')
+    const mapErrorFunc = jest.fn((_error) => 'mapped error value')
 
     const notMapped = ok(12).mapErr(mapErrorFunc)
 
@@ -50,7 +60,7 @@ describe('Result.Ok', () => {
     it('Maps to an Ok', () => {
       const okVal = ok(12)
 
-      const flattened = okVal.andThen(_number => {
+      const flattened = okVal.andThen((_number) => {
         // ...
         // complex logic
         // ...
@@ -64,7 +74,7 @@ describe('Result.Ok', () => {
     it('Maps to an Err', () => {
       const okval = ok(12)
 
-      const flattened = okval.andThen(_number => {
+      const flattened = okval.andThen((_number) => {
         // ...
         // complex logic
         // ...
@@ -73,7 +83,7 @@ describe('Result.Ok', () => {
 
       expect(flattened.isOk()).toBe(false)
 
-      const nextFn = jest.fn(_val => ok('noop'))
+      const nextFn = jest.fn((_val) => ok('noop'))
 
       flattened.andThen(nextFn)
 
@@ -84,7 +94,7 @@ describe('Result.Ok', () => {
   it('Maps to a ResultAsync', async () => {
     const okVal = ok(12)
 
-    const flattened = okVal.asyncAndThen(_number => {
+    const flattened = okVal.asyncAndThen((_number) => {
       // ...
       // complex async logic
       // ...
@@ -100,7 +110,7 @@ describe('Result.Ok', () => {
   })
 
   it('Maps to a promise', async () => {
-    const asyncMapper = jest.fn(_val => {
+    const asyncMapper = jest.fn((_val) => {
       // ...
       // complex logic
       // ..
@@ -125,8 +135,8 @@ describe('Result.Ok', () => {
   })
 
   it('Matches on an Ok', () => {
-    const okMapper = jest.fn(_val => 'weeeeee')
-    const errMapper = jest.fn(_val => 'wooooo')
+    const okMapper = jest.fn((_val) => 'weeeeee')
+    const errMapper = jest.fn((_val) => 'wooooo')
 
     const matched = ok(12).match(okMapper, errMapper)
 
@@ -165,7 +175,7 @@ describe('Result.Err', () => {
   it('Skips `map`', () => {
     const errVal = err('I am your father')
 
-    const mapper = jest.fn(_value => 'noooo')
+    const mapper = jest.fn((_value) => 'noooo')
 
     const hopefullyNotMapped = errVal.map(mapper)
 
@@ -186,10 +196,21 @@ describe('Result.Err', () => {
     expect(mapped._unsafeUnwrapErr()).not.toEqual(errVal._unsafeUnwrapErr())
   })
 
+  it('MapsOr over an Err', () => {
+    const errVal = err('Round 1, Fight!')
+
+    const mapFn = jest.fn((number) => number.toString())
+
+    const mapped = errVal.mapOr(1, mapFn)
+
+    expect(mapped).toEqual(1)
+    expect(mapFn).not.toHaveBeenCalled()
+  })
+
   it('Skips over andThen', () => {
     const errVal = err('Yolo')
 
-    const mapper = jest.fn(_val => ok<string, string>('yooyo'))
+    const mapper = jest.fn((_val) => ok<string, string>('yooyo'))
 
     const hopefullyNotFlattened = errVal.andThen(mapper)
 
@@ -201,7 +222,7 @@ describe('Result.Err', () => {
   it('Transforms error into ResultAsync within `asyncAndThen`', async () => {
     const errVal = err('Yolo')
 
-    const asyncMapper = jest.fn(_val => okAsync<string, string>('yooyo'))
+    const asyncMapper = jest.fn((_val) => okAsync<string, string>('yooyo'))
 
     const hopefullyNotFlattened = errVal.asyncAndThen(asyncMapper)
 
@@ -213,7 +234,7 @@ describe('Result.Err', () => {
   })
 
   it('Does not invoke callback within `asyncMap`', async () => {
-    const asyncMapper = jest.fn(_val => {
+    const asyncMapper = jest.fn((_val) => {
       // ...
       // complex logic
       // ..
@@ -239,8 +260,8 @@ describe('Result.Err', () => {
   })
 
   it('Matches on an Err', () => {
-    const okMapper = jest.fn(_val => 'weeeeee')
-    const errMapper = jest.fn(_val => 'wooooo')
+    const okMapper = jest.fn((_val) => 'weeeeee')
+    const errMapper = jest.fn((_val) => 'wooooo')
 
     const matched = err(12).match(okMapper, errMapper)
 
@@ -2425,7 +2446,7 @@ describe('ResultAsync', () => {
 
   it('Is chainable like any Promise', async () => {
     // For a success value
-    const asyncValChained = okAsync(12).then(res => {
+    const asyncValChained = okAsync(12).then((res) => {
       if (res.isOk()) {
         return res.value + 2
       }
@@ -2436,7 +2457,7 @@ describe('ResultAsync', () => {
     expect(val).toEqual(14)
 
     // For an error
-    const asyncErrChained = errAsync('Oops').then(res => {
+    const asyncErrChained = errAsync('Oops').then((res) => {
       if (res.isErr()) {
         return res.error + '!'
       }
@@ -2451,7 +2472,7 @@ describe('ResultAsync', () => {
     it('Maps a value using a synchronous function', async () => {
       const asyncVal = okAsync(12)
 
-      const mapSyncFn = jest.fn(number => number.toString())
+      const mapSyncFn = jest.fn((number) => number.toString())
 
       const mapped = asyncVal.map(mapSyncFn)
 
@@ -2467,7 +2488,7 @@ describe('ResultAsync', () => {
     it('Maps a value using an asynchronous function', async () => {
       const asyncVal = okAsync(12)
 
-      const mapAsyncFn = jest.fn(number => Promise.resolve(number.toString()))
+      const mapAsyncFn = jest.fn((number) => Promise.resolve(number.toString()))
 
       const mapped = asyncVal.map(mapAsyncFn)
 
@@ -2483,7 +2504,7 @@ describe('ResultAsync', () => {
     it('Skips an error', async () => {
       const asyncErr = errAsync<number, string>('Wrong format')
 
-      const mapSyncFn = jest.fn(number => number.toString())
+      const mapSyncFn = jest.fn((number) => number.toString())
 
       const notMapped = asyncErr.map(mapSyncFn)
 
@@ -2501,7 +2522,7 @@ describe('ResultAsync', () => {
     it('Maps an error using a synchronous function', async () => {
       const asyncErr = errAsync('Wrong format')
 
-      const mapErrSyncFn = jest.fn(str => 'Error: ' + str)
+      const mapErrSyncFn = jest.fn((str) => 'Error: ' + str)
 
       const mappedErr = asyncErr.mapErr(mapErrSyncFn)
 
@@ -2517,7 +2538,7 @@ describe('ResultAsync', () => {
     it('Maps an error using an asynchronous function', async () => {
       const asyncErr = errAsync('Wrong format')
 
-      const mapErrAsyncFn = jest.fn(str => Promise.resolve('Error: ' + str))
+      const mapErrAsyncFn = jest.fn((str) => Promise.resolve('Error: ' + str))
 
       const mappedErr = asyncErr.mapErr(mapErrAsyncFn)
 
@@ -2533,7 +2554,7 @@ describe('ResultAsync', () => {
     it('Skips a value', async () => {
       const asyncVal = okAsync(12)
 
-      const mapErrSyncFn = jest.fn(str => 'Error: ' + str)
+      const mapErrSyncFn = jest.fn((str) => 'Error: ' + str)
 
       const notMapped = asyncVal.mapErr(mapErrSyncFn)
 
@@ -2599,8 +2620,8 @@ describe('ResultAsync', () => {
 
   describe('match', () => {
     it('Matches on an Ok', async () => {
-      const okMapper = jest.fn(_val => 'weeeeee')
-      const errMapper = jest.fn(_val => 'wooooo')
+      const okMapper = jest.fn((_val) => 'weeeeee')
+      const errMapper = jest.fn((_val) => 'wooooo')
 
       const matched = await okAsync(12).match(okMapper, errMapper)
 
@@ -2610,8 +2631,8 @@ describe('ResultAsync', () => {
     })
 
     it('Matches on an Error', async () => {
-      const okMapper = jest.fn(_val => 'weeeeee')
-      const errMapper = jest.fn(_val => 'wooooo')
+      const okMapper = jest.fn((_val) => 'weeeeee')
+      const errMapper = jest.fn((_val) => 'wooooo')
 
       const matched = await errAsync('bad').match(okMapper, errMapper)
 
@@ -2633,7 +2654,7 @@ describe('ResultAsync', () => {
     })
 
     it('Accepts an error handler as a second argument', async () => {
-      const res = ResultAsync.fromPromise(Promise.reject('No!'), e => new Error('Oops: ' + e))
+      const res = ResultAsync.fromPromise(Promise.reject('No!'), (e) => new Error('Oops: ' + e))
 
       expect(res).toBeInstanceOf(ResultAsync)
 

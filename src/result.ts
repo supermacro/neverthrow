@@ -23,6 +23,10 @@ export class Ok<T, E> {
     return ok(f(this.value))
   }
 
+  mapOr<A>(_v: A, f: (t: T) => A): A {
+    return f(this.value)
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mapErr<U>(_f: (e: E) => U): Result<T, U> {
     return ok(this.value)
@@ -71,6 +75,11 @@ export class Err<T, E> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   map<A>(_f: (t: T) => A): Result<A, E> {
     return err(this.error)
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  mapOr<A>(v: A, _f: (t: T) => A): A {
+    return v
   }
 
   mapErr<U>(f: (e: E) => U): Result<T, U> {
