@@ -66,6 +66,10 @@ export class ResultAsync<T, E> {
     return this._promise.then((res) => res.match(ok, _err))
   }
 
+  unwrapOr(t: T): Promise<T> {
+    return this._promise.then((res) => res.unwrapOr(t))
+  }
+
   // Makes ResultAsync awaitable
   then<A>(successCallback: (res: Result<T, E>) => A): Promise<A> {
     return this._promise.then(successCallback)
