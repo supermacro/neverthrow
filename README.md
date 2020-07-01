@@ -317,7 +317,7 @@ parseResult.isErr() // true
 
 ### `Result.unwrapOr` (method)
 
-Unwrap the `Ok` value, or return de default if there is an `Err`
+Unwrap the `Ok` value, or return the default if there is an `Err`
 
 **Signature:**
 
