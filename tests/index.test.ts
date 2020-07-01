@@ -81,6 +81,11 @@ describe('Result.Ok', () => {
     })
   })
 
+  it('unwrapOr and return the Ok value', () => {
+    const okVal = ok(12)
+    expect(okVal.unwrapOr(1)).toEqual(12)
+  })
+
   it('Maps to a ResultAsync', async () => {
     const okVal = ok(12)
 
@@ -184,6 +189,11 @@ describe('Result.Err', () => {
     expect(mapped.isErr()).toBe(true)
     expect(mapper).toHaveBeenCalledTimes(1)
     expect(mapped._unsafeUnwrapErr()).not.toEqual(errVal._unsafeUnwrapErr())
+  })
+
+  it('unwrapOr and return the default value', () => {
+    const okVal = err('Oh nooo')
+    expect(okVal.unwrapOr(1)).toEqual(1)
   })
 
   it('Skips over andThen', () => {
