@@ -44,6 +44,11 @@ export class Ok<T, E> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  unwrapOr(_v: T): T {
+    return this.value
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   match = <A>(ok: (t: T) => A, _err: (e: E) => A): A => {
     return ok(this.value)
   }
@@ -90,6 +95,10 @@ export class Err<T, E> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   asyncMap<U>(_f: (t: T) => Promise<U>): ResultAsync<U, E> {
     return errAsync<U, E>(this.error)
+  }
+
+  unwrapOr(v: T): T {
+    return v
   }
 
   match = <A>(_ok: (t: T) => A, err: (e: E) => A): A => {
