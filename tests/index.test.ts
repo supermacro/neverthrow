@@ -2631,6 +2631,18 @@ describe('ResultAsync', () => {
     })
   })
 
+  describe('unwrapOr', () => {
+    it('returns a promise to the result value on an Ok', async () => {
+      const unwrapped = await okAsync(12).unwrapOr(10)
+      expect(unwrapped).toBe(12)
+    })
+
+    it('returns a promise to the provided default value on an Error', async () => {
+      const unwrapped = await errAsync(12).unwrapOr(10)
+      expect(unwrapped).toBe(10)
+    })
+  })
+
   describe('fromPromise', () => {
     it('Creates a ResultAsync from a Promise', async () => {
       const res = ResultAsync.fromPromise(Promise.resolve(12))

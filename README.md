@@ -332,9 +332,7 @@ const myResult = err('Oh noooo')
 
 const multiply = (val: number): number => val * 2
 
-const unwrapped: number = myResult
-  .map(multiply)
-  .unwrapOr(10)
+const unwrapped: number = myResult.map(multiply).unwrapOr(10)
 ```
 
 ---
@@ -648,6 +646,26 @@ usersInCanada.then((usersResult: Result<Array<User>, string>) => {
     })
   }
 })
+```
+
+---
+
+### `ResultAsync.unwrapOr` (method)
+
+Unwrap the `Ok` value, or return the default if there is an `Err`.  
+Works just like `Result.unwrapOr` but returns a `Promise<T>` instead of `T`.
+
+**Signature:**
+
+```typescript
+unwrapOr<T>(v: T):  Promise<T> { ... }
+```
+
+**Example**:
+
+```typescript
+const unwrapped: number = await errAsync(0).unwrapOr(10)
+// unwrapped = 10
 ```
 
 ---
