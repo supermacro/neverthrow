@@ -40,7 +40,7 @@
     "rollup": "2.21.0",
     "rollup-plugin-dts": "1.4.8",
     "rollup-plugin-typescript2": "0.27.1",
-    "ts-jest": "26.1.1",
+    "ts-jest": "26.1.2",
     "typescript": "3.9.6"
   },
   "keywords": [
