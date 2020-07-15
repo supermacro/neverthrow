@@ -8,6 +8,8 @@ export const ok = <T, E>(value: T): Ok<T, E> => new Ok(value)
 // eslint-disable-next-line @typescript-eslint/no-use-before-define
 export const err = <T, E>(err: E): Err<T, E> => new Err(err)
 
+export const notOk = err
+
 export class Ok<T, E> {
   constructor(readonly value: T) {}
 
@@ -113,3 +115,5 @@ export class Err<T, E> {
     return this.error
   }
 }
+
+export { Err as NotOk }
