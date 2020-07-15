@@ -2,10 +2,8 @@ import { ResultAsync, errAsync } from './'
 
 export type Result<T, E> = Ok<T, E> | Err<T, E>
 
-// eslint-disable-next-line @typescript-eslint/no-use-before-define
 export const ok = <T, E>(value: T): Ok<T, E> => new Ok(value)
 
-// eslint-disable-next-line @typescript-eslint/no-use-before-define
 export const err = <T, E>(err: E): Err<T, E> => new Err(err)
 
 export class Ok<T, E> {
@@ -23,7 +21,6 @@ export class Ok<T, E> {
     return ok(f(this.value))
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mapErr<U>(_f: (e: E) => U): Result<T, U> {
     return ok(this.value)
   }
@@ -43,12 +40,10 @@ export class Ok<T, E> {
     return ResultAsync.fromPromise(f(this.value))
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   unwrapOr(_v: T): T {
     return this.value
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   match = <A>(ok: (t: T) => A, _err: (e: E) => A): A => {
     return ok(this.value)
   }
@@ -73,7 +68,6 @@ export class Err<T, E> {
     return !this.isOk()
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   map<A>(_f: (t: T) => A): Result<A, E> {
     return err(this.error)
   }
@@ -82,17 +76,14 @@ export class Err<T, E> {
     return err(f(this.error))
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   andThen<U>(_f: (t: T) => Result<U, E>): Result<U, E> {
     return err(this.error)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   asyncAndThen<U>(_f: (t: T) => ResultAsync<U, E>): ResultAsync<U, E> {
     return errAsync<U, E>(this.error)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   asyncMap<U>(_f: (t: T) => Promise<U>): ResultAsync<U, E> {
     return errAsync<U, E>(this.error)
   }
