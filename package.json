@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/supermacro/neverthrow#readme",
   "devDependencies": {
-    "@babel/core": "7.10.4",
+    "@babel/core": "7.10.5",
     "@babel/preset-env": "7.10.4",
     "@babel/preset-typescript": "7.10.4",
     "@types/jest": "26.0.4",
