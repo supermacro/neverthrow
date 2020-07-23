@@ -15,7 +15,7 @@ export class ResultAsync<T, E> {
     } else {
       const warning = [
         '`fromPromise` called without a promise rejection handler',
-        'Ensure that you are catching promise rejections yourself, or pass a second argument to `fromPromsie` to convert a caught exception into an `Err` instance',
+        'Ensure that you are catching promise rejections yourself, or pass a second argument to `fromPromise` to convert a caught exception into an `Err` instance',
       ].join(' - ')
 
       logWarning(warning)
