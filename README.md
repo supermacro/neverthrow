@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.com/supermacro/neverthrow.svg?branch=master)](https://travis-ci.com/supermacro/neverthrow)
 
+If you find this package useful, please consider [sponsoring me](https://github.com/sponsors/supermacro/) or simply [buying me a coffee](https://ko-fi.com/gdelgado)!
+
 ## Description
 
 Encode failure into your program.
