@@ -13,8 +13,6 @@ This package contains a `Result` type that represents either success (`Ok`) or f
 For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a `Promise<Result>` and enables chaining.  
 `ResultAsync` is `thenable` meaning it behaves exactly like a native `Promise<Result>`: the underlying `Result` can be accessed using the `await` or `.then()` operators.
 
-`neverthrow` also exposes `chain(...)` methods for chaining asynchronous tasks in a functional style ([docs below](#chaining-api)). However, these methods might be deprecated in the future. It is advised to use the `ResultAsync` instead.
-
 [Read the blog post](https://gdelgado.ca/type-safe-error-handling-in-typescript.html#title) which explains _why you'd want to use this package_.
 
 This package works for both JS and TypeScript. However, the types that this package provides will allow you to get compile-time guarantees around error handling if you are using TypeScript.
@@ -139,13 +137,18 @@ asyncRes.then(res => {
 - `ResultAsync` class
 - `okAsync` convenience function to create a `ResultAsync` containing an `Ok` type `Result`
 - `errAsync` convenience function to create a `ResultAsync` containing an `Err` type `Result`
-- `chain` and all of its variants ([docs below](#chaining-api)) - for chaining sequential asynchronous operations that return `Result`s
 
 ```typescript
-import { ok, Ok, err, Err, Result } from 'neverthrow'
-
-// chain api available as well
-import { chain, chain3, chain4, chain5, chain6, chain7, chain8 } from 'neverthrow'
+import {
+  ok,
+  Ok,
+  err,
+  Err,
+  Result,
+  okAsync,
+  errAsync,
+  ResultAsync
+} from 'neverthrow'
 ```
 
 ## Accessing the value inside of a Result
@@ -754,176 +757,6 @@ const resultMessage = await validateUser(user)
 
 // resultMessage is a string
 ```
-
----
-
-# 🔗
-
-## Chaining API
-
-> Disclaimer: the preferred solution to chaining asynchronous tasks is `ResultAsync`.  
-> The following method might be deprecated in the future.
-
-tldr: `chain` is the `.andThen` equivalent for `Result`s wrapped inside of a `Promise`.
-
-> Examples can be found in the [tests directory](https://github.com/gDelgado14/neverthrow/blob/master/tests/index.test.ts#L235)
-
-The `chain` functions allow you to create sequential execution flows for asynchronous tasks in a very elegant way.
-
-If you try to create sequential execution flows for, say 3 or more, async tasks using the `asyncMap` method, you will end up with nested code (hello callback hell) and a lot of manually unwrapping promises using `await`.
-
-`chain` takes care of unwrapping `Promise`s for you.
-
-**Chains have short-circuit behaviour**:
-
-One of the properties of the `chain` api (thanks to the way `Result`s work), is that the chain returns early (or short circuits) once any computation returns a `Err` variant.
-
-All `chain` functions require that:
-
-- the **first** argument be a promise with `Result` inside it.
-- the **last** argument be a function that returns a promise with `Result` inside it.
-
-All arguments **in between** the first and the last do not need to be async! You'll see this in the function signatures of `chain3`, `chain4`, `chain5`, etc ...
-
-Here's an example using `chain4` ([source](https://github.com/parlez-vous/server/blob/19e34464863b04ae41efccad610be6fa967d5833/src/routes/admins/sites/get-single.ts#L20)):
-
-```typescript
-import { ok, chain4 } from 'neverthrow'
-
-// ...
-chain4(
-  sessionManager.getSessionUser(),
-  ({ id }) => getSingleSite(id, siteId),
-  fetchSiteWithComments,
-  siteWithComments => Promise.resolve(ok(buildSite(siteWithComments))),
-)
-```
-
-### `chain`
-
-**Signature:**
-
-```typescript
-<T1, T2, E>(
-  r1: Promise<Result<T1, E>>,
-  r2: (v: T1) => Promise<Result<T2, E>>,
-): Promise<Result<T2, E>> => { ... }
-```
-
-The above in plain english:
-
-- given a computation `r1`
-- evaluate `r2` with the `Ok` value of `r1` as r2`'s argument.
-  - If `r1` ends up being an `Err` value, then do not evaluate `r2`, and instead return the `Err`
-
-### `chain3`
-
-**Signature:**
-
-```typescript
-<T1, T2, T3, E>(
-  r1: Promise<Result<T1, E>>,
-  r2: (v: T1) => Promise<Result<T2, E>> | Result<T2, E>,
-  r3: (v: T2) => Promise<Result<T3, E>>,
-): Promise<Result<T3, E>> => { ... }
-```
-
-Same thing as `chain`, except now you have a middle computation which can be either synchronous or asynchronous.
-
-### `chain4`
-
-**Signature:**
-
-```typescript
-<T1, T2, T3, T4, E>(
-  r1: Promise<Result<T1, E>>,
-  r2: (v: T1) => Promise<Result<T2, E>> | Result<T2, E>,
-  r3: (v: T2) => Promise<Result<T3, E>> | Result<T3, E>,
-  r4: (v: T3) => Promise<Result<T4, E>>,
-): Promise<Result<T4, E>> => { ... }
-```
-
-Same thing as `chain`, except now you have 2 middle computations; any of which can be either synchronous or asynchronous.
-
-### `chain5`
-
-**Signature:**
-
-```typescript
-<T1, T2, T3, T4, T5, E>(
-  r1: Promise<Result<T1, E>>,
-  r2: (v: T1) => Promise<Result<T2, E>> | Result<T2, E>,
-  r3: (v: T2) => Promise<Result<T3, E>> | Result<T3, E>,
-  r4: (v: T3) => Promise<Result<T4, E>> | Result<T4, E>,
-  r5: (v: T4) => Promise<Result<T5, E>>,
-): Promise<Result<T5, E>> => { ... }
-```
-
-Same thing as `chain`, except now you have 3 middle computations; any of which can be either synchronous or asynchronous.
-
-### `chain6`
-
-**Signature:**
-
-```typescript
-<T1, T2, T3, T4, T5, T6, E>(
-  r1: Promise<Result<T1, E>>,
-  r2: (v: T1) => Promise<Result<T2, E>> | Result<T2, E>,
-  r3: (v: T2) => Promise<Result<T3, E>> | Result<T3, E>,
-  r4: (v: T3) => Promise<Result<T4, E>> | Result<T4, E>,
-  r5: (v: T4) => Promise<Result<T5, E>> | Result<T5, E>,
-  r6: (v: T5) => Promise<Result<T6, E>>,
-): Promise<Result<T6, E>> => {
-```
-
-Same thing as `chain`, except now you have 4 middle computations; any of which can be either synchronous or asynchronous.
-
-### `chain7`
-
-**Signature:**
-
-```typescript
-<T1, T2, T3, T4, T5, T6, T7, E>(
-  r1: Promise<Result<T1, E>>,
-  r2: (v: T1) => Promise<Result<T2, E>> | Result<T2, E>,
-  r3: (v: T2) => Promise<Result<T3, E>> | Result<T3, E>,
-  r4: (v: T3) => Promise<Result<T4, E>> | Result<T4, E>,
-  r5: (v: T4) => Promise<Result<T5, E>> | Result<T5, E>,
-  r6: (v: T5) => Promise<Result<T6, E>> | Result<T6, E>,
-  r7: (v: T6) => Promise<Result<T7, E>>,
-): Promise<Result<T7, E>> => { ... }
-```
-
-Same thing as `chain`, except now you have 5 middle computations; any of which can be either synchronous or asynchronous.
-
-### `chain8`
-
-**Signature:**
-
-```typescript
-<T1, T2, T3, T4, T5, T6, T7, T8, E>(
-  r1: Promise<Result<T1, E>>,
-  r2: (v: T1) => Promise<Result<T2, E>> | Result<T2, E>,
-  r3: (v: T2) => Promise<Result<T3, E>> | Result<T3, E>,
-  r4: (v: T3) => Promise<Result<T4, E>> | Result<T4, E>,
-  r5: (v: T4) => Promise<Result<T5, E>> | Result<T5, E>,
-  r6: (v: T5) => Promise<Result<T6, E>> | Result<T6, E>,
-  r7: (v: T6) => Promise<Result<T7, E>> | Result<T7, E>,
-  r8: (v: T7) => Promise<Result<T8, E>>,
-): Promise<Result<T8, E>> => { ... }
-```
-
-Same thing as `chain`, except now you have 5 middle computations; any of which can be either synchronous or asynchronous.
-
---
-
-## Wrapping a Dependency that throws
-
-> incomplete documenation ...
-> Examples to come soon
-
-- axios
-- knex
 
 ## A note on the Package Name
 
