@@ -1,5 +1,6 @@
 import { ok, err, Ok, Err, Result, ResultAsync, okAsync, errAsync } from '../src'
 import { chain, chain3, chain4, chain5, chain6, chain7, chain8 } from '../src/chain'
+import { combine } from '../src/utils'
 
 describe('Result.Ok', () => {
   it('Creates an Ok value', () => {
@@ -271,6 +272,68 @@ describe('Result.Err', () => {
     const okVal = err(12)
 
     expect(okVal._unsafeUnwrapErr()).toBe(12)
+  })
+})
+
+describe('Utils', () => {
+  describe('`combine`', () => {
+    describe('Sync `combine`', () => {
+      it('Combines a list of results into an Ok value', () => {
+        const resultList = [
+          ok(123),
+          ok(456),
+          ok(789),
+        ]
+
+        const result = combine(resultList)
+
+        expect(result.isOk()).toBe(true)
+        expect(result._unsafeUnwrap()).toEqual([123, 456, 789])
+      })
+
+      it('Combines a list of results into an Err value', () => {
+        const resultList: Result<number, string>[] = [
+          ok(123),
+          err('boooom!'),
+          ok(456),
+          err('ahhhhh!'),
+        ]
+
+        const result = combine(resultList)
+
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBe('boooom!')
+      })
+    })
+
+    describe('Async `combine`', () => {
+      it('Combines a list of async results into an Ok value', async () => {
+        const asyncResultList = [
+          okAsync(123),
+          okAsync(456),
+          okAsync(789),
+        ]
+
+        const result = await combine(asyncResultList)
+
+        expect(result.isOk()).toBe(true)
+        expect(result._unsafeUnwrap()).toEqual([123, 456, 789])
+      })
+
+      it('Combines a list of results into an Err value', async () => {
+        const resultList: ResultAsync<number, string>[] = [
+          okAsync(123),
+          errAsync('boooom!'),
+          okAsync(456),
+          errAsync('ahhhhh!'),
+        ]
+
+        const result = await combine(resultList)
+
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBe('boooom!')
+      })
+    })
   })
 })
 
