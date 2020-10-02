@@ -1,7 +1,7 @@
 import { Result, Ok, Err } from './'
 import { logWarning } from './_internals/log'
 
-export class ResultAsync<T, E> {
+export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   private _promise: Promise<Result<T, E>>
 
   constructor(res: Promise<Result<T, E>>) {
@@ -70,9 +70,12 @@ export class ResultAsync<T, E> {
     return this._promise.then((res) => res.unwrapOr(t))
   }
 
-  // Makes ResultAsync awaitable
-  then<A>(successCallback: (res: Result<T, E>) => A): Promise<A> {
-    return this._promise.then(successCallback)
+  // Makes ResultAsync implement PromiseLike<Result>
+  then<A, B>(
+    successCallback?: (res: Result<T, E>) => A | PromiseLike<A>,
+    failureCallback?: (reason: unknown) => B | PromiseLike<B>,
+  ): PromiseLike<A | B> {
+    return this._promise.then(successCallback, failureCallback)
   }
 }
 
