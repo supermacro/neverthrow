@@ -752,8 +752,10 @@ const { insertUser } from 'imaginary-database'
 // Handle both cases at the end of the chain using match
 const resultMessage = await validateUser(user)
         .andThen(insertUser)
-        .match((user: User) => `User ${user.name} has been successfully created`,
-        (e: Error) =>  `User could not be created because ${e.message}`)
+        .match(
+            (user: User) => `User ${user.name} has been successfully created`,
+            (e: Error) =>  `User could not be created because ${e.message}`
+        )
 
 // resultMessage is a string
 ```
