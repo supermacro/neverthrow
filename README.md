@@ -2,127 +2,54 @@
 
 [![Build Status](https://travis-ci.com/supermacro/neverthrow.svg?branch=master)](https://travis-ci.com/supermacro/neverthrow)
 
-If you find this package useful, please consider [sponsoring me](https://github.com/sponsors/supermacro/) or simply [buying me a coffee](https://ko-fi.com/gdelgado)!
-
 ## Description
 
 Encode failure into your program.
 
 This package contains a `Result` type that represents either success (`Ok`) or failure (`Err`).
 
-For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a `Promise<Result>` and enables chaining.  
-`ResultAsync` is `thenable` meaning it behaves exactly like a native `Promise<Result>`: the underlying `Result` can be accessed using the `await` or `.then()` operators.
+For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a `Promise<Result<T, E>>` and gives you the same level of expressivity and control as a regular `Result<T, E>`.
 
-[Read the blog post](https://gdelgado.ca/type-safe-error-handling-in-typescript.html#title) which explains _why you'd want to use this package_.
-
-This package works for both JS and TypeScript. However, the types that this package provides will allow you to get compile-time guarantees around error handling if you are using TypeScript.
-
-`neverthrow` draws inspiration from [Rust](https://doc.rust-lang.org/std/result/enum.Result.html), and [Elm](https://package.elm-lang.org/packages/elm/core/latest/Result). It is also a great companion to [fp-ts](https://gcanti.github.io/fp-ts/).
+`ResultAsync` is `thenable` meaning it **behaves exactly like a native `Promise<Result>`** ... except you have access to the same methods that `Result` provides without having to `await` or `.then` the promise! Check out [the wiki](https://github.com/supermacro/neverthrow/wiki/Basic-Usage-Examples#asynchronous-api) for examples and best practices.
 
 > Need to see real-life examples of how to leverage this package for error handling? See this repo: https://github.com/parlez-vous/server
+
+<div id="toc"></div>
+
+## Table Of Contents
+
+* [Installation](#installation)
+* [Top-Level API](#top-level-api)
+* [API Documentation](#api-documentation)
+  + [Synchronous API (`Result`)](#synchronous-api-result)
+    - [`ok`](#ok)
+    - [`err`](#err)
+    - [`Result.isOk` (method)](#resultisok-method)
+    - [`Result.isErr` (method)](#resultiserr-method)
+    - [`Result.map` (method)](#resultmap-method)
+    - [`Result.mapErr` (method)](#resultmaperr-method)
+    - [`Result.unwrapOr` (method)](#resultunwrapor-method)
+    - [`Result.andThen` (method)](#resultandthen-method)
+    - [`Result.asyncAndThen` (method)](#resultasyncandthen-method)
+    - [`Result.match` (method)](#resultmatch-method)
+    - [`Result.asyncMap` (method)](#resultasyncmap-method)
+  + [Asynchronous API (`ResultAsync`)](#asynchronous-api-resultasync)
+    - [`okAsync`](#okasync)
+    - [`errAsync`](#errasync)
+    - [`ResultAsync.fromPromise` (static class method)](#resultasyncfrompromise-static-class-method)
+    - [`ResultAsync.map` (method)](#resultasyncmap-method)
+    - [`ResultAsync.mapErr` (method)](#resultasyncmaperr-method)
+    - [`ResultAsync.unwrapOr` (method)](#resultasyncunwrapor-method)
+    - [`ResultAsync.andThen` (method)](#resultasyncandthen-method)
+    - [`ResultAsync.match` (method)](#resultasyncmatch-method)
+  + [Utilities](#utilities)
+    - [`combine`](#combine)
+* [A note on the Package Name](#a-note-on-the-package-name)
 
 ## Installation
 
 ```sh
 > npm install neverthrow
-```
-
-## Usage
-
-### Synchronous API
-
-Create `Ok` or `Err` instances with the `ok` and `err` functions.
-
-```typescript
-import { ok, err } from 'neverthrow'
-
-// something awesome happend
-
-const yesss = ok(someAesomeValue)
-
-// moments later ...
-
-const mappedYes = yesss.map(doingSuperUsefulStuff)
-
-// neverthrow uses type-guards to differentiate between Ok and Err instances
-// Mode info: https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types
-if (mappedYes.isOk()) {
-  // using type guards, we can access an Ok instance's `value` field
-  doStuffWith(mappedYes.value)
-} else {
-  // because of type guards
-  // typescript knows that mappedYes is an Err instance and thus has a `error` field
-  doStuffWith(mappedYes.error)
-}
-```
-
-`Result` is defined as follows:
-
-```typescript
-type Result<T, E> = Ok<T, E> | Err<T, E>
-```
-
-`Ok<T, E>`: contains the success value of type `T`
-
-`Err<T, E>`: contains the failure value of type `E`
-
----
-
-### Asynchronous API
-
-Asynchronous methods can return a `ResultAsync` type instead of a `Promise<Result>` in order to enable further chaining.
-
-`ResultAsync` is `thenable` meaning it behaves exactly like a native `Promise<Result>`: the underlying `Result` can be accessed using the `await` or `.then()` operators.
-
-This is useful for handling multiple asynchronous apis like database queries, timers, http requests, ...
-
-Example:
-
-```typescript
-import { errAsync, ResultAsync } from 'neverthrow'
-import { insertIntoDb } from 'imaginary-database'
-// Let's assume insertIntoDb has the following signature:
-// insertIntoDb(user: User): Promise<User>
-
-// We can create a synchronous method that returns a ResultAsync
-function addUserToDatabase(user: User): ResultAsync<User, Error> {
-  if (user.name.length < 3) {
-    // Throw a async result from a synchronous block thanks to the errAsync helper
-    return errAsync(new Error('Username is too short'))
-  }
-
-  // Wrap the async method into a ResultAsync thanks to fromPromise
-  // The seconds argument catches the error from the promise
-  return ResultAsync.fromPromise(insertIntoDb(user), () => new Error('Database error'))
-}
-
-// We can now call the method above
-const asyncRes = addUserToDatabase({ name: 'Tom' }) // asyncRes is a `ResultAsync<User, Error>`
-
-// We can chain the ResultAsync to build another ResultAsync (see full api below)
-const asyncRes2 = asyncRes.map((user: User) => user.name) // asyncRes2 is a `ResultAsync<string, Error>`
-
-// A ResultAsync acts exactly like a Promise<Result>
-// It can be transformed back into a Result just like a Promise would:
-
-// using await
-const res = await asyncRes
-// res is a Result<string, Error>
-if (res.isErr()) {
-  console.log('Oops fail: ' + res.error.message)
-} else {
-  console.log('Successfully inserted user ' + res.value)
-}
-
-// using then
-asyncRes.then(res => {
-  // res is Result<string, Error>
-  if (res.isErr()) {
-    console.log('Oops fail: ' + res.error.message)
-  } else {
-    console.log('Successfully inserted user ' + res.value)
-  }
-})
 ```
 
 ## Top-Level API
@@ -137,6 +64,8 @@ asyncRes.then(res => {
 - `ResultAsync` class
 - `okAsync` convenience function to create a `ResultAsync` containing an `Ok` type `Result`
 - `errAsync` convenience function to create a `ResultAsync` containing an `Err` type `Result`
+- `combine` utility function that allows you to turn `Result<T, E>[]` into `Result<T[], E>`, or a `ResultAsync<T, E>[]` into `ResultAsync<T[], E>` (just like `Promise.all`)
+
 
 ```typescript
 import {
@@ -147,40 +76,24 @@ import {
   Result,
   okAsync,
   errAsync,
-  ResultAsync
+  ResultAsync,
+  combine
 } from 'neverthrow'
 ```
 
-## Accessing the value inside of a Result
+---
 
-This library takes advantage of TypeScript's [type-guard feature](https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types).
+**Check out the [wiki](https://github.com/supermacro/neverthrow/wiki) for help on how to make the most of `neverthrow`.**
 
-By simply doing an `if` (using `.isOk` or `.isErr`) check on your result, you can inform the TypeScript compiler of whether you have `Ok` instance, or an `Err` instance, and subsequently you can get access to the `value` or `error` value in the respective instances.
+If you find this package useful, please consider [sponsoring me](https://github.com/sponsors/supermacro/) or simply [buying me a coffee](https://ko-fi.com/gdelgado)!
 
-Example:
+---
 
-```typescript
-import { ok, err } from 'neverthrow'
+## API Documentation
 
-const example1 = ok(123)
-const example2 = err('abc')
+### Synchronous API (`Result`)
 
-if (example1.isOk()) {
-  // you now have access to example1.value
-} else {
-  // you now have access to example1.error
-}
-
-if (example2.isErr()) {
-  // you now have access to example2.error
-} else {
-  // you now have access to example2.value
-}
-```
-
-## API
-
-### `ok`
+#### `ok`
 
 Constructs an `Ok` variant of `Result`
 
@@ -201,9 +114,11 @@ myResult.isOk() // true
 myResult.isErr() // false
 ```
 
+[⬆️  Back to top](#toc)
+
 ---
 
-### `err`
+#### `err`
 
 Constructs an `Err` variant of `Result`
 
@@ -224,33 +139,39 @@ myResult.isOk() // false
 myResult.isErr() // true
 ```
 
+[⬆️  Back to top](#toc)
+
 ---
 
-### `Result.isOk` (method)
+#### `Result.isOk` (method)
 
 Returns `true` if the result is an `Ok` variant
 
 **Signature:**
 
 ```typescript
-isOk():  boolean { ... }
+isOk(): boolean { ... }
 ```
+
+[⬆️  Back to top](#toc)
 
 ---
 
-### `Result.isErr` (method)
+#### `Result.isErr` (method)
 
 Returns `true` if the result is an `Err` variant
 
 **Signature**:
 
 ```typescript
-isErr():  boolean { ... }
+isErr(): boolean { ... }
 ```
+
+[⬆️  Back to top](#toc)
 
 ---
 
-### `Result.map` (method)
+#### `Result.map` (method)
 
 Maps a `Result<T, E>` to `Result<U, E>` by applying a function to a contained `Ok` value, leaving an `Err` value untouched.
 
@@ -259,7 +180,7 @@ This function can be used to compose the results of two functions.
 **Signature:**
 
 ```typescript
-type MapFunc = <T>(f: T) => U
+type MapFunc = <T, U>(f: T) => U
 map<U>(fn: MapFunc):  Result<U, E> { ... }
 ```
 
@@ -283,9 +204,11 @@ const newResult = linesResult.map(
 newResult.isOk() // true
 ```
 
+[⬆️  Back to top](#toc)
+
 ---
 
-### `Result.mapErr` (method)
+#### `Result.mapErr` (method)
 
 Maps a `Result<T, E>` to `Result<T, F>` by applying a function to a contained `Err` value, leaving an `Ok` value untouched.
 
@@ -318,16 +241,18 @@ parseResult.mapErr(parseError => {
 parseResult.isErr() // true
 ```
 
+[⬆️  Back to top](#toc)
+
 ---
 
-### `Result.unwrapOr` (method)
+#### `Result.unwrapOr` (method)
 
 Unwrap the `Ok` value, or return the default if there is an `Err`
 
 **Signature:**
 
 ```typescript
-unwrapOr<T>(v: T):  T { ... }
+unwrapOr<T>(v: T): T { ... }
 ```
 
 **Example**:
@@ -340,9 +265,11 @@ const multiply = (val: number): number => val * 2
 const unwrapped: number = myResult.map(multiply).unwrapOr(10)
 ```
 
+[⬆️  Back to top](#toc)
+
 ---
 
-### `Result.andThen` (method)
+#### `Result.andThen` (method)
 
 Same idea as `map` above. Except you must return a new `Result`.
 
@@ -356,7 +283,7 @@ This is useful for when you need to do a subsequent computation using the inner 
 
 ```typescript
 
-type AndThenFunc = (t:  T) => Result<U, E>
+type AndThenFunc = <T, U>(t:  T) => Result<U, E>
 andThen<U>(f: AndThenFunc): Result<U, E> { ... }
 
 ```
@@ -395,9 +322,11 @@ const nested = ok(ok(1234))
 const notNested = nested.andThen(innerResult => innerResult)
 ```
 
+[⬆️  Back to top](#toc)
+
 ---
 
-### `Result.asyncAndThen` (method)
+#### `Result.asyncAndThen` (method)
 
 Same idea as `andThen` above. Except you must return a new `ResultAsync`.
 
@@ -412,9 +341,11 @@ asyncAndThen<U>(f: AndThenAsyncFunc): ResultAsync<U, E> { ... }
 
 ```
 
+[⬆️  Back to top](#toc)
+
 ---
 
-### `Result.match` (method)
+#### `Result.match` (method)
 
 Given 2 functions (one for the `Ok` variant and one for the `Err` variant) execute the function that matches the `Result` variant.
 
@@ -424,8 +355,8 @@ Match callbacks do not necessitate to return a `Result`, however you can return 
 
 ```typescript
 match<A>(
-  okFn: (t:  T) =>  A,
-  errFn: (e:  E) =>  A
+  okFn: (t: T) =>  A,
+  errFn: (e: E) =>  A
 ): A => { ... }
 ```
 
@@ -456,9 +387,11 @@ result.map(successCallback).mapErr(failureCallback)
 myval.match(successCallback, failureCallback)
 ```
 
+[⬆️  Back to top](#toc)
+
 ---
 
-### `Result.asyncMap` (method)
+#### `Result.asyncMap` (method)
 
 Similar to `map` except for two things:
 
@@ -470,7 +403,7 @@ You can then chain the result of `asyncMap` using the `ResultAsync` apis (like `
 **Signature:**
 
 ```typescript
-type MappingFunc = (t:  T) => Promise<U>
+type MappingFunc = (t: T) => Promise<U>
 asyncMap<U>(fn: MappingFunc):  ResultAsync<U, E> { ... }
 ```
 
@@ -487,17 +420,21 @@ const asyncRes = parseHeaders(rawHeader)
 ```
 
 Note that in the above example if `parseHeaders` returns an `Err` then `.map` and `.asyncMap` will not be invoked, and `asyncRes` variable will resolve to an `Err` when turned into a `Result` using `await` or `.then()`.
+  
+[⬆️  Back to top](#toc)
 
 ---
 
-### `okAsync`
+### Asynchronous API (`ResultAsync`)
+
+#### `okAsync`
 
 Constructs an `Ok` variant of `ResultAsync`
 
 **Signature:**
 
 ```typescript
-okAsync<T, E>(value:  T): ResultAsync<T, E>
+okAsync<T, E>(value: T): ResultAsync<T, E>
 ```
 
 **Example:**
@@ -512,10 +449,12 @@ const myResult = await myResultAsync // instance of `Ok`
 myResult.isOk() // true
 myResult.isErr() // false
 ```
+  
+[⬆️  Back to top](#toc)
 
 ---
 
-### `errAsync`
+#### `errAsync`
 
 Constructs an `Err` variant of `ResultAsync`
 
@@ -538,9 +477,11 @@ myResult.isOk() // false
 myResult.isErr() // true
 ```
 
+[⬆️  Back to top](#toc)
+
 ---
 
-### `ResultAsync.fromPromise` (method)
+#### `ResultAsync.fromPromise` (static class method)
 
 Transforms a `Promise<T>` into a `ResultAsync<T, E>`.
 
@@ -555,6 +496,7 @@ fromPromise<U, E>(p: Promise<U>, f?: (e: unknown) => E):  ResultAsync<U, E> { ..
 **Example**:
 
 ```typescript
+import { ResultAsync } from 'neverthrow'
 import { insertIntoDb } from 'imaginary-database'
 // insertIntoDb(user: User): Promise<User>
 
@@ -562,9 +504,11 @@ const res = ResultAsync.fromPromise(insertIntoDb(myUser), () => new Error('Datab
 // res has a type of ResultAsync<User, Error>
 ```
 
+[⬆️  Back to top](#toc)
+
 ---
 
-### `ResultAsync.map` (method)
+#### `ResultAsync.map` (method)
 
 Maps a `ResultAsync<T, E>` to `ResultAsync<U, E>` by applying a function to a contained `Ok` value, leaving an `Err` value untouched.
 
@@ -603,9 +547,11 @@ namesInCanada.then((namesResult: Result<Array<string>, Error>) => {
 })
 ```
 
+[⬆️  Back to top](#toc)
+
 ---
 
-### `ResultAsync.mapErr` (method)
+#### `ResultAsync.mapErr` (method)
 
 Maps a `ResultAsync<T, E>` to `ResultAsync<T, F>` by applying a function to a contained `Err` value, leaving an `Ok` value untouched.
 
@@ -653,9 +599,11 @@ usersInCanada.then((usersResult: Result<Array<User>, string>) => {
 })
 ```
 
+[⬆️  Back to top](#toc)
+
 ---
 
-### `ResultAsync.unwrapOr` (method)
+#### `ResultAsync.unwrapOr` (method)
 
 Unwrap the `Ok` value, or return the default if there is an `Err`.  
 Works just like `Result.unwrapOr` but returns a `Promise<T>` instead of `T`.
@@ -673,9 +621,11 @@ const unwrapped: number = await errAsync(0).unwrapOr(10)
 // unwrapped = 10
 ```
 
+[⬆️  Back to top](#toc)
+
 ---
 
-### `ResultAsync.andThen` (method)
+#### `ResultAsync.andThen` (method)
 
 Same idea as `map` above. Except the applied function must return a `Result` or `ResultAsync`.
 
@@ -721,9 +671,11 @@ resAsync.then((res: Result<void, Error>) => {
 })
 ```
 
+[⬆️  Back to top](#toc)
+
 ---
 
-### `ResultAsync.match` (method)
+#### `ResultAsync.match` (method)
 
 Given 2 functions (one for the `Ok` variant and one for the `Err` variant) execute the function that matches the `ResultAsync` variant.
 
@@ -759,6 +711,45 @@ const resultMessage = await validateUser(user)
 
 // resultMessage is a string
 ```
+
+[⬆️  Back to top](#toc)
+
+---
+
+### Utilities
+
+#### `combine`
+
+If you're familiar with `Promise.all`, the combine function works conceptually the same.
+
+The combine function takes a list of results and return a single result. If all the results in the list are `Ok`, then the return value will be a `Ok` containing a list of all the individual `Ok` values.
+
+If just one of the results in the list is an `Err` then the combine function returns that Err value (it short circuits and returns the first Err that it finds).
+
+Formally speaking:
+
+```typescript
+function combine<T, E>(resultList: Result<T, E>[]): Result<T[], E>
+```
+
+Additionally, this same function also works for `ResultAsync`. And thanks to typescript function overloading, the types can be distinguished.
+
+```typescript
+function combine<T, E>(asyncResultList: ResultAsync<T, E>[]): ResultAsync<T[], E>
+```
+
+**Limitation**: `combine`, as you may have noticed, only works homogenous lists (where all the `T` and `E`'s are the same for each element in the list). There are plans to eventually make `combine` work on heterogeneous lists.
+
+
+[⬆️  Back to top](#toc)
+
+
+---
+
+If you find this package useful, please consider [sponsoring me](https://github.com/sponsors/supermacro/) or simply [buying me a coffee](https://ko-fi.com/gdelgado)!
+
+---
+
 
 ## A note on the Package Name
 
