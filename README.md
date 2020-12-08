@@ -33,6 +33,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.asyncAndThen` (method)](#resultasyncandthen-method)
     - [`Result.match` (method)](#resultmatch-method)
     - [`Result.asyncMap` (method)](#resultasyncmap-method)
+    - [`Result.fromThrowable`](#resultfromthrowable)
   + [Asynchronous API (`ResultAsync`)](#asynchronous-api-resultasync)
     - [`okAsync`](#okasync)
     - [`errAsync`](#errasync)
@@ -425,6 +426,37 @@ Note that in the above example if `parseHeaders` returns an `Err` then `.map` an
 
 ---
 
+#### `Result.fromThrowable`
+
+The JavaScript community has agreed on the convention of throwing exceptions.
+As such, when interfacing with third party libraries it's imperative that you
+wrap third-party code in try / catch  blocks.
+
+This function will create a new function that returns an `Err` when the original
+function throws.
+
+It is not possible to know the types of the errors thrown in the original
+function, therefore it is recommended to use the second argument `errorFn` to
+map what is thrown to a known type.
+
+**Example**:
+
+```typescript
+import { fromThrowable } from 'neverthrow'
+
+type ParseError = { message: string }
+const toParseError = (): ParseError => ({message: "Parse Error" })
+
+const safeJsonParse = fromThrowable(JSON.parse, toParseError)
+
+// the function can now be used safely, if the function throws, the result will be an Err
+const res = safeJsonParse("{");
+```
+
+[⬆️  Back to top](#toc)
+
+---
+
 ### Asynchronous API (`ResultAsync`)
 
 #### `okAsync`
@@ -745,6 +777,7 @@ function combine<T, E>(asyncResultList: ResultAsync<T, E>[]): ResultAsync<T[], E
 
 
 ---
+
 
 If you find this package useful, please consider [sponsoring me](https://github.com/sponsors/supermacro/) or simply [buying me a coffee](https://ko-fi.com/gdelgado)!
 

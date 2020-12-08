@@ -1,5 +1,29 @@
 import { ResultAsync, errAsync } from './'
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace Result {
+  /**
+   * Wraps a function with a try catch, creating a new function with the same
+   * arguments but returning `Ok` if successful, `Err` if the function throws
+   *
+   * @param fn function to wrap with ok on success or err on failure
+   * @param errorFn when an error is thrown, this will wrap the error result if provided
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export function fromThrowable<Fn extends (...args: readonly unknown[]) => any, E>(
+    fn: Fn,
+    errorFn?: (e: unknown) => E,
+  ): (...args: Parameters<Fn>) => Result<ReturnType<Fn>, E> {
+    return (...args) => {
+      try {
+        const result = fn(...args)
+        return ok(result)
+      } catch (e) {
+        return err(errorFn ? errorFn(e) : e)
+      }
+    }
+  }
+}
 export type Result<T, E> = Ok<T, E> | Err<T, E>
 
 // eslint-disable-next-line @typescript-eslint/no-use-before-define
