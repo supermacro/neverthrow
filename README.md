@@ -33,7 +33,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.asyncAndThen` (method)](#resultasyncandthen-method)
     - [`Result.match` (method)](#resultmatch-method)
     - [`Result.asyncMap` (method)](#resultasyncmap-method)
-    - [`Result.fromThrowable`](#resultfromthrowable)
+    - [`Result.fromThrowable` (static class method)](#resultfromthrowable)
   + [Asynchronous API (`ResultAsync`)](#asynchronous-api-resultasync)
     - [`okAsync`](#okasync)
     - [`errAsync`](#errasync)
@@ -426,7 +426,9 @@ Note that in the above example if `parseHeaders` returns an `Err` then `.map` an
 
 ---
 
-#### `Result.fromThrowable`
+#### `Result.fromThrowable` (static class method)
+
+> Although Result is not an actual JS class, the way that `fromThrowable` has been implemented requires that you call `fromThrowable` as though it were a static method on `Result`. See examples below.
 
 The JavaScript community has agreed on the convention of throwing exceptions.
 As such, when interfacing with third party libraries it's imperative that you
@@ -442,12 +444,12 @@ map what is thrown to a known type.
 **Example**:
 
 ```typescript
-import { fromThrowable } from 'neverthrow'
+import { Result } from 'neverthrow'
 
 type ParseError = { message: string }
 const toParseError = (): ParseError => ({message: "Parse Error" })
 
-const safeJsonParse = fromThrowable(JSON.parse, toParseError)
+const safeJsonParse = Result.fromThrowable(JSON.parse, toParseError)
 
 // the function can now be used safely, if the function throws, the result will be an Err
 const res = safeJsonParse("{");
