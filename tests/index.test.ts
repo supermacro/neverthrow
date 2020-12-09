@@ -274,6 +274,50 @@ describe('Result.Err', () => {
   })
 })
 
+describe('Result.fromThrowable', () => {
+  it('Creates a function that returns an OK result when the inner function does not throw', () => {
+    const hello = (): string => 'hello'
+    const safeHello = Result.fromThrowable(hello)
+
+    const result = hello()
+    const safeResult = safeHello()
+
+    expect(safeResult).toBeInstanceOf(Ok)
+    expect(result).toEqual(safeResult._unsafeUnwrap())
+  })
+  it('Creates a function that returns an err when the inner function throws', () => {
+    const thrower = (): string => {
+      throw new Error()
+    }
+
+    // type: () => Result<string, unknown>
+    // received types from thrower fn, no errorFn is provides therefore Err type is unknown
+    const safeThrower = Result.fromThrowable(thrower)
+    const result = safeThrower()
+
+    expect(result).toBeInstanceOf(Err)
+    expect(result._unsafeUnwrapErr()).toBeInstanceOf(Error)
+  })
+
+  it('Accepts an error handler as a second argument', () => {
+    const thrower = (): string => {
+      throw new Error()
+    }
+    type MessageObject = { message: string }
+    const toMessageObject = (): MessageObject => ({ message: 'error' })
+
+    // type: () => Result<string, MessageObject>
+    // received types from thrower fn and errorFn return type
+    const safeThrower = Result.fromThrowable(thrower, toMessageObject)
+    const result = safeThrower()
+
+    expect(result.isOk()).toBe(false)
+    expect(result.isErr()).toBe(true)
+    expect(result).toBeInstanceOf(Err)
+    expect(result._unsafeUnwrapErr()).toEqual({ message: 'error' })
+  })
+})
+
 describe('Utils', () => {
   describe('`combine`', () => {
     describe('Sync `combine`', () => {
