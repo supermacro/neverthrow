@@ -33,7 +33,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.asyncAndThen` (method)](#resultasyncandthen-method)
     - [`Result.match` (method)](#resultmatch-method)
     - [`Result.asyncMap` (method)](#resultasyncmap-method)
-    - [`Result.fromThrowable` (static class method)](#resultfromthrowable)
+    - [`Result.fromThrowable` (static class method)](#resultfromthrowable-static-class-method)
   + [Asynchronous API (`ResultAsync`)](#asynchronous-api-resultasync)
     - [`okAsync`](#okasync)
     - [`errAsync`](#errasync)
