@@ -45,6 +45,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.match` (method)](#resultasyncmatch-method)
   + [Utilities](#utilities)
     - [`combine`](#combine)
+  + [Testing](#testing)
 * [A note on the Package Name](#a-note-on-the-package-name)
 
 ## Installation
@@ -776,6 +777,25 @@ function combine<T, E>(asyncResultList: ResultAsync<T, E>[]): ResultAsync<T[], E
 
 
 [⬆️  Back to top](#toc)
+
+
+---
+
+### Testing
+
+`Result` instances have two unsafe methods, aptly called `_unsafeUnwrap` and `_unsafeUnwrapErr` which **should only be used in a test environment**. 
+
+`_unsafeUnwrap` takes a `Result<T, E>` and returns a `T` when the result is an `Ok`, otherwise it throws.
+
+`_unsafeUnwrapErr` takes a `Result<T, E>` and returns a `E` when the result is an `Err`, otherwise it throws.
+
+That way you can do something like:
+
+```typescript
+expect(myResult._unsafeUnwrap()).toBe(someExpectation)
+```
+
+However, do note that `Result` instances are comparable. So you don't necessarily need to unwrap them in order to assert expectations in your tests.
 
 
 ---
