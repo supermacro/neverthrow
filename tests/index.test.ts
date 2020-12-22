@@ -26,6 +26,11 @@ describe('Result.Ok', () => {
     expect(okVal._unsafeUnwrap()).toBeUndefined()
   })
 
+  it('Is comparable', () => {
+    expect(ok(42)).toEqual(ok(42))
+    expect(ok(42)).not.toEqual(ok(43))
+  })
+
   it('Maps over an Ok value', () => {
     const okVal = ok(12)
     const mapFn = jest.fn((number) => number.toString())
@@ -165,6 +170,11 @@ describe('Result.Err', () => {
     expect(errVal.isOk()).toBe(false)
     expect(errVal.isErr()).toBe(true)
     expect(errVal).toBeInstanceOf(Err)
+  })
+
+  it('Is comparable', () => {
+    expect(err(42)).toEqual(err(42))
+    expect(err(42)).not.toEqual(err(43))
   })
 
   it('Skips `map`', () => {
