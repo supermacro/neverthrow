@@ -80,7 +80,7 @@ export class Ok<T, E> {
   }
 
   _unsafeUnwrapErr(): E {
-    throw new Error('Called `_unsafeUnwrapErr` on an Ok')
+    throw { message: 'Called `_unsafeUnwrapErr` on an Ok', error: this.value }
   }
 }
 
@@ -128,7 +128,7 @@ export class Err<T, E> {
   }
 
   _unsafeUnwrap(): T {
-    throw new Error('Called `_unsafeUnwrap` on an Err')
+    throw { message: 'Called `_unsafeUnwrap` on an Err', error: this.error }
   }
 
   _unsafeUnwrapErr(): E {
