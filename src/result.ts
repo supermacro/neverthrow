@@ -71,7 +71,7 @@ export class Ok<T, E> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  match = <A>(ok: (t: T) => A, _err: (e: E) => A): A => {
+  match<A>(ok: (t: T) => A, _err: (e: E) => A): A {
     return ok(this.value)
   }
 
@@ -123,7 +123,7 @@ export class Err<T, E> {
     return v
   }
 
-  match = <A>(_ok: (t: T) => A, err: (e: E) => A): A => {
+  match<A>(_ok: (t: T) => A, err: (e: E) => A): A {
     return err(this.error)
   }
 
