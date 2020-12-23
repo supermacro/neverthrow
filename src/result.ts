@@ -80,7 +80,7 @@ export class Ok<T, E> {
   }
 
   _unsafeUnwrapErr(): E {
-    throw new Error('Called `_unsafeUnwrapErr` on an Ok')
+    throw new Error('Called `_unsafeUnwrapErr` on an Ok containing:\n' + JSON.stringify(this.value, null, 2))
   }
 }
 
@@ -128,7 +128,7 @@ export class Err<T, E> {
   }
 
   _unsafeUnwrap(): T {
-    throw new Error('Called `_unsafeUnwrap` on an Err')
+    throw new Error('Called `_unsafeUnwrap` on an Err containing:\n' + JSON.stringify(this.error, null, 2))
   }
 
   _unsafeUnwrapErr(): E {
