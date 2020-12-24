@@ -1,5 +1,5 @@
 import { ResultAsync, errAsync } from './'
-import { createNeverThrowError } from './_internals/error'
+import { createNeverThrowError, ErrorConfig } from './_internals/error'
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Result {
@@ -76,12 +76,12 @@ export class Ok<T, E> {
     return ok(this.value)
   }
 
-  _unsafeUnwrap(): T {
+  _unsafeUnwrap(_?: ErrorConfig): T {
     return this.value
   }
 
-  _unsafeUnwrapErr(): E {
-    throw createNeverThrowError('Called `_unsafeUnwrapErr` on an Ok', this)
+  _unsafeUnwrapErr(config?: ErrorConfig): E {
+    throw createNeverThrowError('Called `_unsafeUnwrapErr` on an Ok', this, config)
   }
 }
 
@@ -128,11 +128,11 @@ export class Err<T, E> {
     return err(this.error)
   }
 
-  _unsafeUnwrap(): T {
-    throw createNeverThrowError('Called `_unsafeUnwrap` on an Err', this)
+  _unsafeUnwrap(config?: ErrorConfig): T {
+    throw createNeverThrowError('Called `_unsafeUnwrap` on an Err', this, config)
   }
 
-  _unsafeUnwrapErr(): E {
+  _unsafeUnwrapErr(_?: ErrorConfig): E {
     return this.error
   }
 }
