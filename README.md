@@ -60,9 +60,9 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
 
 - `ok` convenience function to create an `Ok` variant of `Result`
 - `err` convenience function to create an `Err` variant of `Result`
-- `Ok` class for you to construct an `Ok` variant in an OOP way using `new`
-- `Err` class for you to construct an `Err` variant in an OOP way using `new`
-- `Result` type - only available in TypeScript
+- `Ok` class and type
+- `Err` class and type
+- `Result` Type as well as namespace / object from which to call [`Result.fromThrowable`](#resultfromthrowable-static-class-method)
 - `ResultAsync` class
 - `okAsync` convenience function to create a `ResultAsync` containing an `Ok` type `Result`
 - `errAsync` convenience function to create a `ResultAsync` containing an `Err` type `Result`
