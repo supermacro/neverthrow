@@ -20,6 +20,7 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/semi': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/member-delimiter-style': ['error', {
       multiline: {
