@@ -41,7 +41,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.map` (method)](#resultasyncmap-method)
     - [`ResultAsync.mapErr` (method)](#resultasyncmaperr-method)
     - [`ResultAsync.unwrapOr` (method)](#resultasyncunwrapor-method)
-    - [`ResultAsync.andThen` (method)](resultasyncandthen-method-1)
+    - [`ResultAsync.andThen` (method)](#resultasyncandthen-method-1)
     - [`ResultAsync.match` (method)](#resultasyncmatch-method)
   + [Utilities](#utilities)
     - [`combine`](#combine)
