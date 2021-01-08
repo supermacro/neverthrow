@@ -2,6 +2,9 @@
 
 [![Build Status](https://travis-ci.com/supermacro/neverthrow.svg?branch=master)](https://travis-ci.com/supermacro/neverthrow)
 
+[![Package Size](https://badgen.net/bundlephobia/minzip/neverthrow)](https://bundlephobia.com/result?p=neverthrow)
+
+
 ## Description
 
 Encode failure into your program.
