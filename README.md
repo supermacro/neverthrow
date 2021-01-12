@@ -34,6 +34,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.unwrapOr` (method)](#resultunwrapor-method)
     - [`Result.andThen` (method)](#resultandthen-method)
     - [`Result.asyncAndThen` (method)](#resultasyncandthen-method)
+    - [`Result.orElse` (method)](#resultorelse-method)
     - [`Result.match` (method)](#resultmatch-method)
     - [`Result.asyncMap` (method)](#resultasyncmap-method)
     - [`Result.fromThrowable` (static class method)](#resultfromthrowable-static-class-method)
@@ -349,6 +350,41 @@ asyncAndThen<U>(f: AndThenAsyncFunc): ResultAsync<U, E> { ... }
 [⬆️  Back to top](#toc)
 
 ---
+
+#### `Result.orElse` (method)
+
+Takes an `Err` value and maps it to a `Result<T, SomeNewType>`. This is useful for error recovery.
+
+**Signature:**
+
+```typescript
+type ErrorCallback = <A>(e:  E) => Result<T, A>
+orElse<A>(f: ErrorCallback<A>): Result<T, A> { ... }
+```
+
+**Example:**
+
+```typescript
+enum DatabaseError {
+  PoolExhausted = 'PoolExhausted',
+  NotFound = 'NotFound',
+}
+
+const dbQueryResult: Result<string, DatabaseError> = err(DatabaseError.NotFound)
+
+const updatedQueryResult = dbQueryResult.orElse(dbError =>
+  dbError === DatabaseError.NotFound
+    ? ok('User does not exist') // error recovery branch: ok() must be called with a value of type string
+    //
+    //
+    // err() can be called with a value of any new type that you want
+    // it could also be called with the same error value
+    //     
+    //     err(dbError)
+    : err(500) 
+)
+```
+
 
 #### `Result.match` (method)
 

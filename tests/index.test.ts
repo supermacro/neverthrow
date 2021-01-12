@@ -86,6 +86,16 @@ describe('Result.Ok', () => {
     })
   })
 
+  describe('orElse', () => {
+    it('Skips orElse on an Ok value', () => {
+      const okVal = ok(12)
+      const errorCallback = jest.fn((_errVal) => err<number, string>('It is now a string'))
+
+      expect(okVal.orElse(errorCallback)).toEqual(ok(12))
+      expect(errorCallback).not.toHaveBeenCalled()
+    })
+  })
+
   it('unwrapOr and return the Ok value', () => {
     const okVal = ok(12)
     expect(okVal.unwrapOr(1)).toEqual(12)
@@ -281,6 +291,16 @@ describe('Result.Err', () => {
     const okVal = err(12)
 
     expect(okVal._unsafeUnwrapErr()).toBe(12)
+  })
+
+  describe('orElse', () => {
+    it('invokes the orElse callback on an Err value', () => {
+      const okVal = err('BOOOM!')
+      const errorCallback = jest.fn((_errVal) => err(true))
+
+      expect(okVal.orElse(errorCallback)).toEqual(err(true))
+      expect(errorCallback).toHaveBeenCalledTimes(1)
+    })
   })
 })
 

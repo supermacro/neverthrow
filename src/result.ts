@@ -58,6 +58,13 @@ export class Ok<T, E> {
     return f(this.value)
   }
 
+  /**
+   * Applies a function to an `Err` value, leaving `Ok` values untouched. Useful for error recovery.
+   */
+  orElse<A>(_f: (e: E) => Result<T, A>): Result<T, A> {
+    return ok(this.value)
+  }
+
   asyncAndThen<U>(f: (t: T) => ResultAsync<U, E>): ResultAsync<U, E> {
     return f(this.value)
   }
@@ -108,6 +115,13 @@ export class Err<T, E> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   andThen<U>(_f: (t: T) => Result<U, E>): Result<U, E> {
     return err(this.error)
+  }
+
+  /**
+   * Applies a function to an `Err` value, leaving `Ok` values untouched. Useful for error recovery.
+   */
+  orElse<A>(f: (e: E) => Result<T, A>): Result<T, A> {
+    return f(this.error)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
