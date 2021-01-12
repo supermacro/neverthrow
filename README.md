@@ -758,16 +758,28 @@ const resultMessage = await validateUser(user)
 
 #### `combine`
 
+Combine lists of `Result`s or lists of `ResultAsync`s.
+
 If you're familiar with `Promise.all`, the combine function works conceptually the same.
 
-The combine function takes a list of results and return a single result. If all the results in the list are `Ok`, then the return value will be a `Ok` containing a list of all the individual `Ok` values.
+**`combine` works on both heterogeneous and homogeneous lists**. This means that you can have lists that contain different kinds of `Result`s and still be able to combine them. Note that you cannot combine lists that contain both `Result`s **and** `ResultAsync`s. 
+
+The combine function takes a list of results and returns a single result. If all the results in the list are `Ok`, then the return value will be a `Ok` containing a list of all the individual `Ok` values.
 
 If just one of the results in the list is an `Err` then the combine function returns that Err value (it short circuits and returns the first Err that it finds).
 
 Formally speaking:
 
 ```typescript
+// homogeneous lists
 function combine<T, E>(resultList: Result<T, E>[]): Result<T[], E>
+
+// heterogeneous lists
+function combine<T1, T2, E1, E2>(resultList: [ Result<T1, E1>, Result<T2, E2> ]): Result<[ T1, T2 ], E1 | E2>
+function combine<T1, T2, T3, E1, E2, E3> => Result<[ T1, T2, T3 ], E1 | E2 | E3>
+function combine<T1, T2, T3, T4, E1, E2, E3, E4> => Result<[ T1, T2, T3, T4 ], E1 | E2 | E3 | E4>
+// ... etc etc ad infinitum
+
 ```
 
 Additionally, this same function also works for `ResultAsync`. And thanks to typescript function overloading, the types can be distinguished.
@@ -775,9 +787,6 @@ Additionally, this same function also works for `ResultAsync`. And thanks to typ
 ```typescript
 function combine<T, E>(asyncResultList: ResultAsync<T, E>[]): ResultAsync<T[], E>
 ```
-
-**Limitation**: `combine`, as you may have noticed, only works homogenous lists (where all the `T` and `E`'s are the same for each element in the list). There are plans to eventually make `combine` work on heterogeneous lists.
-
 
 [⬆️  Back to top](#toc)
 
