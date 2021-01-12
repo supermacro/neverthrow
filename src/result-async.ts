@@ -62,6 +62,18 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     )
   }
 
+  orElse<A>(f: (e: E) => Result<T, A> | ResultAsync<T, A>): ResultAsync<T, A> {
+    return new ResultAsync(
+      this._promise.then(async (res: Result<T, E>) => {
+        if (res.isErr()) {
+          return f(res.error)
+        }
+
+        return new Ok<T, A>(res.value)
+      }),
+    )
+  }
+
   match<A>(ok: (t: T) => A, _err: (e: E) => A): Promise<A> {
     return this._promise.then((res) => res.match(ok, _err))
   }

@@ -385,6 +385,10 @@ const updatedQueryResult = dbQueryResult.orElse(dbError =>
 )
 ```
 
+[⬆️  Back to top](#toc)
+
+---
+
 
 #### `Result.match` (method)
 
@@ -743,6 +747,22 @@ resAsync.then((res: Result<void, Error>) => {
     console.log("User has been validated, inserted and notified successfully.")
   }
 })
+```
+
+[⬆️  Back to top](#toc)
+
+--- 
+
+
+#### `ResultAsync.orElse` (method)
+
+Takes an `Err` value and maps it to a `ResultAsync<T, SomeNewType>`. This is useful for error recovery.
+
+**Signature:**
+
+```typescript
+type ErrorCallback = <A>(e:  E) => Result<T, A> | ResultAsync<T, A>
+orElse<A>(f: ErrorCallback<A>): ResultAsync<T, A> { ... }
 ```
 
 [⬆️  Back to top](#toc)

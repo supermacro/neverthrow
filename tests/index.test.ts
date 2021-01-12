@@ -641,6 +641,40 @@ describe('ResultAsync', () => {
     })
   })
 
+  describe('orElse', () => {
+    it('Skips orElse on an Ok value', async () => {
+      const okVal = okAsync(12)
+      const errorCallback = jest.fn((_errVal) => errAsync<number, string>('It is now a string'))
+
+
+      const result = await okVal.orElse(errorCallback)
+
+      expect(result).toEqual(ok(12))
+
+      expect(errorCallback).not.toHaveBeenCalled()
+    })
+
+    it('Invokes the orElse callback on an Err value', async () => {
+      const myResult = errAsync('BOOOM!')
+      const errorCallback = jest.fn((_errVal) => errAsync(true))
+
+      const result = await myResult.orElse(errorCallback)
+
+      expect(result).toEqual(err(true))
+      expect(errorCallback).toHaveBeenCalledTimes(1)
+    })
+
+    it('Accepts a regular Result in the callback', async () => {
+      const myResult = errAsync('BOOOM!')
+      const errorCallback = jest.fn((_errVal) => err(true))
+
+      const result = await myResult.orElse(errorCallback)
+
+      expect(result).toEqual(err(true))
+      expect(errorCallback).toHaveBeenCalledTimes(1)
+    })
+  })
+
   describe('match', () => {
     it('Matches on an Ok', async () => {
       const okMapper = jest.fn((_val) => 'weeeeee')
