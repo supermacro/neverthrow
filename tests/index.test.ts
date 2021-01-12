@@ -330,7 +330,7 @@ describe('Result.fromThrowable', () => {
 
 describe('Utils', () => {
   describe('`combine`', () => {
-    describe('Sync `combine`', () => {
+    describe('Synchronous `combine`', () => {
       it('Combines a list of results into an Ok value', () => {
         const resultList = [ok(123), ok(456), ok(789)]
 
@@ -352,6 +352,20 @@ describe('Utils', () => {
 
         expect(result.isErr()).toBe(true)
         expect(result._unsafeUnwrapErr()).toBe('boooom!')
+      })
+
+      it('Combines heterogenous lists', () => {
+        type HeterogenousList = [ Result<string, string>, Result<number, number>, Result<boolean, boolean> ]
+
+        const heterogenousList: HeterogenousList = [
+          ok('Yooooo'),
+          ok(123),
+          ok(true),
+        ]
+
+        const result = combine(heterogenousList)
+
+        expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true])
       })
     })
 
@@ -377,6 +391,20 @@ describe('Utils', () => {
 
         expect(result.isErr()).toBe(true)
         expect(result._unsafeUnwrapErr()).toBe('boooom!')
+      })
+
+      it('Combines heterogenous lists', async () => {
+        type HeterogenousList = [ ResultAsync<string, string>, ResultAsync<number, number>, ResultAsync<boolean, boolean> ]
+
+        const heterogenousList: HeterogenousList = [
+          okAsync('Yooooo'),
+          okAsync(123),
+          okAsync(true),
+        ]
+
+        const result = await combine(heterogenousList)
+
+        expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true])
       })
     })
   })

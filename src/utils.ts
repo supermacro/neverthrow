@@ -1,6 +1,26 @@
 import { Result, ok, err } from './result'
 import { ResultAsync } from './result-async'
 
+// Given a list of Results, this extracts all the different `T` types from that list
+type ExtractOkTypes<T extends Result<unknown, unknown>[]> = {
+  [idx in keyof T]: T[idx] extends Result<infer U, unknown> ? U : never
+}
+
+// Given a list of ResultAsyncs, this extracts all the different `T` types from that list
+type ExtractOkAsyncTypes<T extends ResultAsync<unknown, unknown>[]> = {
+  [idx in keyof T]: T[idx] extends ResultAsync<infer U, unknown> ? U : never
+}
+
+// Given a list of Results, this extracts all the different `E` types from that list
+type ExtractErrTypes<T extends Result<unknown, unknown>[]> = {
+  [idx in keyof T]: T[idx] extends Result<unknown, infer E> ? E : never
+}
+
+// Given a list of ResultAsyncs, this extracts all the different `E` types from that list
+type ExtractErrAsyncTypes<T extends ResultAsync<unknown, unknown>[]> = {
+  [idx in keyof T]: T[idx] extends ResultAsync<unknown, infer E> ? E : never
+}
+
 /**
  * Short circuits on the FIRST Err value that we find
  */
@@ -26,9 +46,13 @@ const combineResultAsyncList = <T, E>(asyncResultList: ResultAsync<T, E>[]): Res
     E
   >
 
-export function combine<T, E>(resultList: Result<T, E>[]): Result<T[], E>
+export function combine<T extends Result<unknown, unknown>[]>(
+  resultList: [...T],
+): Result<ExtractOkTypes<T>, ExtractErrTypes<T>>
 
-export function combine<T, E>(asyncResultList: ResultAsync<T, E>[]): ResultAsync<T[], E>
+export function combine<T extends ResultAsync<unknown, unknown>[]>(
+  asyncResultList: [...T],
+): Result<ExtractOkAsyncTypes<T>, ExtractErrAsyncTypes<T>>
 
 // eslint-disable-next-line
 export function combine(list: any): any {
