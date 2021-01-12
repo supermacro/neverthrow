@@ -354,7 +354,7 @@ describe('Utils', () => {
         expect(result._unsafeUnwrapErr()).toBe('boooom!')
       })
 
-      it('Combines heterogenous lists', () => {
+      it('Combines heterogeneous lists', () => {
         type HeterogenousList = [ Result<string, string>, Result<number, number>, Result<boolean, boolean> ]
 
         const heterogenousList: HeterogenousList = [
@@ -393,7 +393,7 @@ describe('Utils', () => {
         expect(result._unsafeUnwrapErr()).toBe('boooom!')
       })
 
-      it('Combines heterogenous lists', async () => {
+      it('Combines heterogeneous lists', async () => {
         type HeterogenousList = [ ResultAsync<string, string>, ResultAsync<number, number>, ResultAsync<boolean, boolean> ]
 
         const heterogenousList: HeterogenousList = [
