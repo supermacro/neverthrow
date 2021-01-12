@@ -48,11 +48,11 @@ const combineResultAsyncList = <T, E>(asyncResultList: ResultAsync<T, E>[]): Res
 
 export function combine<T extends Result<unknown, unknown>[]>(
   resultList: [...T],
-): Result<ExtractOkTypes<T>, ExtractErrTypes<T>>
+): Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number]>
 
 export function combine<T extends ResultAsync<unknown, unknown>[]>(
   asyncResultList: [...T],
-): Result<ExtractOkAsyncTypes<T>, ExtractErrAsyncTypes<T>>
+): Result<ExtractOkAsyncTypes<T>, ExtractErrAsyncTypes<T>[number]>
 
 // eslint-disable-next-line
 export function combine(list: any): any {

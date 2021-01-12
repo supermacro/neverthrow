@@ -363,7 +363,9 @@ describe('Utils', () => {
           ok(true),
         ]
 
-        const result = combine(heterogenousList)
+        type ExpecteResult = Result<[ string, number, boolean ], string | number | boolean>
+
+        const result: ExpecteResult = combine(heterogenousList)
 
         expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true])
       })
@@ -402,7 +404,9 @@ describe('Utils', () => {
           okAsync(true),
         ]
 
-        const result = await combine(heterogenousList)
+        type ExpecteResult = Result<[ string, number, boolean ], string | number | boolean>
+
+        const result: ExpecteResult= await combine(heterogenousList)
 
         expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true])
       })
