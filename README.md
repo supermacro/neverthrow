@@ -807,7 +807,15 @@ That way you can do something like:
 expect(myResult._unsafeUnwrap()).toBe(someExpectation)
 ```
 
-However, do note that `Result` instances are comparable. So you don't necessarily need to unwrap them in order to assert expectations in your tests.
+However, do note that `Result` instances are comparable. So you don't necessarily need to unwrap them in order to assert expectations in your tests. So you could also do something like this:
+
+```typescript
+import { ok } from 'neverthrow'
+
+// ...
+
+expect(callSomeFunctionThatReturnsAResult("with", "some", "args")).toEqual(ok(someExpectation));
+```
 
 By default, the thrown value does not contain a stack trace. This is because stack trace generation [makes error messages in Jest harder to understand](https://github.com/supermacro/neverthrow/pull/215). If you want stack traces to be generated, call `_unsafeUnwrap` and / or `_unsafeUnwrapErr` with a config object:
 
