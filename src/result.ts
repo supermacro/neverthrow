@@ -70,7 +70,7 @@ export class Ok<T, E> {
   }
 
   asyncMap<U>(f: (t: T) => Promise<U>): ResultAsync<U, E> {
-    return ResultAsync.fromPromise(f(this.value))
+    return ResultAsync.fromSafePromise(f(this.value))
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -42,6 +42,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`okAsync`](#okasync)
     - [`errAsync`](#errasync)
     - [`ResultAsync.fromPromise` (static class method)](#resultasyncfrompromise-static-class-method)
+    - [`ResultAsync.fromSafePromise` (static class method)](#resultasyncfromsafepromise-static-class-method)
     - [`ResultAsync.map` (method)](#resultasyncmap-method)
     - [`ResultAsync.mapErr` (method)](#resultasyncmaperr-method)
     - [`ResultAsync.unwrapOr` (method)](#resultasyncunwrapor-method)
@@ -562,14 +563,14 @@ myResult.isErr() // true
 
 #### `ResultAsync.fromPromise` (static class method)
 
-Transforms a `Promise<T>` into a `ResultAsync<T, E>`.
+Transforms a `Promise<T>` that may throw into a `ResultAsync<T, E>`.
 
-The second argument handles the rejection case of the promise. If it is ommited, **the code might throw** because `neverthrow` does not know if the promise you are passing to `fromPromise` has any promise rejection logic associated to it (via a `.catch` method call or `catch (err) {}` block).
+The second argument handles the rejection case of the promise and maps the error from `unknown` into some type `E`.
 
 **Signature:**
 
 ```typescript
-fromPromise<U, E>(p: Promise<U>, f?: (e: unknown) => E):  ResultAsync<U, E> { ... }
+fromPromise<U, E>(p: Promise<U>, f: (e: unknown) => E):  ResultAsync<U, E> { ... }
 ```
 
 **Example**:
@@ -582,6 +583,48 @@ import { insertIntoDb } from 'imaginary-database'
 const res = ResultAsync.fromPromise(insertIntoDb(myUser), () => new Error('Database error'))
 // res has a type of ResultAsync<User, Error>
 ```
+
+[⬆️  Back to top](#toc)
+
+---
+
+#### `ResultAsync.fromSafePromise` (static class method)
+
+Same as `ResultAsync.fromPromise` except that the promise never throws, and therefore does not require an error handler. **Ensure you know what you're doing, otherwise a thrown exception within this promise will break any guarantees that neverthrow provides.**
+
+
+**Signature:**
+
+```typescript
+fromSafePromise<T, E>(p: Promise<T>):  ResultAsync<T, E> { ... }
+```
+
+**Example**:
+
+```typescript
+import { RouteError } from 'routes/error'
+
+// simulate slow routes in an http server that works in a Result / ResultAsync context
+// Adopted from https://github.com/parlez-vous/server/blob/2496bacf55a2acbebc30631b5562f34272794d76/src/routes/common/signup.ts
+export const slowDown = <T>(ms: number) => (val: T) =>
+  ResultAsync.fromSafePromise<T, RouteError>(
+    new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(val)
+      }, ms)
+    })
+  )
+
+export const signupHandler = route<User>((req, sessionManager) =>
+  decode(userSignupDecoder, req.body, 'Invalid request body').map((parsed) => {
+    return createUser(parsed)
+      .andThen(slowDown(3000)) // slowdown by 3 seconds
+      .andThen(sessionManager.createSession)
+      .map(({ sessionToken, admin }) => AppData.init(admin, sessionToken))
+  })
+)
+```
+
 
 [⬆️  Back to top](#toc)
 

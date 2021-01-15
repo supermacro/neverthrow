@@ -1,5 +1,4 @@
 import { Result, Ok, Err } from './'
-import { logWarning } from './_internals/log'
 
 export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   private _promise: Promise<Result<T, E>>
@@ -8,18 +7,16 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     this._promise = res
   }
 
-  static fromPromise<T, E>(promise: Promise<T>, errorFn?: (e: unknown) => E): ResultAsync<T, E> {
-    let newPromise: Promise<Result<T, E>> = promise.then((value: T) => new Ok(value))
-    if (errorFn) {
-      newPromise = newPromise.catch((e) => new Err<T, E>(errorFn(e)))
-    } else {
-      const warning = [
-        '`fromPromise` called without a promise rejection handler',
-        'Ensure that you are catching promise rejections yourself, or pass a second argument to `fromPromise` to convert a caught exception into an `Err` instance',
-      ].join(' - ')
+  static fromSafePromise<T, E>(promise: Promise<T>): ResultAsync<T, E> {
+    const newPromise = promise.then((value: T) => new Ok<T, E>(value))
 
-      logWarning(warning)
-    }
+    return new ResultAsync(newPromise)
+  }
+
+  static fromPromise<T, E>(promise: Promise<T>, errorFn: (e: unknown) => E): ResultAsync<T, E> {
+    const newPromise = promise
+      .then((value: T) => new Ok<T, E>(value))
+      .catch((e) => new Err<T, E>(errorFn(e)))
 
     return new ResultAsync(newPromise)
   }

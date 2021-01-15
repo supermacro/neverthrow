@@ -41,10 +41,9 @@ const combineResultList = <T, E>(resultList: Result<T, E>[]): Result<T[], E> =>
  * or fails if one (or more) of the inner results are Err values
  */
 const combineResultAsyncList = <T, E>(asyncResultList: ResultAsync<T, E>[]): ResultAsync<T[], E> =>
-  ResultAsync.fromPromise(Promise.all(asyncResultList)).andThen(combineResultList) as ResultAsync<
-    T[],
-    E
-  >
+  ResultAsync.fromSafePromise(Promise.all(asyncResultList)).andThen(
+    combineResultList,
+  ) as ResultAsync<T[], E>
 
 export function combine<T extends readonly Result<unknown, unknown>[]>(
   resultList: T,
