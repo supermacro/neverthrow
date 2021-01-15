@@ -711,9 +711,9 @@ describe('ResultAsync', () => {
     })
   })
 
-  describe('fromPromise', () => {
+  describe('fromSafePromise', () => {
     it('Creates a ResultAsync from a Promise', async () => {
-      const res = ResultAsync.fromPromise(Promise.resolve(12))
+      const res = ResultAsync.fromSafePromise(Promise.resolve(12))
 
       expect(res).toBeInstanceOf(ResultAsync)
 
@@ -721,7 +721,9 @@ describe('ResultAsync', () => {
       expect(val.isOk()).toBe(true)
       expect(val._unsafeUnwrap()).toEqual(12)
     })
+  })
 
+  describe('fromPromise', () => {
     it('Accepts an error handler as a second argument', async () => {
       const res = ResultAsync.fromPromise(Promise.reject('No!'), (e) => new Error('Oops: ' + e))
 
