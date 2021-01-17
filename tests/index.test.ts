@@ -395,6 +395,10 @@ describe('Utils', () => {
       it('Combines a list of async results into an Ok value', async () => {
         const asyncResultList = [okAsync(123), okAsync(456), okAsync(789)]
 
+        const resultAsync: ResultAsync<number[], unknown> = combine(asyncResultList)
+        
+        expect(resultAsync).toBeInstanceOf(ResultAsync)
+
         const result = await combine(asyncResultList)
 
         expect(result.isOk()).toBe(true)
