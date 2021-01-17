@@ -51,7 +51,7 @@ export function combine<T extends readonly Result<unknown, unknown>[]>(
 
 export function combine<T extends readonly ResultAsync<unknown, unknown>[]>(
   asyncResultList: T,
-): Result<ExtractOkAsyncTypes<T>, ExtractErrAsyncTypes<T>[number]>
+): ResultAsync<ExtractOkAsyncTypes<T>, ExtractErrAsyncTypes<T>[number]>
 
 // eslint-disable-next-line
 export function combine(list: any): any {
