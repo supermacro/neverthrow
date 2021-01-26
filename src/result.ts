@@ -54,7 +54,7 @@ export class Ok<T, E> {
   // add info on how this is really useful for converting a
   // Result<Result<T, E2>, E1>
   // into a Result<T, E2>
-  andThen<U>(f: (t: T) => Result<U, E>): Result<U, E> {
+  andThen<U, F>(f: (t: T) => Result<U, F>): Result<U, E | F> {
     return f(this.value)
   }
 
@@ -65,7 +65,7 @@ export class Ok<T, E> {
     return ok(this.value)
   }
 
-  asyncAndThen<U>(f: (t: T) => ResultAsync<U, E>): ResultAsync<U, E> {
+  asyncAndThen<U, F>(f: (t: T) => ResultAsync<U, F>): ResultAsync<U, E | F> {
     return f(this.value)
   }
 
@@ -113,7 +113,7 @@ export class Err<T, E> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  andThen<U>(_f: (t: T) => Result<U, E>): Result<U, E> {
+  andThen<U, F>(_f: (t: T) => Result<U, F>): Result<U, E | F> {
     return err(this.error)
   }
 
@@ -125,7 +125,7 @@ export class Err<T, E> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  asyncAndThen<U>(_f: (t: T) => ResultAsync<U, E>): ResultAsync<U, E> {
+  asyncAndThen<U, F>(_f: (t: T) => ResultAsync<U, F>): ResultAsync<U, E | F> {
     return errAsync<U, E>(this.error)
   }
 

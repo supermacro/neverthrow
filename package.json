@@ -6,7 +6,8 @@
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "jest",
+    "test": "jest && npm run test-types",
+    "test-types": "tsc --noEmit ./tests/typecheck-tests.ts",
     "lint": "eslint ./src --ext .ts",
     "format": "prettier --write 'src/**/*.ts?(x)' && npm run lint -- --fix",
     "typecheck": "tsc --noEmit",

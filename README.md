@@ -281,19 +281,21 @@ const unwrapped: number = myResult.map(multiply).unwrapOr(10)
 
 Same idea as `map` above. Except you must return a new `Result`.
 
-The returned value will be a `Result`.
+The returned value will be a `Result`. As of `v4.1.0-beta`, you are able to return distinct error types (see signature below). Prior to `v4.1.0-beta`, the error type could not be distinct.
 
 This is useful for when you need to do a subsequent computation using the inner `T` value, but that computation might fail.
 
-`andThen` is really useful as a tool to flatten a `Result<Result<A, E2>, E1>` into a `Result<A, E2>` (see example below).
+Additionally, `andThen` is really useful as a tool to flatten a `Result<Result<A, E2>, E1>` into a `Result<A, E2>` (see example below).
 
 **Signature:**
 
 ```typescript
-
-type AndThenFunc = <T, U>(t:  T) => Result<U, E>
-andThen<U>(f: AndThenFunc): Result<U, E> { ... }
-
+class Result<T, E> {
+  // Note that the latest version lets you return distinct errors as well.
+  // If the error types (E and F) are the same (like `string | string`)
+  // then they will be merged into one type (`string`)
+  andThen<U, F>(fn: (val: T) => Result<U, F>): Result<U, E | F> { ... }
+}
 ```
 
 **Example 1: Chaining Results**
@@ -336,17 +338,16 @@ const notNested = nested.andThen(innerResult => innerResult)
 
 #### `Result.asyncAndThen` (method)
 
-Same idea as `andThen` above. Except you must return a new `ResultAsync`.
+Same idea as [`andThen` above](#resultandthen-method), except you must return a new `ResultAsync`.
 
 The returned value will be a `ResultAsync`.
 
 **Signature:**
 
 ```typescript
-
-type AndThenAsyncFunc = (t:  T) => ResultAsync<U, E>
-asyncAndThen<U>(f: AndThenAsyncFunc): ResultAsync<U, E> { ... }
-
+class Result<T, E> {
+  asyncAndThen<U, F>(fn: (val: T) => ResultAsync<U, F>): ResultAsync<U, E | F> { ... }
+}
 ```
 
 [⬆️  Back to top](#toc)
@@ -762,6 +763,13 @@ This is useful for when you need to do a subsequent computation using the inner 
 ```typescript
 type AndThenFunc = (t:  T) => ResultAsync<U, E> | Result<U, E>
 andThen<U>(f: AndThenFunc): ResultAsync<U, E> { ... }
+
+class ResultAsync<T, E> {
+  // Note that the latest version (v4.1.0-beta) lets you return distinct errors as well.
+  // If the error types (E and F) are the same (like `string | string`)
+  // then they will be merged into one type (`string`)
+  andThen<U, F>(f: (t: T) => Result<U, F> | ResultAsync<U, F>): ResultAsync<U, E | F> { ... }
+}
 ```
 
 **Example**
