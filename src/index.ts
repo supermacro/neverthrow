@@ -1,3 +1,3 @@
-export { Result, ok, Ok, err, Err } from './result'
-export { ResultAsync, okAsync, errAsync } from './result-async'
+export { Result, ok, Ok, err, Err, fromThrowable } from './result'
+export { ResultAsync, okAsync, errAsync, fromPromise, fromSafePromise } from './result-async'
 export { combine } from './utils'

@@ -51,6 +51,9 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.match` (method)](#resultasyncmatch-method)
   + [Utilities](#utilities)
     - [`combine`](#combine)
+    - [`fromThrowable`](#fromThrowable)
+    - [`fromPromise`](#fromPromise)
+    - [`fromSafePromise`](#fromSafePromise)
   + [Testing](#testing)
 * [A note on the Package Name](#a-note-on-the-package-name)
 
@@ -900,6 +903,36 @@ function combine<T, E>(asyncResultList: ResultAsync<T, E>[]): ResultAsync<T[], E
 
 
 ---
+
+#### fromThrowable
+
+Top level export of `Result.fromThrowable`.
+
+Please find documentation at [Result.fromThrowable](#resultfromthrowable-static-class-method)
+
+[⬆️  Back to top](#toc)
+
+
+---
+
+#### fromPromise
+
+Top level export of `ResultAsync.fromPromise`.
+
+Please find documentation at [ResultAsync.fromPromise](#resultasyncfrompromise-static-class-method)
+
+[⬆️  Back to top](#toc)
+
+
+---
+
+#### fromSafePromise
+
+Top level export of `ResultAsync.fromSafePromise`.
+
+Please find documentation at [ResultAsync.fromSafePromise](#resultasyncfromsafepromise-static-class-method)
+
+[⬆️  Back to top](#toc)
 
 ### Testing
 
