@@ -150,3 +150,5 @@ export class Err<T, E> {
     return this.error
   }
 }
+
+export const fromThrowable = Result.fromThrowable

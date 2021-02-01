@@ -1,4 +1,4 @@
-import { ok, err, Ok, Err, Result, ResultAsync, okAsync, errAsync } from '../src'
+import { ok, err, Ok, Err, Result, ResultAsync, okAsync, errAsync, fromPromise, fromSafePromise, fromThrowable } from '../src'
 import { combine } from '../src/utils'
 
 describe('Result.Ok', () => {
@@ -345,6 +345,10 @@ describe('Result.fromThrowable', () => {
     expect(result.isErr()).toBe(true)
     expect(result).toBeInstanceOf(Err)
     expect(result._unsafeUnwrapErr()).toEqual({ message: 'error' })
+  })
+
+  it('has a top level export', () => {
+      expect(fromThrowable).toBe(Result.fromThrowable)
   })
 })
 
@@ -725,6 +729,10 @@ describe('ResultAsync', () => {
       expect(val.isOk()).toBe(true)
       expect(val._unsafeUnwrap()).toEqual(12)
     })
+
+    it('has a top level export', () => {
+      expect(fromSafePromise).toBe(ResultAsync.fromSafePromise)
+    })
   })
 
   describe('fromPromise', () => {
@@ -736,6 +744,10 @@ describe('ResultAsync', () => {
       const val = await res
       expect(val.isErr()).toBe(true)
       expect(val._unsafeUnwrapErr()).toEqual(Error('Oops: No!'))
+    })
+
+    it('has a top level export', () => {
+      expect(fromPromise).toBe(ResultAsync.fromPromise)
     })
   })
 

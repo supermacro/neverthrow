@@ -93,3 +93,6 @@ export const okAsync = <T, E>(value: T): ResultAsync<T, E> =>
 
 export const errAsync = <T, E>(err: E): ResultAsync<T, E> =>
   new ResultAsync(Promise.resolve(new Err<T, E>(err)))
+
+export const fromPromise = ResultAsync.fromPromise
+export const fromSafePromise = ResultAsync.fromSafePromise
