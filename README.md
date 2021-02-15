@@ -88,7 +88,10 @@ import {
   okAsync,
   errAsync,
   ResultAsync,
-  combine
+  combine,
+  fromThrowable,
+  fromPromise,
+  fromSafePromise,
 } from 'neverthrow'
 ```
 
