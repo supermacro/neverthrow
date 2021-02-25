@@ -393,6 +393,24 @@ describe('Utils', () => {
 
         expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true])
       })
+
+      it('Does not destructure / concatenate arrays', () => {
+        type HomogenousList = [
+          Result<string[], boolean>,
+          Result<number[], string>,
+        ]
+
+        const homogenousList: HomogenousList = [
+          ok(['hello', 'world']),
+          ok([1, 2, 3])
+        ]
+
+        type ExpectedResult = Result<[ string[], number[] ], boolean | string>
+
+        const result: ExpectedResult = combine(homogenousList)
+
+        expect(result._unsafeUnwrap()).toEqual([ [ 'hello', 'world' ], [ 1, 2, 3 ]])
+      })
     })
 
     describe('Async `combine`', () => {
@@ -424,19 +442,25 @@ describe('Utils', () => {
       })
 
       it('Combines heterogeneous lists', async () => {
-        type HeterogenousList = [ ResultAsync<string, string>, ResultAsync<number, number>, ResultAsync<boolean, boolean> ]
+        type HeterogenousList = [
+          ResultAsync<string, string>,
+          ResultAsync<number, number>,
+          ResultAsync<boolean, boolean>,
+          ResultAsync<number[], string>,
+        ]
 
         const heterogenousList: HeterogenousList = [
           okAsync('Yooooo'),
           okAsync(123),
           okAsync(true),
+          okAsync([ 1, 2, 3]),
         ]
 
-        type ExpecteResult = Result<[ string, number, boolean ], string | number | boolean>
+        type ExpecteResult = Result<[ string, number, boolean, number[] ], string | number | boolean>
 
-        const result: ExpecteResult= await combine(heterogenousList)
+        const result: ExpecteResult = await combine(heterogenousList)
 
-        expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true])
+        expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true, [ 1, 2, 3 ]])
       })
     })
   })
