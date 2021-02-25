@@ -21,7 +21,6 @@ type ExtractErrAsyncTypes<T extends readonly ResultAsync<unknown, unknown>[]> = 
   [idx in keyof T]: T[idx] extends ResultAsync<unknown, infer E> ? E : never
 }
 
-
 const appendValueToEndOfList = <T>(value: T) => (list: T[]): T[] => {
   // need to wrap `value` inside of an array in order to prevent
   // Array.prototype.concat from destructuring the contents of `value`
@@ -30,7 +29,7 @@ const appendValueToEndOfList = <T>(value: T) => (list: T[]): T[] => {
   // Otherwise you will receive [ 'hi', 1, 2, 3 ]
   // when you actually expected a tuple containing [ 'hi', [ 1, 2, 3 ] ]
   if (Array.isArray(value)) {
-    return list.concat([ value ])
+    return list.concat([value])
   }
 
   return list.concat(value)
