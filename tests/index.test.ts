@@ -1,5 +1,5 @@
 import { ok, err, Ok, Err, Result, ResultAsync, okAsync, errAsync, fromPromise, fromSafePromise, fromThrowable } from '../src'
-import { combine } from '../src/utils'
+import { combine, combineWithAllErrors } from '../src/utils'
 
 describe('Result.Ok', () => {
   it('Creates an Ok value', () => {
@@ -461,6 +461,66 @@ describe('Utils', () => {
         const result: ExpecteResult = await combine(heterogenousList)
 
         expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true, [ 1, 2, 3 ]])
+      })
+    })
+  })
+  describe('`combineWithAllErrors`', () => {
+    describe('Synchronous `combineWithAllErrors`', () => {
+      it('Combines a list of results into an Ok value', () => {
+        const resultList = [ok(123), ok(456), ok(789)]
+
+        const result = combineWithAllErrors(resultList)
+
+        expect(result.isOk()).toBe(true)
+        expect(result._unsafeUnwrap()).toEqual([123, 456, 789])
+      })
+
+      it('Combines a list of results into an Err value', () => {
+        const resultList: Result<number, string>[] = [
+          ok(123),
+          err('boooom!'),
+          ok(456),
+          err('ahhhhh!'),
+        ]
+
+        const result = combineWithAllErrors(resultList)
+
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toEqual(['boooom!', 'ahhhhh!'])
+      })
+
+      it('Combines heterogeneous lists', () => {
+        type HeterogenousList = [ Result<string, string>, Result<number, number>, Result<boolean, boolean> ]
+
+        const heterogenousList: HeterogenousList = [
+          ok('Yooooo'),
+          ok(123),
+          ok(true),
+        ]
+
+        type ExpecteResult = Result<[ string, number, boolean ], (string | number | boolean)[]>
+
+        const result: ExpecteResult = combineWithAllErrors(heterogenousList)
+
+        expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true])
+      })
+
+      it('Does not destructure / concatenate arrays', () => {
+        type HomogenousList = [
+          Result<string[], boolean>,
+          Result<number[], string>,
+        ]
+
+        const homogenousList: HomogenousList = [
+          ok(['hello', 'world']),
+          ok([1, 2, 3])
+        ]
+
+        type ExpectedResult = Result<[ string[], number[] ], (boolean | string)[]>
+
+        const result: ExpectedResult = combineWithAllErrors(homogenousList)
+
+        expect(result._unsafeUnwrap()).toEqual([ [ 'hello', 'world' ], [ 1, 2, 3 ]])
       })
     })
   })

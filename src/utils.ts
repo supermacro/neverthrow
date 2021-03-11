@@ -75,3 +75,29 @@ export function combine(list: any): any {
     return combineResultList(list)
   }
 }
+
+
+/**
+ * Give a list of all the errors we find
+ */
+const combineResultListWithAllErrors = <T, E>(resultList: Result<T, E>[]): Result<T[], E[]> =>
+  resultList.reduce(
+    (acc, result) =>
+      result.isErr()
+        ? acc.isErr()
+          ? err([...acc.error, result.error])
+          : err([result.error])
+        : acc.isErr()
+          ? acc
+          : ok([...acc.value, result.value]),
+    ok([]) as Result<T[], E[]>,
+  )
+
+export function combineWithAllErrors<T extends readonly Result<unknown, unknown>[]>(
+  resultList: T,
+): Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number][]>
+
+// eslint-disable-next-line
+export function combineWithAllErrors(list: any): any {
+  return combineResultListWithAllErrors(list);
+}
