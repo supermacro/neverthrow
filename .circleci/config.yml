@@ -1,7 +1,3 @@
-# TODO: learn how to reuse parts of a config yaml file to reduce
-#       code duplication
-#       i.e. restoring caches / workspaces
-
 version: 2
 jobs:
   install_deps:
