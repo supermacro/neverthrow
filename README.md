@@ -941,7 +941,7 @@ const resultList: Result<number, string>[] = [
 
 const result = combineWithAllErrors(resultList)
 
-// result it Err(['boooom!', 'ahhhhh!'])
+// result is Err(['boooom!', 'ahhhhh!'])
 ```
 
 [⬆️  Back to top](#toc)
