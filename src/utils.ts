@@ -76,7 +76,6 @@ export function combine(list: any): any {
   }
 }
 
-
 /**
  * Give a list of all the errors we find
  */
@@ -88,8 +87,8 @@ const combineResultListWithAllErrors = <T, E>(resultList: Result<T, E>[]): Resul
           ? err([...acc.error, result.error])
           : err([result.error])
         : acc.isErr()
-          ? acc
-          : ok([...acc.value, result.value]),
+        ? acc
+        : ok([...acc.value, result.value]),
     ok([]) as Result<T[], E[]>,
   )
 
@@ -99,5 +98,5 @@ export function combineWithAllErrors<T extends readonly Result<unknown, unknown>
 
 // eslint-disable-next-line
 export function combineWithAllErrors(list: any): any {
-  return combineResultListWithAllErrors(list);
+  return combineResultListWithAllErrors(list)
 }
