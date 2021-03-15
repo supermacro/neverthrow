@@ -92,11 +92,26 @@ const combineResultListWithAllErrors = <T, E>(resultList: Result<T, E>[]): Resul
     ok([]) as Result<T[], E[]>,
   )
 
+const combineResultAsyncListWithAllErrors = <T, E>(
+  asyncResultList: ResultAsync<T, E>[],
+): ResultAsync<T[], E[]> =>
+  ResultAsync.fromSafePromise(Promise.all(asyncResultList)).andThen(
+    combineResultListWithAllErrors,
+  ) as ResultAsync<T[], E[]>
+
 export function combineWithAllErrors<T extends readonly Result<unknown, unknown>[]>(
   resultList: T,
 ): Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number][]>
 
+export function combineWithAllErrors<T extends readonly ResultAsync<unknown, unknown>[]>(
+  asyncResultList: T,
+): ResultAsync<ExtractOkAsyncTypes<T>, ExtractErrAsyncTypes<T>[number][]>
+
 // eslint-disable-next-line
 export function combineWithAllErrors(list: any): any {
-  return combineResultListWithAllErrors(list)
+  if (list[0] instanceof ResultAsync) {
+    return combineResultAsyncListWithAllErrors(list)
+  } else {
+    return combineResultListWithAllErrors(list)
+  }
 }
