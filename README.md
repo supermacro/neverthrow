@@ -51,6 +51,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.match` (method)](#resultasyncmatch-method)
   + [Utilities](#utilities)
     - [`combine`](#combine)
+    - [`combineWithAllErrors`](#combineWithAllErrors)
     - [`fromThrowable`](#fromThrowable)
     - [`fromPromise`](#fromPromise)
     - [`fromSafePromise`](#fromSafePromise)
@@ -876,7 +877,7 @@ Combine lists of `Result`s or lists of `ResultAsync`s.
 
 If you're familiar with `Promise.all`, the combine function works conceptually the same.
 
-**`combine` works on both heterogeneous and homogeneous lists**. This means that you can have lists that contain different kinds of `Result`s and still be able to combine them. Note that you cannot combine lists that contain both `Result`s **and** `ResultAsync`s. 
+**`combine` works on both heterogeneous and homogeneous lists**. This means that you can have lists that contain different kinds of `Result`s and still be able to combine them. Note that you cannot combine lists that contain both `Result`s **and** `ResultAsync`s.
 
 The combine function takes a list of results and returns a single result. If all the results in the list are `Ok`, then the return value will be a `Ok` containing a list of all the individual `Ok` values.
 
@@ -900,6 +901,47 @@ Additionally, this same function also works for `ResultAsync`. And thanks to typ
 
 ```typescript
 function combine<T, E>(asyncResultList: ResultAsync<T, E>[]): ResultAsync<T[], E>
+```
+
+[⬆️  Back to top](#toc)
+
+
+---
+
+#### `combineWithAllErrors`
+
+Like `combine` but without short-circuiting. Instead of just the first error value, you get a list of all error values of the input result list.
+
+If only some results fail, the new combined error list will only contain the error value of the failed results, meaning that there is no guarantee of the length of the new error list.
+
+Like `combine`, it works for both `Result` and `ResultAsync`.
+
+Function signature:
+
+```typescript
+// homogeneous lists
+function combineWithAllErrors<T, E>(resultList: Result<T, E>[]): Result<T[], E[]>
+
+// heterogeneous lists
+function combineWithAllErrors<T1, T2, E1, E2>(resultList: [ Result<T1, E1>, Result<T2, E2> ]): Result<[ T1, T2 ], (E1 | E2)[]>
+function combineWithAllErrors<T1, T2, T3, E1, E2, E3> => Result<[ T1, T2, T3 ], (E1 | E2 | E3)[]>
+function combineWithAllErrors<T1, T2, T3, T4, E1, E2, E3, E4> => Result<[ T1, T2, T3, T4 ], (E1 | E2 | E3 | E4)[]>
+// ... etc etc ad infinitum
+```
+
+Example usage:
+
+```typescript
+const resultList: Result<number, string>[] = [
+  ok(123),
+  err('boooom!'),
+  ok(456),
+  err('ahhhhh!'),
+]
+
+const result = combineWithAllErrors(resultList)
+
+// result is Err(['boooom!', 'ahhhhh!'])
 ```
 
 [⬆️  Back to top](#toc)
