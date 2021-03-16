@@ -43,7 +43,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`errAsync`](#errasync)
     - [`ResultAsync.fromPromise` (static class method)](#resultasyncfrompromise-static-class-method)
     - [`ResultAsync.fromSafePromise` (static class method)](#resultasyncfromsafepromise-static-class-method)
-    - [`ResultAsync.map` (method)](#resultasyncmap-method)
+    - [`ResultAsync.map` (method)](#resultasyncmap-method-1)
     - [`ResultAsync.mapErr` (method)](#resultasyncmaperr-method)
     - [`ResultAsync.unwrapOr` (method)](#resultasyncunwrapor-method)
     - [`ResultAsync.andThen` (method)](#resultasyncandthen-method-1)
