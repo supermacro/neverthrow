@@ -621,6 +621,11 @@ describe('ResultAsync', () => {
       expect(allResult[0].isOk()).toBe(true)
       expect(allResult[0]._unsafeUnwrap()).toEqual('1')
     })
+
+    it('rejects if the underlying promise is rejected', () => {
+      const asyncResult = new ResultAsync(Promise.reject('oops'))
+      expect(asyncResult).rejects.toBe('oops')
+    })
   })
 
   describe('map', () => {
