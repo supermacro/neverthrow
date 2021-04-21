@@ -598,7 +598,7 @@ const res = ResultAsync.fromPromise(insertIntoDb(myUser), () => new Error('Datab
 
 #### `ResultAsync.fromSafePromise` (static class method)
 
-Same as `ResultAsync.fromPromise` except that the promise never throws, and therefore does not require an error handler. **Ensure you know what you're doing, otherwise a thrown exception within this promise will break any guarantees that neverthrow provides.**
+Same as `ResultAsync.fromPromise` except that it does not handle the rejection of the promise. **Ensure you know what you're doing, otherwise a thrown exception within this promise will cause ResultAsync to reject, instead of resolve to a Result.**
 
 
 **Signature:**
