@@ -2,7 +2,7 @@ version: 2
 jobs:
   install_deps:
     docker:
-      - image: cimg/node:14.15.4 
+      - image: cimg/node:14.17.1 
     steps:
       - checkout
       - run:
@@ -19,7 +19,7 @@ jobs:
 
   typecheck:
     docker:
-      - image: cimg/node:14.15.4
+      - image: cimg/node:14.17.1
     steps:
       - checkout
       - attach_workspace:
@@ -31,7 +31,7 @@ jobs:
       
   lint:
     docker:
-      - image: cimg/node:14.15.4
+      - image: cimg/node:14.17.1
     steps:
       - checkout
       - attach_workspace:
@@ -43,7 +43,7 @@ jobs:
 
   test:
     docker:
-      - image: cimg/node:14.15.4
+      - image: cimg/node:14.17.1
     steps:
       - checkout
       - attach_workspace:
