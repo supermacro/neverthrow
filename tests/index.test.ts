@@ -315,6 +315,19 @@ describe('Result.fromThrowable', () => {
     expect(safeResult).toBeInstanceOf(Ok)
     expect(result).toEqual(safeResult._unsafeUnwrap())
   })
+
+  // Added for issue #300 -- the test here is not so much that expectations are met as that the test compiles.
+  it('Accepts an inner function which takes arguments', () => {
+    const hello = (fname: string): string => `hello, ${fname}`;
+    const safeHello = Result.fromThrowable(hello);
+
+    const result = hello('Dikembe');
+    const safeResult = safeHello('Dikembe');
+
+    expect(safeResult).toBeInstanceOf(Ok);
+    expect(result).toEqual(safeResult._unsafeUnwrap());
+  });
+
   it('Creates a function that returns an err when the inner function throws', () => {
     const thrower = (): string => {
       throw new Error()
