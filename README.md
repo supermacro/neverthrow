@@ -597,7 +597,7 @@ The second argument handles the rejection case of the promise and maps the error
 ResultAsync.fromPromise<T, E>(
   promise: Promise<T>,
   errorHandler: (unknownError: unknown) => E)
-): ResultAsync<U, E> { ... }
+): ResultAsync<T, E> { ... }
 ```
 
 **Example**:
