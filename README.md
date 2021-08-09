@@ -4,7 +4,6 @@
 
 [![Package Size](https://badgen.net/bundlephobia/minzip/neverthrow)](https://bundlephobia.com/result?p=neverthrow)
 
-
 ## Description
 
 Encode failure into your program.
@@ -78,7 +77,6 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
 - `errAsync` convenience function to create a `ResultAsync` containing an `Err` type `Result`
 - `combine` utility function that allows you to turn `Result<T, E>[]` into `Result<T[], E>`, or a `ResultAsync<T, E>[]` into `ResultAsync<T[], E>` (just like `Promise.all`)
 
-
 ```typescript
 import {
   ok,
@@ -115,7 +113,7 @@ Constructs an `Ok` variant of `Result`
 **Signature:**
 
 ```typescript
-ok<T, E>(value:  T): Ok<T, E> { ... }
+ok<T, E>(value: T): Ok<T, E> { ... }
 ```
 
 **Example:**
@@ -140,7 +138,7 @@ Constructs an `Err` variant of `Result`
 **Signature:**
 
 ```typescript
-err<T, E>(err:  E):  Err<T, E> { ... }
+err<T, E>(error: E): Err<T, E> { ... }
 ```
 
 **Example:**
@@ -195,8 +193,9 @@ This function can be used to compose the results of two functions.
 **Signature:**
 
 ```typescript
-type MapFunc = <T, U>(f: T) => U
-map<U>(fn: MapFunc):  Result<U, E> { ... }
+class Result<T, E> {
+  map<U>(callback: (value: T) => U): Result<U, E> { ... }
+}
 ```
 
 **Example**:
@@ -232,8 +231,9 @@ This function can be used to pass through a successful result while handling an 
 **Signature:**
 
 ```typescript
-type MapFunc = <E>(e: E) => F
-mapErr<U>(fn: MapFunc):  Result<T, F> { ... }
+class Result<T, E> {
+  mapErr<F>(callback: (error: E) => F): Result<T, F> { ... }
+}
 ```
 
 **Example**:
@@ -267,7 +267,9 @@ Unwrap the `Ok` value, or return the default if there is an `Err`
 **Signature:**
 
 ```typescript
-unwrapOr<T>(v: T): T { ... }
+class Result<T, E> {
+  unwrapOr<T>(value: T): T { ... }
+}
 ```
 
 **Example**:
@@ -275,7 +277,7 @@ unwrapOr<T>(v: T): T { ... }
 ```typescript
 const myResult = err('Oh noooo')
 
-const multiply = (val: number): number => val * 2
+const multiply = (value: number): number => value * 2
 
 const unwrapped: number = myResult.map(multiply).unwrapOr(10)
 ```
@@ -301,7 +303,9 @@ class Result<T, E> {
   // Note that the latest version lets you return distinct errors as well.
   // If the error types (E and F) are the same (like `string | string`)
   // then they will be merged into one type (`string`)
-  andThen<U, F>(fn: (val: T) => Result<U, F>): Result<U, E | F> { ... }
+  andThen<U, F>(
+    callback: (value: T) => Result<U, F>
+  ): Result<U, E | F> { ... }
 }
 ```
 
@@ -336,7 +340,7 @@ err(3)
 const nested = ok(ok(1234))
 
 // notNested is a Ok(1234)
-const notNested = nested.andThen(innerResult => innerResult)
+const notNested = nested.andThen((innerResult) => innerResult)
 ```
 
 [⬆️  Back to top](#toc)
@@ -353,7 +357,9 @@ The returned value will be a `ResultAsync`.
 
 ```typescript
 class Result<T, E> {
-  asyncAndThen<U, F>(fn: (val: T) => ResultAsync<U, F>): ResultAsync<U, E | F> { ... }
+  asyncAndThen<U, F>(
+    callback: (value: T) => ResultAsync<U, F>
+  ): ResultAsync<U, E | F> { ... }
 }
 ```
 
@@ -368,8 +374,11 @@ Takes an `Err` value and maps it to a `Result<T, SomeNewType>`. This is useful f
 **Signature:**
 
 ```typescript
-type ErrorCallback = <A>(e:  E) => Result<T, A>
-orElse<A>(f: ErrorCallback<A>): Result<T, A> { ... }
+class Result<T, E> {
+  orElse<A>(
+    callback: (error: E) => Result<T, A>
+  ): Result<T, A> { ... }
+}
 ```
 
 **Example:**
@@ -382,7 +391,7 @@ enum DatabaseError {
 
 const dbQueryResult: Result<string, DatabaseError> = err(DatabaseError.NotFound)
 
-const updatedQueryResult = dbQueryResult.orElse(dbError =>
+const updatedQueryResult = dbQueryResult.orElse((dbError) =>
   dbError === DatabaseError.NotFound
     ? ok('User does not exist') // error recovery branch: ok() must be called with a value of type string
     //
@@ -399,7 +408,6 @@ const updatedQueryResult = dbQueryResult.orElse(dbError =>
 
 ---
 
-
 #### `Result.match` (method)
 
 Given 2 functions (one for the `Ok` variant and one for the `Err` variant) execute the function that matches the `Result` variant.
@@ -409,10 +417,12 @@ Match callbacks do not necessitate to return a `Result`, however you can return 
 **Signature:**
 
 ```typescript
-match<A>(
-  okFn: (t: T) =>  A,
-  errFn: (e: E) =>  A
-): A => { ... }
+class Result<T, E> {
+  match<A>(
+    okCallback: (value: T) =>  A,
+    errorCallback: (error: E) =>  A
+  ): A => { ... }
+}
 ```
 
 `match` is like chaining `map` and `mapErr`, with the distinction that with `match` both functions must have the same return type.
@@ -458,8 +468,11 @@ You can then chain the result of `asyncMap` using the `ResultAsync` apis (like `
 **Signature:**
 
 ```typescript
-type MappingFunc = (t: T) => Promise<U>
-asyncMap<U>(fn: MappingFunc):  ResultAsync<U, E> { ... }
+class Result<T, E> {
+  asyncMap<U>(
+    callback: (value: T) => Promise<U>
+  ): ResultAsync<U, E> { ... }
+}
 ```
 
 **Example:**
@@ -486,7 +499,7 @@ Note that in the above example if `parseHeaders` returns an `Err` then `.map` an
 
 The JavaScript community has agreed on the convention of throwing exceptions.
 As such, when interfacing with third party libraries it's imperative that you
-wrap third-party code in try / catch  blocks.
+wrap third-party code in try / catch blocks.
 
 This function will create a new function that returns an `Err` when the original
 function throws.
@@ -501,7 +514,7 @@ map what is thrown to a known type.
 import { Result } from 'neverthrow'
 
 type ParseError = { message: string }
-const toParseError = (): ParseError => ({message: "Parse Error" })
+const toParseError = (): ParseError => ({ message: "Parse Error" })
 
 const safeJsonParse = Result.fromThrowable(JSON.parse, toParseError)
 
@@ -537,7 +550,7 @@ const myResult = await myResultAsync // instance of `Ok`
 myResult.isOk() // true
 myResult.isErr() // false
 ```
-  
+
 [⬆️  Back to top](#toc)
 
 ---
@@ -549,7 +562,7 @@ Constructs an `Err` variant of `ResultAsync`
 **Signature:**
 
 ```typescript
-errAsync<T, E>(err:  E):  ResultAsync<T, E>
+errAsync<T, E>(error: E): ResultAsync<T, E>
 ```
 
 **Example:**
@@ -578,7 +591,13 @@ The second argument handles the rejection case of the promise and maps the error
 **Signature:**
 
 ```typescript
-fromPromise<U, E>(p: Promise<U>, f: (e: unknown) => E):  ResultAsync<U, E> { ... }
+// fromPromise is a static class method
+// also available as a standalone function
+// import { fromPromise } from 'neverthrow'
+ResultAsync.fromPromise<T, E>(
+  promise: Promise<T>,
+  errorHandler: (unknownError: unknown) => E)
+): ResultAsync<T, E> { ... }
 ```
 
 **Example**:
@@ -589,7 +608,7 @@ import { insertIntoDb } from 'imaginary-database'
 // insertIntoDb(user: User): Promise<User>
 
 const res = ResultAsync.fromPromise(insertIntoDb(myUser), () => new Error('Database error'))
-// res has a type of ResultAsync<User, Error>
+// `res` has a type of ResultAsync<User, Error>
 ```
 
 [⬆️  Back to top](#toc)
@@ -600,11 +619,15 @@ const res = ResultAsync.fromPromise(insertIntoDb(myUser), () => new Error('Datab
 
 Same as `ResultAsync.fromPromise` except that it does not handle the rejection of the promise. **Ensure you know what you're doing, otherwise a thrown exception within this promise will cause ResultAsync to reject, instead of resolve to a Result.**
 
-
 **Signature:**
 
 ```typescript
-fromSafePromise<T, E>(p: Promise<T>):  ResultAsync<T, E> { ... }
+// fromPromise is a static class method
+// also available as a standalone function
+// import { fromPromise } from 'neverthrow'
+ResultAsync.fromSafePromise<T, E>(
+  promise: Promise<T>
+): ResultAsync<T, E> { ... }
 ```
 
 **Example**:
@@ -614,11 +637,11 @@ import { RouteError } from 'routes/error'
 
 // simulate slow routes in an http server that works in a Result / ResultAsync context
 // Adopted from https://github.com/parlez-vous/server/blob/2496bacf55a2acbebc30631b5562f34272794d76/src/routes/common/signup.ts
-export const slowDown = <T>(ms: number) => (val: T) =>
+export const slowDown = <T>(ms: number) => (value: T) =>
   ResultAsync.fromSafePromise<T, RouteError>(
     new Promise((resolve) => {
       setTimeout(() => {
-        resolve(val)
+        resolve(value)
       }, ms)
     })
   )
@@ -649,8 +672,11 @@ This function can be used to compose the results of two functions.
 **Signature:**
 
 ```typescript
-type MapFunc = <T>(f: T | Promise<T>) => U
-map<U>(fn: MapFunc):  ResultAsync<U, E> { ... }
+class ResultAsync<T, E> {
+  map<U>(
+    callback: (value: T) => U | Promise<U>
+  ): ResultAsync<U, E> { ... }
+}
 ```
 
 **Example**:
@@ -692,8 +718,11 @@ This function can be used to pass through a successful result while handling an 
 **Signature:**
 
 ```typescript
-type MapFunc = <E>(e: E) => F | Promise<F>
-mapErr<U>(fn: MapFunc):  ResultAsync<T, F> { ... }
+class ResultAsync<T, E> {
+  mapErr<F>(
+    callback: (error: E) => F | Promise<F>
+  ): ResultAsync<T, F> { ... }
+}
 ```
 
 **Example**:
@@ -704,10 +733,10 @@ const { findUsersIn } from 'imaginary-database'
 // findUsersIn(country: string): ResultAsync<Array<User>, Error>
 
 // Let's say we need to low-level errors from findUsersIn to be more readable
-const usersInCanada = findUsersIn("Canada").mapErr((e: Error) => {
+const usersInCanada = findUsersIn("Canada").mapErr((error: Error) => {
   // The only error we want to pass to the user is "Unknown country"
-  if(e.message === "Unknown country"){
-    return e.message
+  if(error.message === "Unknown country"){
+    return error.message
   }
   // All other errors will be labelled as a system error
   return "System error, please contact an administrator."
@@ -741,7 +770,9 @@ Works just like `Result.unwrapOr` but returns a `Promise<T>` instead of `T`.
 **Signature:**
 
 ```typescript
-unwrapOr<T>(v: T):  Promise<T> { ... }
+class ResultAsync<T, E> {
+  unwrapOr<T>(value: T): Promise<T> { ... }
+}
 ```
 
 **Example**:
@@ -768,14 +799,14 @@ This is useful for when you need to do a subsequent computation using the inner 
 **Signature:**
 
 ```typescript
-type AndThenFunc = (t:  T) => ResultAsync<U, E> | Result<U, E>
-andThen<U>(f: AndThenFunc): ResultAsync<U, E> { ... }
+// Note that the latest version (v4.1.0-beta) lets you return distinct errors as well.
+// If the error types (E and F) are the same (like `string | string`)
+// then they will be merged into one type (`string`)
 
 class ResultAsync<T, E> {
-  // Note that the latest version (v4.1.0-beta) lets you return distinct errors as well.
-  // If the error types (E and F) are the same (like `string | string`)
-  // then they will be merged into one type (`string`)
-  andThen<U, F>(f: (t: T) => Result<U, F> | ResultAsync<U, F>): ResultAsync<U, E | F> { ... }
+  andThen<U, F>(
+    callback: (value: T) => Result<U, F> | ResultAsync<U, F>
+  ): ResultAsync<U, E | F> { ... }
 }
 ```
 
@@ -810,8 +841,7 @@ resAsync.then((res: Result<void, Error>) => {
 
 [⬆️  Back to top](#toc)
 
---- 
-
+---
 
 #### `ResultAsync.orElse` (method)
 
@@ -820,8 +850,11 @@ Takes an `Err` value and maps it to a `ResultAsync<T, SomeNewType>`. This is use
 **Signature:**
 
 ```typescript
-type ErrorCallback = <A>(e:  E) => Result<T, A> | ResultAsync<T, A>
-orElse<A>(f: ErrorCallback<A>): ResultAsync<T, A> { ... }
+class ResultAsync<T, E> {
+  orElse<A>(
+    callback: (error: E) => Result<T, A> | ResultAsync<T, A>
+  ): ResultAsync<T, A> { ... }
+}
 ```
 
 [⬆️  Back to top](#toc)
@@ -837,10 +870,12 @@ The difference with `Result.match` is that it always returns a `Promise` because
 **Signature:**
 
 ```typescript
-match<A>(
-  okFn: (t:  T) =>  A,
-  errFn: (e:  E) =>  A
-): Promise<A> => { ... }
+class ResultAsync<T, E> {
+  match<A>(
+    okCallback: (value: T) =>  A,
+    errorCallback: (error: E) =>  A
+  ): Promise<A> => { ... }
+}
 ```
 
 **Example:**
@@ -859,7 +894,7 @@ const resultMessage = await validateUser(user)
         .andThen(insertUser)
         .match(
             (user: User) => `User ${user.name} has been successfully created`,
-            (e: Error) =>  `User could not be created because ${e.message}`
+            (error: Error) =>  `User could not be created because ${error.message}`
         )
 
 // resultMessage is a string
@@ -981,7 +1016,7 @@ Please find documentation at [ResultAsync.fromSafePromise](#resultasyncfromsafep
 
 ### Testing
 
-`Result` instances have two unsafe methods, aptly called `_unsafeUnwrap` and `_unsafeUnwrapErr` which **should only be used in a test environment**. 
+`Result` instances have two unsafe methods, aptly called `_unsafeUnwrap` and `_unsafeUnwrapErr` which **should only be used in a test environment**.
 
 `_unsafeUnwrap` takes a `Result<T, E>` and returns a `T` when the result is an `Ok`, otherwise it throws a custom object.
 
@@ -1013,14 +1048,11 @@ _unsafeUnwrapErr({
 // ^ Now the error object will have a `.stack` property containing the current stack
 ```
 
-
 ---
-
 
 If you find this package useful, please consider [sponsoring me](https://github.com/sponsors/supermacro/) or simply [buying me a coffee](https://ko-fi.com/gdelgado)!
 
 ---
-
 
 ## A note on the Package Name
 
