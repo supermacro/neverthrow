@@ -232,7 +232,7 @@ This function can be used to pass through a successful result while handling an 
 
 ```typescript
 class Result<T, E> {
-  mapErr<U>(callback: (error: E) => F): Result<T, F> { ... }
+  mapErr<F>(callback: (error: E) => F): Result<T, F> { ... }
 }
 ```
 
@@ -591,12 +591,13 @@ The second argument handles the rejection case of the promise and maps the error
 **Signature:**
 
 ```typescript
-class ResultAsync<T, E> {
-  fromPromise<U, E>(
-    promise: Promise<U>,
-    callback: (unknownError: unknown) => E)
-  ): ResultAsync<U, E> { ... }
-}
+// fromPromise is a static class method
+// also available as a standalone function
+// import { fromPromise } from 'neverthrow'
+ResultAsync.fromPromise<T, E>(
+  promise: Promise<T>,
+  errorHandler: (unknownError: unknown) => E)
+): ResultAsync<U, E> { ... }
 ```
 
 **Example**:
@@ -621,11 +622,12 @@ Same as `ResultAsync.fromPromise` except that it does not handle the rejection o
 **Signature:**
 
 ```typescript
-class ResultAsync<T, E> {
-  fromSafePromise<T, E>(
-    promise: Promise<T>
-  ): ResultAsync<T, E> { ... }
-}
+// fromPromise is a static class method
+// also available as a standalone function
+// import { fromPromise } from 'neverthrow'
+ResultAsync.fromSafePromise<T, E>(
+  promise: Promise<T>
+): ResultAsync<T, E> { ... }
 ```
 
 **Example**:
@@ -795,14 +797,6 @@ This is useful for when you need to do a subsequent computation using the inner 
 `andThen` is really useful as a tool to flatten a `ResultAsync<ResultAsync<A, E2>, E1>` into a `ResultAsync<A, E2>` (see example below).
 
 **Signature:**
-
-```typescript
-class ResultAsync<T, E> {
-  andThen<U>(
-    callback: (value: T) => Result<U, E> | ResultAsync<U, E>
-  ): ResultAsync<U, E> { ... }
-}
-```
 
 ```typescript
 // Note that the latest version (v4.1.0-beta) lets you return distinct errors as well.
