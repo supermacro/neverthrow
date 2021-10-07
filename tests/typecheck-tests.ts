@@ -37,6 +37,62 @@ import { ok, err, okAsync, errAsync, Result, ResultAsync } from '../src'
       const result: Expectation = ok<number, MyError>(123)
         .andThen((val) => err<string, string[]>(['oh nooooo']))
     });
+
+    (function it(_ = 'Infers error type when returning disjoint types (native scalar types)') {
+      type Expectation = Result<unknown, string | number | boolean>
+
+      const result: Expectation = ok<number, string>(123)
+        .andThen((val) => {
+          switch (val) {
+            case 1:
+              return err('yoooooo dude' + val)
+            case 2:
+              return err(123)
+            default:
+              return err(false)
+          }
+        })
+    });
+
+    (function it(_ = 'Infers error type when returning disjoint types (custom types)') {
+      interface MyError { 
+        stack: string
+        code: number
+      }
+      type Expectation = Result<unknown, string | number | MyError>
+
+      const result: Expectation = ok<number, string>(123)
+        .andThen((val) => {
+          switch (val) {
+            case 1:
+              return err('yoooooo dude' + val)
+            case 2:
+              return err(123)
+            default:
+              return err({ stack: '/blah', code: 500 })
+          }
+        })
+    });
+
+    (function it(_ = 'Infers both error and ok type when returning both (scalar types)') {
+      interface MyError { 
+        stack: string
+        code: number
+      }
+      type Expectation = Result<number, string | number | MyError>
+
+      const result: Expectation = ok<number, string>(123)
+        .andThen((val) => {
+          switch (val) {
+            case 1:
+              return err('yoooooo dude' + val)
+            case 2:
+              return ok(123)
+            default:
+              return err({ stack: '/blah', code: 500 })
+          }
+        })
+    });
   });
 
   (function describe(_ = 'asyncAndThen') {
