@@ -27,9 +27,17 @@ export namespace Result {
 }
 export type Result<T, E> = Ok<T, E> | Err<T, E>
 
-export const ok = <T, E>(value: T): Ok<T, E> => new Ok(value)
+export const ok = <T, E = never>(value: T): Ok<T, E> => new Ok(value)
 
-export const err = <T, E>(err: E): Err<T, E> => new Err(err)
+export const err = <T = never, E = unknown>(err: E): Err<T, E> => new Err(err)
+
+type InferOkTypes<R extends Result<unknown, unknown>> = R extends Result<infer T, unknown>
+  ? T
+  : unknown
+
+type InferErrTypes<R extends Result<unknown, unknown>> = R extends Result<unknown, infer E>
+  ? E
+  : unknown
 
 interface IResult<T, E> {
   /**
@@ -77,7 +85,9 @@ interface IResult<T, E> {
    *
    * @param f The function to apply to the current value
    */
-  andThen<U, F>(f: (t: T) => Result<U, F>): Result<U, E | F>
+  andThen<R extends Result<unknown, unknown>>(
+    f: (t: T) => R,
+  ): Result<InferOkTypes<R>, InferErrTypes<R> | E>
 
   /**
    * Takes an `Err` value and maps it to a `Result<T, SomeNewType>`.
@@ -172,8 +182,11 @@ export class Ok<T, E> implements IResult<T, E> {
   mapErr<U>(_f: (e: E) => U): Result<T, U> {
     return ok(this.value)
   }
-  andThen<U, F>(f: (t: T) => Result<U, F>): Result<U, E | F> {
-    return f(this.value)
+  andThen<R extends Result<unknown, unknown>>(
+    f: (t: T) => R,
+  ): Result<InferOkTypes<R>, InferErrTypes<R> | E> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return f(this.value) as any
   }
 
   orElse<A>(_f: (e: E) => Result<T, A>): Result<T, A> {
@@ -228,8 +241,11 @@ export class Err<T, E> implements IResult<T, E> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  andThen<U, F>(_f: (t: T) => Result<U, F>): Result<U, E | F> {
-    return err(this.error)
+  andThen<R extends Result<unknown, unknown>>(
+    _f: (t: T) => R,
+  ): Result<InferOkTypes<R>, InferErrTypes<R> | E> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return err(this.error) as any
   }
 
   orElse<A>(f: (e: E) => Result<T, A>): Result<T, A> {
