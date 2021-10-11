@@ -124,6 +124,67 @@ import { ok, err, okAsync, errAsync, Result, ResultAsync } from '../src'
     });
   });
 
+  (function describe(_ = 'orElse') {
+    (function it(_ = 'the type of the argument is the error type of the result') {
+      type Expectation = string
+
+      const result = ok<number, string>(123)
+        .orElse((val: Expectation) => {
+          switch (val) {
+            case '2':
+              return err(1)
+            default:
+              return err(1)
+          }
+        })
+    });
+
+
+    (function it(_ = 'infers the err return type with multiple returns (same type) ') {
+      type Expectation = Result<number, number>
+
+      const result: Expectation = ok<number, string>(123)
+        .orElse((val) => {
+          switch (val) {
+            case '2':
+              return err(1)
+            default:
+              return err(1)
+          }
+        })
+    });
+
+    (function it(_ = 'infers the err return type with multiple returns (different type) ') {
+      type Expectation = Result<number, number | string>
+
+      const result: Expectation = ok<number, string>(123)
+        .orElse((val) => {
+          switch (val) {
+            case '2':
+              return err(1)
+            default:
+              return err('1')
+          }
+        })
+    });
+
+    (function it(_ = 'infers ok and err return types with multiple returns ') {
+      type Expectation = Result<number, number | string>
+
+      const result: Expectation = ok<number, string>(123)
+        .orElse((val) => {
+          switch (val) {
+            case '1':
+              return ok(1)
+            case '2':
+              return err(1)
+            default:
+              return err('1')
+          }
+        })
+    });
+  });
+
   (function describe(_ = 'asyncAndThen') {
     (function it(_ = 'Combines two equal error types (native scalar types)') {
       type Expectation = ResultAsync<unknown, string>
@@ -382,6 +443,83 @@ import { ok, err, okAsync, errAsync, Result, ResultAsync } from '../src'
             }
           })
       });
+    });
+  });
+
+  (function describe(_ = 'orElse') {
+    (function it(_ = 'the type of the argument is the error type of the result') {
+      type Expectation = string
+
+      const result = okAsync<number, string>(123)
+        .orElse((val: Expectation) => {
+          switch (val) {
+            case '2':
+              return errAsync(1)
+            default:
+              return errAsync(1)
+          }
+        })
+    });
+
+
+    (function it(_ = 'infers the err return type with multiple returns (same type) ') {
+      type Expectation = ResultAsync<number, number>
+
+      const result: Expectation = okAsync<number, string>(123)
+        .orElse((val) => {
+          switch (val) {
+            case '2':
+              return errAsync(1)
+            default:
+              return errAsync(1)
+          }
+        })
+    });
+
+    (function it(_ = 'infers the err return type with multiple returns (different type) ') {
+      type Expectation = ResultAsync<number, number | string>
+
+      const result: Expectation = okAsync<number, string>(123)
+        .orElse((val) => {
+          switch (val) {
+            case '2':
+              return errAsync(1)
+            default:
+              return errAsync('1')
+          }
+        })
+    });
+
+    (function it(_ = 'infers ok and err return types with multiple returns ') {
+      type Expectation = ResultAsync<number, number | string>
+
+      const result: Expectation = okAsync<number, string>(123)
+        .orElse((val) => {
+          switch (val) {
+            case '1':
+              return okAsync(1)
+            case '2':
+              return errAsync(1)
+            default:
+              return errAsync('1')
+          }
+        })
+    });
+
+    (function it(_ = 'allows specifying ok and err return types when mixing Result and ResultAsync in returns ') {
+      type Expectation = ResultAsync<number, number | string>
+
+      const result: Expectation = okAsync<number, string>(123)
+        .orElse<number | string>((val) => {
+          switch (val) {
+            case '1':
+              return ok(1)
+            case '2':
+              return errAsync(1)
+            default:
+              return errAsync('1')
+          }
+        })
     });
   });
 });

@@ -91,7 +91,8 @@ interface IResult<T, E> {
    * @param f  A function to apply to an `Err` value, leaving `Ok` values
    * untouched.
    */
-  orElse<A>(f: (e: E) => Result<T, A>): Result<T, A>
+  orElse<R extends Result<unknown, unknown>>(f: (e: E) => R): Result<T, InferErrTypes<R>>
+  // orElse<A>(f: (e: E) => Result<T, A>): Result<T, A>
 
   /**
    * Similar to `map` Except you must return a new `Result`.
@@ -182,7 +183,7 @@ export class Ok<T, E> implements IResult<T, E> {
     return f(this.value) as any
   }
 
-  orElse<A>(_f: (e: E) => Result<T, A>): Result<T, A> {
+  orElse<R extends Result<unknown, unknown>>(_f: (e: E) => R): Result<T, InferErrTypes<R>> {
     return ok(this.value)
   }
 
@@ -241,8 +242,9 @@ export class Err<T, E> implements IResult<T, E> {
     return err(this.error) as any
   }
 
-  orElse<A>(f: (e: E) => Result<T, A>): Result<T, A> {
-    return f(this.error)
+  orElse<R extends Result<unknown, unknown>>(f: (e: E) => R): Result<T, InferErrTypes<R>> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return f(this.error) as any
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
