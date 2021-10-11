@@ -1,4 +1,5 @@
 import { ResultAsync, errAsync } from './'
+import { InferOkTypes, InferErrTypes } from './utils'
 import { createNeverThrowError, ErrorConfig } from './_internals/error'
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -30,14 +31,6 @@ export type Result<T, E> = Ok<T, E> | Err<T, E>
 export const ok = <T, E = never>(value: T): Ok<T, E> => new Ok(value)
 
 export const err = <T = never, E = unknown>(err: E): Err<T, E> => new Err(err)
-
-type InferOkTypes<R extends Result<unknown, unknown>> = R extends Result<infer T, unknown>
-  ? T
-  : unknown
-
-type InferErrTypes<R extends Result<unknown, unknown>> = R extends Result<unknown, infer E>
-  ? E
-  : unknown
 
 interface IResult<T, E> {
   /**

@@ -74,13 +74,42 @@ import { ok, err, okAsync, errAsync, Result, ResultAsync } from '../src'
         })
     });
 
-    (function it(_ = 'Infers both error and ok type when returning both (scalar types)') {
+    (function it(_ = 'Infers new ok type when returning both Ok and Err (same as initial)') {
+      type Expectation = Result<number, unknown>
+
+      const result: Expectation = ok<number, string>(123)
+        .andThen((val) => {
+          switch (val) {
+            case 1:
+              return err('yoooooo dude' + val)
+            default:
+              return ok(val + 456)
+          }
+        })
+    });
+
+    (function it(_ = 'Infers new ok type when returning both Ok and Err (different from initial)') {
+      const initial = ok<number, string>(123)
+      type Expectation = Result<string, unknown>
+
+      const result: Expectation = initial
+        .andThen((val) => {
+          switch (val) {
+            case 1:
+              return err('yoooooo dude' + val)
+            default:
+              return ok(val + ' string')
+          }
+        })
+    });
+
+    (function it(_ = 'Infers new err type when returning both Ok and Err') {
       interface MyError { 
         stack: string
         code: number
       }
-      type Expectation = Result<number, string | number | MyError>
-
+      type Expectation = Result<unknown, string | number | MyError>
+  
       const result: Expectation = ok<number, string>(123)
         .andThen((val) => {
           switch (val) {
@@ -161,6 +190,198 @@ import { ok, err, okAsync, errAsync, Result, ResultAsync } from '../src'
 
       const result: Expectation = okAsync<number, MyError>(123)
         .andThen((val) => err<string, string[]>(['oh nooooo']))
+    });
+
+    (function describe(_ = 'when returning Result types') {
+      (function it(_ = 'Infers error type when returning disjoint types (native scalar types)') {
+        type Expectation = ResultAsync<unknown, string | number | boolean>
+  
+        const result: Expectation = okAsync<number, string>(123)
+          .andThen((val) => {
+            switch (val) {
+              case 1:
+                return err('yoooooo dude' + val)
+              case 2:
+                return err(123)
+              default:
+                return err(false)
+            }
+          })
+      });
+  
+      (function it(_ = 'Infers error type when returning disjoint types (custom types)') {
+        interface MyError { 
+          stack: string
+          code: number
+        }
+        type Expectation = ResultAsync<unknown, string | number | MyError>
+  
+        const result: Expectation = okAsync<number, string>(123)
+          .andThen((val) => {
+            switch (val) {
+              case 1:
+                return err('yoooooo dude' + val)
+              case 2:
+                return err(123)
+              default:
+                return err({ stack: '/blah', code: 500 })
+            }
+          })
+      });
+  
+      (function it(_ = 'Infers new ok type when returning both Ok and Err (same as initial)') {
+        type Expectation = ResultAsync<number, unknown>
+  
+        const result: Expectation = okAsync<number, string>(123)
+          .andThen((val) => {
+            switch (val) {
+              case 1:
+                return err('yoooooo dude' + val)
+              default:
+                return ok(val + 456)
+            }
+          })
+      });
+  
+      (function it(_ = 'Infers new ok type when returning both Ok and Err (different from initial)') {
+        const initial = okAsync<number, string>(123)
+        type Expectation = ResultAsync<string, unknown>
+  
+        const result: Expectation = initial
+          .andThen((val) => {
+            switch (val) {
+              case 1:
+                return err('yoooooo dude' + val)
+              default:
+                return ok(val + ' string')
+            }
+          })
+      });
+  
+      (function it(_ = 'Infers new err type when returning both Ok and Err') {
+        interface MyError { 
+          stack: string
+          code: number
+        }
+        type Expectation = ResultAsync<unknown, string | number | MyError>
+    
+        const result: Expectation = okAsync<number, string>(123)
+          .andThen((val) => {
+            switch (val) {
+              case 1:
+                return err('yoooooo dude' + val)
+              case 2:
+                return ok(123)
+              default:
+                return err({ stack: '/blah', code: 500 })
+            }
+          })
+      });
+    });
+
+    (function describe(_ = 'when returning ResultAsync types') {
+      (function it(_ = 'Infers error type when returning disjoint types (native scalar types)') {
+        type Expectation = ResultAsync<unknown, string | number | boolean>
+  
+        const result: Expectation = okAsync<number, string>(123)
+          .andThen((val) => {
+            switch (val) {
+              case 1:
+                return errAsync('yoooooo dude' + val)
+              case 2:
+                return errAsync(123)
+              default:
+                return errAsync(false)
+            }
+          })
+      });
+  
+      (function it(_ = 'Infers error type when returning disjoint types (custom types)') {
+        interface MyError { 
+          stack: string
+          code: number
+        }
+        type Expectation = ResultAsync<unknown, string | number | MyError>
+  
+        const result: Expectation = okAsync<number, string>(123)
+          .andThen((val) => {
+            switch (val) {
+              case 1:
+                return errAsync('yoooooo dude' + val)
+              case 2:
+                return errAsync(123)
+              default:
+                return errAsync({ stack: '/blah', code: 500 })
+            }
+          })
+      });
+  
+      (function it(_ = 'Infers new ok type when returning both Ok and Err (same as initial)') {
+        type Expectation = ResultAsync<number, unknown>
+  
+        const result: Expectation = okAsync<number, string>(123)
+          .andThen((val) => {
+            switch (val) {
+              case 1:
+                return errAsync('yoooooo dude' + val)
+              default:
+                return okAsync(val + 456)
+            }
+          })
+      });
+  
+      (function it(_ = 'Infers new ok type when returning both Ok and Err (different from initial)') {
+        const initial = okAsync<number, string>(123)
+        type Expectation = ResultAsync<string, unknown>
+  
+        const result: Expectation = initial
+          .andThen((val) => {
+            switch (val) {
+              case 1:
+                return errAsync('yoooooo dude' + val)
+              default:
+                return okAsync(val + ' string')
+            }
+          })
+      });
+  
+      (function it(_ = 'Infers new err type when returning both Ok and Err') {
+        interface MyError { 
+          stack: string
+          code: number
+        }
+        type Expectation = ResultAsync<unknown, string | number | MyError>
+    
+        const result: Expectation = okAsync<number, string>(123)
+          .andThen((val) => {
+            switch (val) {
+              case 1:
+                return errAsync('yoooooo dude' + val)
+              case 2:
+                return okAsync(123)
+              default:
+                return errAsync({ stack: '/blah', code: 500 })
+            }
+          })
+      });
+    });
+
+    (function describe(_ = 'when returning a mix of Result and ResultAsync types') {
+      (function it(_ = 'allows for explicitly specifying the Ok and Err types when inference fails') {
+        type Expectation = ResultAsync<number | boolean, string | number | boolean>
+  
+        const result: Expectation = okAsync<number, string>(123)
+          .andThen<number | boolean, string | number | boolean>((val) => {
+            switch (val) {
+              case 1:
+                return errAsync('yoooooo dude' + val)
+              case 2:
+                return err(123)
+              default:
+                return okAsync(false)
+            }
+          })
+      });
     });
   });
 });
