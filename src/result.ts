@@ -81,6 +81,7 @@ interface IResult<T, E> {
   andThen<R extends Result<unknown, unknown>>(
     f: (t: T) => R,
   ): Result<InferOkTypes<R>, InferErrTypes<R> | E>
+  andThen<U, F>(f: (t: T) => Result<U, F>): Result<U, E | F>
 
   /**
    * Takes an `Err` value and maps it to a `Result<T, SomeNewType>`.
@@ -92,7 +93,7 @@ interface IResult<T, E> {
    * untouched.
    */
   orElse<R extends Result<unknown, unknown>>(f: (e: E) => R): Result<T, InferErrTypes<R>>
-  // orElse<A>(f: (e: E) => Result<T, A>): Result<T, A>
+  orElse<A>(f: (e: E) => Result<T, A>): Result<T, A>
 
   /**
    * Similar to `map` Except you must return a new `Result`.
@@ -176,14 +177,20 @@ export class Ok<T, E> implements IResult<T, E> {
   mapErr<U>(_f: (e: E) => U): Result<T, U> {
     return ok(this.value)
   }
+
   andThen<R extends Result<unknown, unknown>>(
     f: (t: T) => R,
-  ): Result<InferOkTypes<R>, InferErrTypes<R> | E> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return f(this.value) as any
+  ): Result<InferOkTypes<R>, InferErrTypes<R> | E>
+  andThen<U, F>(f: (t: T) => Result<U, F>): Result<U, E | F>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  andThen(f: any): any {
+    return f(this.value)
   }
 
-  orElse<R extends Result<unknown, unknown>>(_f: (e: E) => R): Result<T, InferErrTypes<R>> {
+  orElse<R extends Result<unknown, unknown>>(_f: (e: E) => R): Result<T, InferErrTypes<R>>
+  orElse<A>(_f: (e: E) => Result<T, A>): Result<T, A>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  orElse(_f: any): any {
     return ok(this.value)
   }
 
@@ -234,17 +241,20 @@ export class Err<T, E> implements IResult<T, E> {
     return err(f(this.error))
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   andThen<R extends Result<unknown, unknown>>(
     _f: (t: T) => R,
-  ): Result<InferOkTypes<R>, InferErrTypes<R> | E> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return err(this.error) as any
+  ): Result<InferOkTypes<R>, InferErrTypes<R> | E>
+  andThen<U, F>(_f: (t: T) => Result<U, F>): Result<U, E | F>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  andThen(_f: any): any {
+    return err(this.error)
   }
 
-  orElse<R extends Result<unknown, unknown>>(f: (e: E) => R): Result<T, InferErrTypes<R>> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return f(this.error) as any
+  orElse<R extends Result<unknown, unknown>>(f: (e: E) => R): Result<T, InferErrTypes<R>>
+  orElse<A>(f: (e: E) => Result<T, A>): Result<T, A>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  orElse(f: any): any {
+    return f(this.error)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

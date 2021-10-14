@@ -122,6 +122,14 @@ import { ok, err, okAsync, errAsync, Result, ResultAsync } from '../src'
           }
         })
     });
+
+    (function it(_ = 'allows specifying the E and T types explicitly') {
+      type Expectation = Result<'yo', number>
+
+      const result: Expectation = ok(123).andThen<'yo', number>(val => {
+        return ok('yo')
+      })
+    });
   });
 
   (function describe(_ = 'orElse') {
@@ -182,6 +190,14 @@ import { ok, err, okAsync, errAsync, Result, ResultAsync } from '../src'
               return err('1')
           }
         })
+    });
+
+    (function it(_ = 'allows specifying the E and T types explicitly') {
+      type Expectation = Result<'yo', string>
+
+      const result: Expectation = ok<'yo', number>('yo').orElse<string>(val => {
+        return err('yo')
+      })
     });
   });
 
