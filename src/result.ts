@@ -115,7 +115,7 @@ interface IResult<T, E> {
    *
    * @param v the default value to return if there is an `Err`
    */
-  unwrapOr(v: T): T
+  unwrapOr<A>(v: A): T | A
 
   /**
    *
@@ -189,7 +189,7 @@ export class Ok<T, E> implements IResult<T, E> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  unwrapOr(_v: T): T {
+  unwrapOr<A>(_v: A): T | A {
     return this.value
   }
 
@@ -246,7 +246,7 @@ export class Err<T, E> implements IResult<T, E> {
     return errAsync<U, E>(this.error)
   }
 
-  unwrapOr(v: T): T {
+  unwrapOr<A>(v: A): T | A {
     return v
   }
 
