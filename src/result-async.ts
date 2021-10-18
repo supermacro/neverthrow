@@ -1,3 +1,4 @@
+import { InferOkTypes, InferErrTypes, InferAsyncOkTypes, InferAsyncErrTypes } from './utils'
 import { Result, Ok, Err } from './'
 
 export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
@@ -45,28 +46,40 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     )
   }
 
-  andThen<U, F>(f: (t: T) => Result<U, F> | ResultAsync<U, F>): ResultAsync<U, E | F> {
+
+  andThen<R extends Result<unknown, unknown>>(
+    f: (t: T) => R,
+  ): ResultAsync<InferOkTypes<R>, InferErrTypes<R> | E>
+  andThen<R extends ResultAsync<unknown, unknown>>(
+    f: (t: T) => R,
+  ): ResultAsync<InferAsyncOkTypes<R>, InferAsyncErrTypes<R> | E>
+  andThen<U, F>(f: (t: T) => Result<U, F> | ResultAsync<U, F>): ResultAsync<U, E | F>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  andThen(f: any): any {
     return new ResultAsync(
       this._promise.then((res) => {
         if (res.isErr()) {
-          return new Err<U, E>(res.error)
+          return new Err<never, E>(res.error)
         }
 
         const newValue = f(res.value)
-
         return newValue instanceof ResultAsync ? newValue._promise : newValue
       }),
     )
   }
 
-  orElse<A>(f: (e: E) => Result<T, A> | ResultAsync<T, A>): ResultAsync<T, A> {
+  orElse<R extends Result<T, unknown>>(f: (e: E) => R): ResultAsync<T, InferErrTypes<R>>
+  orElse<R extends ResultAsync<T, unknown>>(f: (e: E) => R): ResultAsync<T, InferAsyncErrTypes<R>>
+  orElse<A>(f: (e: E) => Result<T, A> | ResultAsync<T, A>): ResultAsync<T, A>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  orElse(f: any): any {
     return new ResultAsync(
       this._promise.then(async (res: Result<T, E>) => {
         if (res.isErr()) {
           return f(res.error)
         }
 
-        return new Ok<T, A>(res.value)
+        return new Ok<T, unknown>(res.value)
       }),
     )
   }
@@ -88,10 +101,10 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   }
 }
 
-export const okAsync = <T, E>(value: T): ResultAsync<T, E> =>
+export const okAsync = <T, E = never>(value: T): ResultAsync<T, E> =>
   new ResultAsync(Promise.resolve(new Ok<T, E>(value)))
 
-export const errAsync = <T, E>(err: E): ResultAsync<T, E> =>
+export const errAsync = <T = never, E = unknown>(err: E): ResultAsync<T, E> =>
   new ResultAsync(Promise.resolve(new Err<T, E>(err)))
 
 export const fromPromise = ResultAsync.fromPromise
