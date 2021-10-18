@@ -212,7 +212,7 @@ describe('Result.Err', () => {
   })
 
   it('unwrapOr and return the default value', () => {
-    const okVal = err('Oh nooo')
+    const okVal = err<number, string>('Oh nooo')
     expect(okVal.unwrapOr(1)).toEqual(1)
   })
 
@@ -856,7 +856,7 @@ describe('ResultAsync', () => {
     })
 
     it('returns a promise to the provided default value on an Error', async () => {
-      const unwrapped = await errAsync(12).unwrapOr(10)
+      const unwrapped = await errAsync<number, number>(12).unwrapOr(10)
       expect(unwrapped).toBe(10)
     })
   })

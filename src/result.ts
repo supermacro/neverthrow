@@ -1,4 +1,5 @@
 import { ResultAsync, errAsync } from './'
+import { InferOkTypes, InferErrTypes } from './utils'
 import { createNeverThrowError, ErrorConfig } from './_internals/error'
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -27,9 +28,9 @@ export namespace Result {
 }
 export type Result<T, E> = Ok<T, E> | Err<T, E>
 
-export const ok = <T, E>(value: T): Ok<T, E> => new Ok(value)
+export const ok = <T, E = never>(value: T): Ok<T, E> => new Ok(value)
 
-export const err = <T, E>(err: E): Err<T, E> => new Err(err)
+export const err = <T = never, E = unknown>(err: E): Err<T, E> => new Err(err)
 
 interface IResult<T, E> {
   /**
@@ -77,6 +78,9 @@ interface IResult<T, E> {
    *
    * @param f The function to apply to the current value
    */
+  andThen<R extends Result<unknown, unknown>>(
+    f: (t: T) => R,
+  ): Result<InferOkTypes<R>, InferErrTypes<R> | E>
   andThen<U, F>(f: (t: T) => Result<U, F>): Result<U, E | F>
 
   /**
@@ -88,6 +92,7 @@ interface IResult<T, E> {
    * @param f  A function to apply to an `Err` value, leaving `Ok` values
    * untouched.
    */
+  orElse<R extends Result<unknown, unknown>>(f: (e: E) => R): Result<T, InferErrTypes<R>>
   orElse<A>(f: (e: E) => Result<T, A>): Result<T, A>
 
   /**
@@ -172,11 +177,20 @@ export class Ok<T, E> implements IResult<T, E> {
   mapErr<U>(_f: (e: E) => U): Result<T, U> {
     return ok(this.value)
   }
-  andThen<U, F>(f: (t: T) => Result<U, F>): Result<U, E | F> {
+
+  andThen<R extends Result<unknown, unknown>>(
+    f: (t: T) => R,
+  ): Result<InferOkTypes<R>, InferErrTypes<R> | E>
+  andThen<U, F>(f: (t: T) => Result<U, F>): Result<U, E | F>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  andThen(f: any): any {
     return f(this.value)
   }
 
-  orElse<A>(_f: (e: E) => Result<T, A>): Result<T, A> {
+  orElse<R extends Result<unknown, unknown>>(_f: (e: E) => R): Result<T, InferErrTypes<R>>
+  orElse<A>(_f: (e: E) => Result<T, A>): Result<T, A>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  orElse(_f: any): any {
     return ok(this.value)
   }
 
@@ -227,12 +241,19 @@ export class Err<T, E> implements IResult<T, E> {
     return err(f(this.error))
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  andThen<U, F>(_f: (t: T) => Result<U, F>): Result<U, E | F> {
+  andThen<R extends Result<unknown, unknown>>(
+    _f: (t: T) => R,
+  ): Result<InferOkTypes<R>, InferErrTypes<R> | E>
+  andThen<U, F>(_f: (t: T) => Result<U, F>): Result<U, E | F>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  andThen(_f: any): any {
     return err(this.error)
   }
 
-  orElse<A>(f: (e: E) => Result<T, A>): Result<T, A> {
+  orElse<R extends Result<unknown, unknown>>(f: (e: E) => R): Result<T, InferErrTypes<R>>
+  orElse<A>(f: (e: E) => Result<T, A>): Result<T, A>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  orElse(f: any): any {
     return f(this.error)
   }
 

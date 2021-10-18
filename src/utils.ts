@@ -21,6 +21,12 @@ type ExtractErrAsyncTypes<T extends readonly ResultAsync<unknown, unknown>[]> = 
   [idx in keyof T]: T[idx] extends ResultAsync<unknown, infer E> ? E : never
 }
 
+export type InferOkTypes<R> = R extends Result<infer T, unknown> ? T : never
+export type InferErrTypes<R> = R extends Result<unknown, infer E> ? E : never
+
+export type InferAsyncOkTypes<R> = R extends ResultAsync<infer T, unknown> ? T : never
+export type InferAsyncErrTypes<R> = R extends ResultAsync<unknown, infer E> ? E : never
+
 const appendValueToEndOfList = <T>(value: T) => (list: T[]): T[] => {
   // need to wrap `value` inside of an array in order to prevent
   // Array.prototype.concat from destructuring the contents of `value`
