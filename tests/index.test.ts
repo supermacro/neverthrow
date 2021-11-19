@@ -1,4 +1,5 @@
 import { ok, err, Ok, Err, Result, ResultAsync, okAsync, errAsync, fromPromise, fromSafePromise, fromThrowable } from '../src'
+import * as td from 'testdouble'
 import { combine, combineWithAllErrors } from '../src/utils'
 
 describe('Result.Ok', () => {
@@ -574,6 +575,27 @@ describe('Utils', () => {
         const result: ExpecteResult = await combineWithAllErrors(heterogenousList)
 
         expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true])
+      })
+    })
+
+    describe('testdouble `combine`', () => {
+      interface ITestInterface {
+        getName(): string
+        setName(name: string): void
+        getAsyncResult(): ResultAsync<ITestInterface, Error>
+      }
+
+      it('Combines `testdouble` proxies from mocks generated via interfaces', async () => {
+        const mock = td.object<ITestInterface>()
+
+        const result = await combine([okAsync(mock)] as const)
+
+        expect(result).toBeDefined()
+        expect(result.isErr()).toBeFalsy()
+        const unwrappedResult = result._unsafeUnwrap()
+
+        expect(unwrappedResult.length).toBe(1)
+        expect(unwrappedResult[0]).toBe(mock)
       })
     })
   })

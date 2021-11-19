@@ -27,19 +27,7 @@ export type InferErrTypes<R> = R extends Result<unknown, infer E> ? E : never
 export type InferAsyncOkTypes<R> = R extends ResultAsync<infer T, unknown> ? T : never
 export type InferAsyncErrTypes<R> = R extends ResultAsync<unknown, infer E> ? E : never
 
-const appendValueToEndOfList = <T>(value: T) => (list: T[]): T[] => {
-  // need to wrap `value` inside of an array in order to prevent
-  // Array.prototype.concat from destructuring the contents of `value`
-  // into `list`.
-  //
-  // Otherwise you will receive [ 'hi', 1, 2, 3 ]
-  // when you actually expected a tuple containing [ 'hi', [ 1, 2, 3 ] ]
-  if (Array.isArray(value)) {
-    return list.concat([value])
-  }
-
-  return list.concat(value)
-}
+const appendValueToEndOfList = <T>(value: T) => (list: T[]): T[] => [...list, value]
 
 /**
  * Short circuits on the FIRST Err value that we find
