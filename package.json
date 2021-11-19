@@ -39,7 +39,7 @@
     "jest": "27.0.6",
     "prettier": "2.2.1",
     "rollup": "2.52.7",
-    "rollup-plugin-dts": "3.0.1",
+    "rollup-plugin-dts": "4.0.1",
     "rollup-plugin-typescript2": "0.29.0",
     "testdouble": "^3.16.3",
     "ts-jest": "27.0.3",
