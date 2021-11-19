@@ -1,6 +1,7 @@
 # NeverThrow 🙅
 
-[![Build Status](https://travis-ci.com/supermacro/neverthrow.svg?branch=master)](https://travis-ci.com/supermacro/neverthrow)
+[![supermacro](https://circleci.com/gh/supermacro/neverthrow.svg?style=svg)](https://app.circleci.com/pipelines/github/supermacro/neverthrow)
+
 
 [![Package Size](https://badgen.net/bundlephobia/minzip/neverthrow)](https://bundlephobia.com/result?p=neverthrow)
 
