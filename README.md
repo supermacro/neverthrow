@@ -21,6 +21,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
 ## Table Of Contents
 
 * [Installation](#installation)
+* [Recommended: Use `eslint-plugin-neverthrow`](#recommended-use-eslint-plugin-neverthrow)
 * [Top-Level API](#top-level-api)
 * [API Documentation](#api-documentation)
   + [Synchronous API (`Result`)](#synchronous-api-result)
@@ -62,6 +63,27 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
 ```sh
 > npm install neverthrow
 ```
+
+## Recommended: Use `eslint-plugin-neverthrow`
+
+As part of `neverthrow`s [bounty program](https://github.com/supermacro/neverthrow/issues/314), user [mdbetancourt](https://github.com/mdbetancourt) created `eslint-plugin-neverthrow` to ensure that errors are not gone unhandled.
+
+Install by running:
+
+```sh
+> npm install eslint-plugin-neverthrow
+```
+
+With `eslint-plugin-neverthrow`, you are forced to consume the result in one of the following three ways:
+
+- Calling `.match`
+- Calling `.unwrapOr`
+- Calling `._unsafeUnwrap`
+
+This ensures that you're explicitly handling the error of your `Result`.
+
+This plugin is essentially a porting of Rust's [`must-use`](https://doc.rust-lang.org/std/result/#results-must-be-used) attribute. 
+
 
 ## Top-Level API
 
