@@ -449,31 +449,52 @@ class Result<T, E> {
 ```
 
 `match` is like chaining `map` and `mapErr`, with the distinction that with `match` both functions must have the same return type.
+The differences between `match` and chaining `map` and `mapErr` are that:
+- with `match` both functions must have the same return type `A`
+- `match` unwraps the `Result<T, E>` into an `A` (the match functions' return type)
+  - This makes no difference if you are performing side effects only
 
 **Example:**
 
 ```typescript
-const result = computationThatMightFail()
-
-const successCallback = (someNumber: number) => {
-  console.log('> number is: ', someNumber)
-}
-
-const failureCallback = (someFailureValue: string) => {
-  console.log('> boooooo')
-}
-
-// method chaining api
-// note that you DONT have to append mapErr
+// map/mapErr api
+// note that you DON'T have to append mapErr
 // after map which means that you are not required to do
 // error handling
-result.map(successCallback).mapErr(failureCallback)
+computationThatMightFail().map(console.log).mapErr(console.error)
 
 // match api
-// works exactly the same as above,
+// works exactly the same as above since both callbacks
+// only perform side effects,
 // except, now you HAVE to do error handling :)
-myval.match(successCallback, failureCallback)
+computationThatMightFail().match(console.log, console.error)
+
+// Returning values
+const attempt = computationThatMightFail()
+  .map((str) => str.toUpperCase())
+  .mapErr((err) => `Error: ${err}`)
+// `attempt` is of type `Result<string, string>`
+
+const answer = computationThatMightFail().match(
+  (str) => str.toUpperCase(),
+  (err) => `Error: ${err}`
+)
+// `answer` is of type `string`
 ```
+
+If you don't use the error parameter in your match callback then `match` is equivalent to chaining `map` with `unwrapOr`:
+```ts
+const answer = computationThatMightFail().match(
+  (str) => str.toUpperCase(),
+  () => 'ComputationError'
+)
+// `answer` is of type `string`
+
+const answer = computationThatMightFail()
+  .map((str) => str.toUpperCase())
+  .unwrapOr('ComputationError')
+```
+
 
 [⬆️  Back to top](#toc)
 
