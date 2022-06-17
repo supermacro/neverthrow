@@ -1,4 +1,10 @@
-import { InferOkTypes, InferErrTypes, InferAsyncOkTypes, InferAsyncErrTypes } from './utils'
+import {
+  InferOkTypes,
+  InferErrTypes,
+  InferAsyncOkTypes,
+  InferAsyncErrTypes,
+  SoundPromise,
+} from './utils'
 import { Result, Ok, Err } from './'
 
 export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
@@ -6,6 +12,10 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
 
   constructor(res: Promise<Result<T, E>>) {
     this._promise = res
+  }
+
+  static fromSoundPromise<T, E>(promise: SoundPromise<T, E>): ResultAsync<T, E> {
+    return new ResultAsync(promise)
   }
 
   static fromSafePromise<T, E>(promise: Promise<T>): ResultAsync<T, E> {
