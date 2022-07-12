@@ -39,6 +39,8 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.match` (method)](#resultmatch-method)
     - [`Result.asyncMap` (method)](#resultasyncmap-method)
     - [`Result.fromThrowable` (static class method)](#resultfromthrowable-static-class-method)
+    - [`Result.combine` (static class method)](#resultcombine-static-class-method)
+    - [`Result.combineWithAllErrors` (static class method)](#resultcombinewithallerrorsr-static-class-method)
   + [Asynchronous API (`ResultAsync`)](#asynchronous-api-resultasync)
     - [`okAsync`](#okasync)
     - [`errAsync`](#errasync)
@@ -50,12 +52,6 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.andThen` (method)](#resultasyncandthen-method-1)
     - [`ResultAsync.orElse` (method)](#resultasyncorelse-method)
     - [`ResultAsync.match` (method)](#resultasyncmatch-method)
-  + [Utilities](#utilities)
-    - [`combine`](#combine)
-    - [`combineWithAllErrors`](#combineWithAllErrors)
-    - [`fromThrowable`](#fromThrowable)
-    - [`fromPromise`](#fromPromise)
-    - [`fromSafePromise`](#fromSafePromise)
   + [Testing](#testing)
 * [A note on the Package Name](#a-note-on-the-package-name)
 
@@ -94,11 +90,10 @@ This plugin is essentially a porting of Rust's [`must-use`](https://doc.rust-lan
 - `err` convenience function to create an `Err` variant of `Result`
 - `Ok` class and type
 - `Err` class and type
-- `Result` Type as well as namespace / object from which to call [`Result.fromThrowable`](#resultfromthrowable-static-class-method)
+- `Result` Type as well as namespace / object from which to call [`Result.fromThrowable`](#resultfromthrowable-static-class-method), [Result.combine](#resultcombine-static-class-method).
 - `ResultAsync` class
 - `okAsync` convenience function to create a `ResultAsync` containing an `Ok` type `Result`
 - `errAsync` convenience function to create a `ResultAsync` containing an `Err` type `Result`
-- `combine` utility function that allows you to turn `Result<T, E>[]` into `Result<T[], E>`, or a `ResultAsync<T, E>[]` into `ResultAsync<T[], E>` (just like `Promise.all`)
 
 ```typescript
 import {
@@ -110,7 +105,6 @@ import {
   okAsync,
   errAsync,
   ResultAsync,
-  combine,
   fromThrowable,
   fromPromise,
   fromSafePromise,
@@ -570,6 +564,99 @@ const res = safeJsonParse("{");
 
 ---
 
+#### `Result.combine` (static class method)
+
+> Although Result is not an actual JS class, the way that `combine` has been implemented requires that you call `combine` as though it were a static method on `Result`. See examples below.
+
+Combine lists of `Result`s.
+
+If you're familiar with `Promise.all`, the combine function works conceptually the same.
+
+**`combine` works on both heterogeneous and homogeneous lists**. This means that you can have lists that contain different kinds of `Result`s and still be able to combine them. Note that you cannot combine lists that contain both `Result`s **and** `ResultAsync`s.
+
+The combine function takes a list of results and returns a single result. If all the results in the list are `Ok`, then the return value will be a `Ok` containing a list of all the individual `Ok` values.
+
+If just one of the results in the list is an `Err` then the combine function returns that Err value (it short circuits and returns the first Err that it finds).
+
+Formally speaking:
+
+```typescript
+// homogeneous lists
+function combine<T, E>(resultList: Result<T, E>[]): Result<T[], E>
+
+// heterogeneous lists
+function combine<T1, T2, E1, E2>(resultList: [ Result<T1, E1>, Result<T2, E2> ]): Result<[ T1, T2 ], E1 | E2>
+function combine<T1, T2, T3, E1, E2, E3> => Result<[ T1, T2, T3 ], E1 | E2 | E3>
+function combine<T1, T2, T3, T4, E1, E2, E3, E4> => Result<[ T1, T2, T3, T4 ], E1 | E2 | E3 | E4>
+// ... etc etc ad infinitum
+
+```
+
+Example:
+```typescript
+const resultList: Result<number, never>[] =
+  [ok(1), ok(2)]
+
+const combinedList: Result<number[], unknown> =
+  Result.combine(resultList)
+```
+
+Example with tuples:
+```typescript
+/** @example tuple(1, 2, 3) === [1, 2, 3] // with type [number, number, number] */
+const tuple = <T extends any[]>(...args: T): T => args
+
+const resultTuple: [Result<string, never>, Result<string, never>] =
+  tuple(ok('a'), ok('b'))
+
+const combinedTuple: Result<[string, string], unknown> =
+  Result.combine(resultTuple)
+```
+
+[⬆️  Back to top](#toc)
+
+---
+
+#### `Result.combineWithAllErrors` (static class method)
+
+> Although Result is not an actual JS class, the way that `combineWithAllErrors` has been implemented requires that you call `combineWithAllErrors` as though it were a static method on `Result`. See examples below.
+
+Like `combine` but without short-circuiting. Instead of just the first error value, you get a list of all error values of the input result list.
+
+If only some results fail, the new combined error list will only contain the error value of the failed results, meaning that there is no guarantee of the length of the new error list.
+
+Function signature:
+
+```typescript
+// homogeneous lists
+function combineWithAllErrors<T, E>(resultList: Result<T, E>[]): Result<T[], E[]>
+
+// heterogeneous lists
+function combineWithAllErrors<T1, T2, E1, E2>(resultList: [ Result<T1, E1>, Result<T2, E2> ]): Result<[ T1, T2 ], (E1 | E2)[]>
+function combineWithAllErrors<T1, T2, T3, E1, E2, E3> => Result<[ T1, T2, T3 ], (E1 | E2 | E3)[]>
+function combineWithAllErrors<T1, T2, T3, T4, E1, E2, E3, E4> => Result<[ T1, T2, T3, T4 ], (E1 | E2 | E3 | E4)[]>
+// ... etc etc ad infinitum
+```
+
+Example usage:
+
+```typescript
+const resultList: Result<number, string>[] = [
+  ok(123),
+  err('boooom!'),
+  ok(456),
+  err('ahhhhh!'),
+]
+
+const result = Result.combineWithAllErrors(resultList)
+
+// result is Err(['boooom!', 'ahhhhh!'])
+```
+
+[⬆️  Back to top](#toc)
+
+---
+
 ### Asynchronous API (`ResultAsync`)
 
 #### `okAsync`
@@ -631,6 +718,7 @@ myResult.isErr() // true
 Transforms a `Promise<T>` that may throw into a `ResultAsync<T, E>`.
 
 The second argument handles the rejection case of the promise and maps the error from `unknown` into some type `E`.
+
 
 **Signature:**
 
@@ -948,15 +1036,13 @@ const resultMessage = await validateUser(user)
 
 ---
 
-### Utilities
+#### `ResultAsync.combine` (static class method)
 
-#### `combine`
-
-Combine lists of `Result`s or lists of `ResultAsync`s.
+Combine lists of `ResultAsync`s.
 
 If you're familiar with `Promise.all`, the combine function works conceptually the same.
 
-**`combine` works on both heterogeneous and homogeneous lists**. This means that you can have lists that contain different kinds of `Result`s and still be able to combine them. Note that you cannot combine lists that contain both `Result`s **and** `ResultAsync`s.
+**`combine` works on both heterogeneous and homogeneous lists**. This means that you can have lists that contain different kinds of `ResultAsync`s and still be able to combine them. Note that you cannot combine lists that contain both `Result`s **and** `ResultAsync`s.
 
 The combine function takes a list of results and returns a single result. If all the results in the list are `Ok`, then the return value will be a `Ok` containing a list of all the individual `Ok` values.
 
@@ -966,97 +1052,73 @@ Formally speaking:
 
 ```typescript
 // homogeneous lists
-function combine<T, E>(resultList: Result<T, E>[]): Result<T[], E>
+function combine<T, E>(resultList: ResultAsync<T, E>[]): ResultAsync<T[], E>
 
 // heterogeneous lists
-function combine<T1, T2, E1, E2>(resultList: [ Result<T1, E1>, Result<T2, E2> ]): Result<[ T1, T2 ], E1 | E2>
-function combine<T1, T2, T3, E1, E2, E3> => Result<[ T1, T2, T3 ], E1 | E2 | E3>
-function combine<T1, T2, T3, T4, E1, E2, E3, E4> => Result<[ T1, T2, T3, T4 ], E1 | E2 | E3 | E4>
+function combine<T1, T2, E1, E2>(resultList: [ ResultAsync<T1, E1>, ResultAsync<T2, E2> ]): ResultAsync<[ T1, T2 ], E1 | E2>
+function combine<T1, T2, T3, E1, E2, E3> => ResultAsync<[ T1, T2, T3 ], E1 | E2 | E3>
+function combine<T1, T2, T3, T4, E1, E2, E3, E4> => ResultAsync<[ T1, T2, T3, T4 ], E1 | E2 | E3 | E4>
 // ... etc etc ad infinitum
 
 ```
 
-Additionally, this same function also works for `ResultAsync`. And thanks to typescript function overloading, the types can be distinguished.
-
+Example:
 ```typescript
-function combine<T, E>(asyncResultList: ResultAsync<T, E>[]): ResultAsync<T[], E>
+const resultList: ResultAsync<number, never>[] =
+  [okAsync(1), okAsync(2)]
+
+const combinedList: ResultAsync<number[], unknown> =
+  ResultAsync.combine(resultList)
 ```
 
-[⬆️  Back to top](#toc)
+Example with tuples:
+```typescript
+/** @example tuple(1, 2, 3) === [1, 2, 3] // with type [number, number, number] */
+const tuple = <T extends any[]>(...args: T): T => args
 
+const resultTuple: [ResultAsync<string, never>, ResultAsync<string, never>] =
+  tuple(okAsync('a'), okAsync('b'))
+
+const combinedTuple: ResultAsync<[string, string], unknown> =
+  ResultAsync.combine(resultTuple)
+```
+[⬆️  Back to top](#toc)
 
 ---
 
-#### `combineWithAllErrors`
+#### `ResultAsync.combineWithAllErrors` (static class method)
 
 Like `combine` but without short-circuiting. Instead of just the first error value, you get a list of all error values of the input result list.
 
 If only some results fail, the new combined error list will only contain the error value of the failed results, meaning that there is no guarantee of the length of the new error list.
 
-Like `combine`, it works for both `Result` and `ResultAsync`.
-
 Function signature:
 
 ```typescript
 // homogeneous lists
-function combineWithAllErrors<T, E>(resultList: Result<T, E>[]): Result<T[], E[]>
+function combineWithAllErrors<T, E>(resultList: ResultAsync<T, E>[]): ResultAsync<T[], E[]>
 
 // heterogeneous lists
-function combineWithAllErrors<T1, T2, E1, E2>(resultList: [ Result<T1, E1>, Result<T2, E2> ]): Result<[ T1, T2 ], (E1 | E2)[]>
-function combineWithAllErrors<T1, T2, T3, E1, E2, E3> => Result<[ T1, T2, T3 ], (E1 | E2 | E3)[]>
-function combineWithAllErrors<T1, T2, T3, T4, E1, E2, E3, E4> => Result<[ T1, T2, T3, T4 ], (E1 | E2 | E3 | E4)[]>
+function combineWithAllErrors<T1, T2, E1, E2>(resultList: [ ResultAsync<T1, E1>, ResultAsync<T2, E2> ]): ResultAsync<[ T1, T2 ], (E1 | E2)[]>
+function combineWithAllErrors<T1, T2, T3, E1, E2, E3> => ResultAsync<[ T1, T2, T3 ], (E1 | E2 | E3)[]>
+function combineWithAllErrors<T1, T2, T3, T4, E1, E2, E3, E4> => ResultAsync<[ T1, T2, T3, T4 ], (E1 | E2 | E3 | E4)[]>
 // ... etc etc ad infinitum
 ```
 
 Example usage:
 
 ```typescript
-const resultList: Result<number, string>[] = [
-  ok(123),
-  err('boooom!'),
-  ok(456),
-  err('ahhhhh!'),
+const resultList: ResultAsync<number, string>[] = [
+  okAsync(123),
+  errAsync('boooom!'),
+  okAsync(456),
+  errAsync('ahhhhh!'),
 ]
 
-const result = combineWithAllErrors(resultList)
+const result = ResultAsync.combineWithAllErrors(resultList)
 
 // result is Err(['boooom!', 'ahhhhh!'])
 ```
-
-[⬆️  Back to top](#toc)
-
-
----
-
-#### fromThrowable
-
-Top level export of `Result.fromThrowable`.
-
-Please find documentation at [Result.fromThrowable](#resultfromthrowable-static-class-method)
-
-[⬆️  Back to top](#toc)
-
-
----
-
-#### fromPromise
-
-Top level export of `ResultAsync.fromPromise`.
-
-Please find documentation at [ResultAsync.fromPromise](#resultasyncfrompromise-static-class-method)
-
-[⬆️  Back to top](#toc)
-
-
----
-
-#### fromSafePromise
-
-Top level export of `ResultAsync.fromSafePromise`.
-
-Please find documentation at [ResultAsync.fromSafePromise](#resultasyncfromsafepromise-static-class-method)
-
-[⬆️  Back to top](#toc)
 
 ### Testing
 
