@@ -6,7 +6,7 @@ import {
   ExtractOkAsyncTypes,
   ExtractErrAsyncTypes,
   combineResultAsyncList,
-  combineResultAsyncListWithAllErrors
+  combineResultAsyncListWithAllErrors,
 } from './_internals/utils'
 import { Result, Ok, Err } from './'
 
