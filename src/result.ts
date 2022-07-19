@@ -36,18 +36,13 @@ export namespace Result {
   export function combine<T extends readonly Result<unknown, unknown>[]>(
     resultList: T,
   ): Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number]> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (combineResultList(resultList as any) as any) as Result<
-      ExtractOkTypes<T>,
-      ExtractErrTypes<T>[number]
-    >
+    return combineResultList(resultList) as Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number]>
   }
 
   export function combineWithAllErrors<T extends readonly Result<unknown, unknown>[]>(
     resultList: T,
   ): Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number][]> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (combineResultListWithAllErrors(resultList as any) as any) as Result<
+    return combineResultListWithAllErrors(resultList) as Result<
       ExtractOkTypes<T>,
       ExtractErrTypes<T>[number][]
     >

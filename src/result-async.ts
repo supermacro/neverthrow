@@ -17,12 +17,14 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     this._promise = res
   }
 
+  static fromSafePromise<T, E>(promise: PromiseLike<T>): ResultAsync<T, E>
   static fromSafePromise<T, E>(promise: Promise<T>): ResultAsync<T, E> {
     const newPromise = promise.then((value: T) => new Ok<T, E>(value))
 
     return new ResultAsync(newPromise)
   }
 
+  static fromPromise<T, E>(promise: PromiseLike<T>, errorFn: (e: unknown) => E): ResultAsync<T, E>
   static fromPromise<T, E>(promise: Promise<T>, errorFn: (e: unknown) => E): ResultAsync<T, E> {
     const newPromise = promise
       .then((value: T) => new Ok<T, E>(value))
@@ -34,8 +36,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   static combine<T extends readonly ResultAsync<unknown, unknown>[]>(
     asyncResultList: T,
   ): ResultAsync<ExtractOkAsyncTypes<T>, ExtractErrAsyncTypes<T>[number]> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (combineResultAsyncList(asyncResultList as any) as any) as ResultAsync<
+    return combineResultAsyncList(asyncResultList) as ResultAsync<
       ExtractOkAsyncTypes<T>,
       ExtractErrAsyncTypes<T>[number]
     >
@@ -44,8 +45,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   static combineWithAllErrors<T extends readonly ResultAsync<unknown, unknown>[]>(
     asyncResultList: T,
   ): ResultAsync<ExtractOkAsyncTypes<T>, ExtractErrAsyncTypes<T>[number][]> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (combineResultAsyncListWithAllErrors(asyncResultList as any) as any) as ResultAsync<
+    return combineResultAsyncListWithAllErrors(asyncResultList) as ResultAsync<
       ExtractOkAsyncTypes<T>,
       ExtractErrAsyncTypes<T>[number][]
     >

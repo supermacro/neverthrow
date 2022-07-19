@@ -715,7 +715,7 @@ myResult.isErr() // true
 
 #### `ResultAsync.fromPromise` (static class method)
 
-Transforms a `Promise<T>` that may throw into a `ResultAsync<T, E>`.
+Transforms a `PromiseLike<T>` (that may throw) into a `ResultAsync<T, E>`.
 
 The second argument handles the rejection case of the promise and maps the error from `unknown` into some type `E`.
 
@@ -727,10 +727,12 @@ The second argument handles the rejection case of the promise and maps the error
 // also available as a standalone function
 // import { fromPromise } from 'neverthrow'
 ResultAsync.fromPromise<T, E>(
-  promise: Promise<T>,
+  promise: PromiseLike<T>,
   errorHandler: (unknownError: unknown) => E)
 ): ResultAsync<T, E> { ... }
 ```
+
+If you are working with `PromiseLike` objects that you **know for a fact** will not throw, then use `fromSafePromise` in order to avoid having to pass a redundant `errorHandler` argument.
 
 **Example**:
 
@@ -758,7 +760,7 @@ Same as `ResultAsync.fromPromise` except that it does not handle the rejection o
 // also available as a standalone function
 // import { fromPromise } from 'neverthrow'
 ResultAsync.fromSafePromise<T, E>(
-  promise: Promise<T>
+  promise: PromiseLike<T>
 ): ResultAsync<T, E> { ... }
 ```
 
