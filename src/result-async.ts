@@ -1,4 +1,13 @@
-import { InferOkTypes, InferErrTypes, InferAsyncOkTypes, InferAsyncErrTypes } from './utils'
+import {
+  InferOkTypes,
+  InferErrTypes,
+  InferAsyncOkTypes,
+  InferAsyncErrTypes,
+  ExtractOkAsyncTypes,
+  ExtractErrAsyncTypes,
+  combineResultAsyncList,
+  combineResultAsyncListWithAllErrors,
+} from './_internals/utils'
 import { Result, Ok, Err } from './'
 
 export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
@@ -22,6 +31,24 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
       .catch((e) => new Err<T, E>(errorFn(e)))
 
     return new ResultAsync(newPromise)
+  }
+
+  static combine<T extends readonly ResultAsync<unknown, unknown>[]>(
+    asyncResultList: T,
+  ): ResultAsync<ExtractOkAsyncTypes<T>, ExtractErrAsyncTypes<T>[number]> {
+    return combineResultAsyncList(asyncResultList) as ResultAsync<
+      ExtractOkAsyncTypes<T>,
+      ExtractErrAsyncTypes<T>[number]
+    >
+  }
+
+  static combineWithAllErrors<T extends readonly ResultAsync<unknown, unknown>[]>(
+    asyncResultList: T,
+  ): ResultAsync<ExtractOkAsyncTypes<T>, ExtractErrAsyncTypes<T>[number][]> {
+    return combineResultAsyncListWithAllErrors(asyncResultList) as ResultAsync<
+      ExtractOkAsyncTypes<T>,
+      ExtractErrAsyncTypes<T>[number][]
+    >
   }
 
   map<A>(f: (t: T) => A | Promise<A>): ResultAsync<A, E> {
