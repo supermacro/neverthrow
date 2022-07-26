@@ -1141,6 +1141,39 @@ const result = ResultAsync.combineWithAllErrors(resultList)
 // result is Err(['boooom!', 'ahhhhh!'])
 ```
 
+
+---
+
+#### fromThrowable
+
+Top level export of `Result.fromThrowable`.
+
+Please find documentation at [Result.fromThrowable](#resultfromthrowable-static-class-method)
+
+[⬆️  Back to top](#toc)
+
+
+---
+
+#### fromPromise
+
+Top level export of `ResultAsync.fromPromise`.
+
+Please find documentation at [ResultAsync.fromPromise](#resultasyncfrompromise-static-class-method)
+
+[⬆️  Back to top](#toc)
+
+
+---
+
+#### fromSafePromise
+
+Top level export of `ResultAsync.fromSafePromise`.
+
+Please find documentation at [ResultAsync.fromSafePromise](#resultasyncfromsafepromise-static-class-method)
+
+[⬆️  Back to top](#toc)
+
 ### Testing
 
 `Result` instances have two unsafe methods, aptly called `_unsafeUnwrap` and `_unsafeUnwrapErr` which **should only be used in a test environment**.
