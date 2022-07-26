@@ -52,6 +52,10 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.andThen` (method)](#resultasyncandthen-method-1)
     - [`ResultAsync.orElse` (method)](#resultasyncorelse-method)
     - [`ResultAsync.match` (method)](#resultasyncmatch-method)
+  + [Utilities](#utilities)
+    - [`fromThrowable`](#fromThrowable)
+    - [`fromPromise`](#fromPromise)
+    - [`fromSafePromise`](#fromSafePromise)
   + [Testing](#testing)
 * [A note on the Package Name](#a-note-on-the-package-name)
 
@@ -653,7 +657,22 @@ const result = Result.combineWithAllErrors(resultList)
 // result is Err(['boooom!', 'ahhhhh!'])
 ```
 
+[[⬆️  Back to top](#toc)
+---
+#### fromThrowable
+Top level export of `Result.fromThrowable`.
+Please find documentation at [Result.fromThrowable](#resultfromthrowable-static-class-method)
 [⬆️  Back to top](#toc)
+---
+#### fromPromise
+Top level export of `ResultAsync.fromPromise`.
+Please find documentation at [ResultAsync.fromPromise](#resultasyncfrompromise-static-class-method)
+[⬆️  Back to top](#toc)
+---
+#### fromSafePromise
+Top level export of `ResultAsync.fromSafePromise`.
+Please find documentation at [ResultAsync.fromSafePromise](#resultasyncfromsafepromise-static-class-method)
+[⬆️  Back to top](#toc)⬆️  Back to top](#toc)
 
 ---
 
