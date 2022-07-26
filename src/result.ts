@@ -1,5 +1,12 @@
 import { ResultAsync, errAsync } from './'
-import { InferOkTypes, InferErrTypes } from './utils'
+import {
+  InferOkTypes,
+  InferErrTypes,
+  ExtractOkTypes,
+  ExtractErrTypes,
+  combineResultList,
+  combineResultListWithAllErrors,
+} from './_internals/utils'
 import { createNeverThrowError, ErrorConfig } from './_internals/error'
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -25,7 +32,28 @@ export namespace Result {
       }
     }
   }
+
+  export function combine<T extends readonly Result<unknown, unknown>[]>(
+    resultList: T,
+  ): Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number]> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (combineResultList(resultList as any) as any) as Result<
+      ExtractOkTypes<T>,
+      ExtractErrTypes<T>[number]
+    >
+  }
+
+  export function combineWithAllErrors<T extends readonly Result<unknown, unknown>[]>(
+    resultList: T,
+  ): Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number][]> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (combineResultListWithAllErrors(resultList as any) as any) as Result<
+      ExtractOkTypes<T>,
+      ExtractErrTypes<T>[number][]
+    >
+  }
 }
+
 export type Result<T, E> = Ok<T, E> | Err<T, E>
 
 export const ok = <T, E = never>(value: T): Ok<T, E> => new Ok(value)
