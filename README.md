@@ -40,22 +40,24 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.asyncMap` (method)](#resultasyncmap-method)
     - [`Result.fromThrowable` (static class method)](#resultfromthrowable-static-class-method)
     - [`Result.combine` (static class method)](#resultcombine-static-class-method)
-    - [`Result.combineWithAllErrors` (static class method)](#resultcombinewithallerrorsr-static-class-method)
+    - [`Result.combineWithAllErrors` (static class method)](#resultcombinewithallerrors-static-class-method)
   + [Asynchronous API (`ResultAsync`)](#asynchronous-api-resultasync)
     - [`okAsync`](#okasync)
     - [`errAsync`](#errasync)
     - [`ResultAsync.fromPromise` (static class method)](#resultasyncfrompromise-static-class-method)
     - [`ResultAsync.fromSafePromise` (static class method)](#resultasyncfromsafepromise-static-class-method)
-    - [`ResultAsync.map` (method)](#resultasyncmap-method-1)
+    - [`ResultAsync.map` (method)](#resultasyncmap-method)
     - [`ResultAsync.mapErr` (method)](#resultasyncmaperr-method)
     - [`ResultAsync.unwrapOr` (method)](#resultasyncunwrapor-method)
-    - [`ResultAsync.andThen` (method)](#resultasyncandthen-method-1)
+    - [`ResultAsync.andThen` (method)](#resultasyncandthen-method)
     - [`ResultAsync.orElse` (method)](#resultasyncorelse-method)
     - [`ResultAsync.match` (method)](#resultasyncmatch-method)
+    - [`ResultAsync.combine` (static class method)](#resultasynccombine-static-class-method)
+    - [`ResultAsync.combineWithAllErrors` (static class method)](#resultasynccombinewithallerrors-static-class-method)
   + [Utilities](#utilities)
-    - [`fromThrowable`](#fromThrowable)
-    - [`fromPromise`](#fromPromise)
-    - [`fromSafePromise`](#fromSafePromise)
+    - [`fromThrowable`](#fromthrowable)
+    - [`fromPromise`](#frompromise)
+    - [`fromSafePromise`](#fromsafepromise)
   + [Testing](#testing)
 * [A note on the Package Name](#a-note-on-the-package-name)
 
@@ -657,22 +659,7 @@ const result = Result.combineWithAllErrors(resultList)
 // result is Err(['boooom!', 'ahhhhh!'])
 ```
 
-[[⬆️  Back to top](#toc)
----
-#### fromThrowable
-Top level export of `Result.fromThrowable`.
-Please find documentation at [Result.fromThrowable](#resultfromthrowable-static-class-method)
-[⬆️  Back to top](#toc)
----
-#### fromPromise
-Top level export of `ResultAsync.fromPromise`.
-Please find documentation at [ResultAsync.fromPromise](#resultasyncfrompromise-static-class-method)
-[⬆️  Back to top](#toc)
----
-#### fromSafePromise
-Top level export of `ResultAsync.fromSafePromise`.
-Please find documentation at [ResultAsync.fromSafePromise](#resultasyncfromsafepromise-static-class-method)
-[⬆️  Back to top](#toc)⬆️  Back to top](#toc)
+
 
 ---
 
@@ -1144,35 +1131,30 @@ const result = ResultAsync.combineWithAllErrors(resultList)
 
 ---
 
-#### fromThrowable
+### Utilities
+
+#### `fromThrowable`
 
 Top level export of `Result.fromThrowable`.
-
 Please find documentation at [Result.fromThrowable](#resultfromthrowable-static-class-method)
 
 [⬆️  Back to top](#toc)
 
-
----
-
-#### fromPromise
+#### `fromPromise`
 
 Top level export of `ResultAsync.fromPromise`.
-
 Please find documentation at [ResultAsync.fromPromise](#resultasyncfrompromise-static-class-method)
 
 [⬆️  Back to top](#toc)
 
-
----
-
-#### fromSafePromise
+#### `fromSafePromise`
 
 Top level export of `ResultAsync.fromSafePromise`.
-
 Please find documentation at [ResultAsync.fromSafePromise](#resultasyncfromsafepromise-static-class-method)
 
 [⬆️  Back to top](#toc)
+
+---
 
 ### Testing
 
