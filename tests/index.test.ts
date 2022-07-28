@@ -1,6 +1,5 @@
 import { ok, err, Ok, Err, Result, ResultAsync, okAsync, errAsync, fromPromise, fromSafePromise, fromThrowable } from '../src'
 import * as td from 'testdouble'
-import { combine, combineWithAllErrors } from '../src/utils'
 
 describe('Result.Ok', () => {
   it('Creates an Ok value', () => {
@@ -367,12 +366,12 @@ describe('Result.fromThrowable', () => {
 })
 
 describe('Utils', () => {
-  describe('`combine`', () => {
+  describe('`Result.combine`', () => {
     describe('Synchronous `combine`', () => {
       it('Combines a list of results into an Ok value', () => {
         const resultList = [ok(123), ok(456), ok(789)]
 
-        const result = combine(resultList)
+        const result = Result.combine(resultList)
 
         expect(result.isOk()).toBe(true)
         expect(result._unsafeUnwrap()).toEqual([123, 456, 789])
@@ -386,7 +385,7 @@ describe('Utils', () => {
           err('ahhhhh!'),
         ]
 
-        const result = combine(resultList)
+        const result = Result.combine(resultList)
 
         expect(result.isErr()).toBe(true)
         expect(result._unsafeUnwrapErr()).toBe('boooom!')
@@ -403,7 +402,7 @@ describe('Utils', () => {
 
         type ExpecteResult = Result<[ string, number, boolean ], string | number | boolean>
 
-        const result: ExpecteResult = combine(heterogenousList)
+        const result: ExpecteResult = Result.combine(heterogenousList)
 
         expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true])
       })
@@ -421,21 +420,21 @@ describe('Utils', () => {
 
         type ExpectedResult = Result<[ string[], number[] ], boolean | string>
 
-        const result: ExpectedResult = combine(homogenousList)
+        const result: ExpectedResult = Result.combine(homogenousList)
 
         expect(result._unsafeUnwrap()).toEqual([ [ 'hello', 'world' ], [ 1, 2, 3 ]])
       })
     })
 
-    describe('Async `combine`', () => {
+    describe('`ResultAsync.combine`', () => {
       it('Combines a list of async results into an Ok value', async () => {
         const asyncResultList = [okAsync(123), okAsync(456), okAsync(789)]
 
-        const resultAsync: ResultAsync<number[], unknown> = combine(asyncResultList)
+        const resultAsync: ResultAsync<number[], unknown> = ResultAsync.combine(asyncResultList)
         
         expect(resultAsync).toBeInstanceOf(ResultAsync)
 
-        const result = await combine(asyncResultList)
+        const result = await ResultAsync.combine(asyncResultList)
 
         expect(result.isOk()).toBe(true)
         expect(result._unsafeUnwrap()).toEqual([123, 456, 789])
@@ -449,7 +448,7 @@ describe('Utils', () => {
           errAsync('ahhhhh!'),
         ]
 
-        const result = await combine(resultList)
+        const result = await ResultAsync.combine(resultList)
 
         expect(result.isErr()).toBe(true)
         expect(result._unsafeUnwrapErr()).toBe('boooom!')
@@ -472,18 +471,18 @@ describe('Utils', () => {
 
         type ExpecteResult = Result<[ string, number, boolean, number[] ], string | number | boolean>
 
-        const result: ExpecteResult = await combine(heterogenousList)
+        const result: ExpecteResult = await ResultAsync.combine(heterogenousList)
 
         expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true, [ 1, 2, 3 ]])
       })
     })
   })
-  describe('`combineWithAllErrors`', () => {
+  describe('`Result.combineWithAllErrors`', () => {
     describe('Synchronous `combineWithAllErrors`', () => {
       it('Combines a list of results into an Ok value', () => {
         const resultList = [ok(123), ok(456), ok(789)]
 
-        const result = combineWithAllErrors(resultList)
+        const result = Result.combineWithAllErrors(resultList)
 
         expect(result.isOk()).toBe(true)
         expect(result._unsafeUnwrap()).toEqual([123, 456, 789])
@@ -497,7 +496,7 @@ describe('Utils', () => {
           err('ahhhhh!'),
         ]
 
-        const result = combineWithAllErrors(resultList)
+        const result = Result.combineWithAllErrors(resultList)
 
         expect(result.isErr()).toBe(true)
         expect(result._unsafeUnwrapErr()).toEqual(['boooom!', 'ahhhhh!'])
@@ -514,7 +513,7 @@ describe('Utils', () => {
 
         type ExpecteResult = Result<[ string, number, boolean ], (string | number | boolean)[]>
 
-        const result: ExpecteResult = combineWithAllErrors(heterogenousList)
+        const result: ExpecteResult = Result.combineWithAllErrors(heterogenousList)
 
         expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true])
       })
@@ -532,16 +531,16 @@ describe('Utils', () => {
 
         type ExpectedResult = Result<[ string[], number[] ], (boolean | string)[]>
 
-        const result: ExpectedResult = combineWithAllErrors(homogenousList)
+        const result: ExpectedResult = Result.combineWithAllErrors(homogenousList)
 
         expect(result._unsafeUnwrap()).toEqual([ [ 'hello', 'world' ], [ 1, 2, 3 ]])
       })
     })
-    describe('Async `combineWithAllErrors`', () => {
+    describe('`ResultAsync.combineWithAllErrors`', () => {
       it('Combines a list of async results into an Ok value', async () => {
         const asyncResultList = [okAsync(123), okAsync(456), okAsync(789)]
 
-        const result = await combineWithAllErrors(asyncResultList)
+        const result = await ResultAsync.combineWithAllErrors(asyncResultList)
 
         expect(result.isOk()).toBe(true)
         expect(result._unsafeUnwrap()).toEqual([123, 456, 789])
@@ -555,7 +554,7 @@ describe('Utils', () => {
           errAsync('ahhhhh!'),
         ]
 
-        const result = await combineWithAllErrors(asyncResultList)
+        const result = await ResultAsync.combineWithAllErrors(asyncResultList)
 
         expect(result.isErr()).toBe(true)
         expect(result._unsafeUnwrapErr()).toEqual(['boooom!', 'ahhhhh!'])
@@ -572,13 +571,13 @@ describe('Utils', () => {
 
         type ExpecteResult = Result<[ string, number, boolean ], (string | number | boolean)[]>
 
-        const result: ExpecteResult = await combineWithAllErrors(heterogenousList)
+        const result: ExpecteResult = await ResultAsync.combineWithAllErrors(heterogenousList)
 
         expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true])
       })
     })
 
-    describe('testdouble `combine`', () => {
+    describe('testdouble `ResultAsync.combine`', () => {
       interface ITestInterface {
         getName(): string
         setName(name: string): void
@@ -588,7 +587,7 @@ describe('Utils', () => {
       it('Combines `testdouble` proxies from mocks generated via interfaces', async () => {
         const mock = td.object<ITestInterface>()
 
-        const result = await combine([okAsync(mock)] as const)
+        const result = await ResultAsync.combine([okAsync(mock)] as const)
 
         expect(result).toBeDefined()
         expect(result.isErr()).toBeFalsy()
