@@ -308,149 +308,160 @@ export const fromThrowable = Result.fromThrowable
 
 // Given a union, this extracts the intersection of the unions by casting it
 // to a parameter of a function and then inferring from it.
-type IntersectOf<U extends any>
-  = (U extends unknown ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never
+type IntersectOf<U extends unknown> = (U extends unknown ? (k: U) => void : never) extends (
+  k: infer I,
+) => void
+  ? I
+  : never
 
 // Given a union, this extracts the last possible value.
-type Last<U extends any>
-  = IntersectOf<U extends unknown ? (x: U) => void : never> extends (x: infer P) => void ? P : never
+type Last<U extends unknown> = IntersectOf<U extends unknown ? (x: U) => void : never> extends (
+  x: infer P,
+) => void
+  ? P
+  : never
 
 /// Given a union and a member, this excludes the member.
-type ExcludeUnionItem<U extends any, M extends any> = U extends M ? never : U
+type ExcludeUnionItem<U extends unknown, M extends unknown> = U extends M ? never : U
 
 // Given two types, this checks whether the A1 is extending the A2, including
 // the `never` type in calculation. If A1 is `never`, then this will be `0`.
-type IsExtending<A1 extends any, A2 extends any>
-  = [ A1 ] extends [ never ] ? 0 : A1 extends A2 ? 1 : 0
+type IsExtending<A1 extends unknown, A2 extends unknown> = [A1] extends [never]
+  ? 0
+  : A1 extends A2
+  ? 1
+  : 0
 
 // Given an array and a type, this extends the array by appending the `A`.
-type Append<L extends ReadonlyArray<any>, A extends any> = [
-  ...L,
-  A,
-]
+type Append<L extends ReadonlyArray<unknown>, A extends unknown> = [...L, A]
 
 // Given a union, this gives the array of the union members.
-type MemberListOf<
-  Union,
-  MemberList extends ReadonlyArray<any> = [],
-  LastU = Last<Union>
-  > = {
-    0: MemberListOf<ExcludeUnionItem<Union, LastU>, Append<MemberList, LastU>>
-    1: MemberList
-  }[ IsExtending<[ Union ], [ never ]> ]
+type MemberListOf<Union, MemberList extends ReadonlyArray<unknown> = [], LastU = Last<Union>> = {
+  0: MemberListOf<ExcludeUnionItem<Union, LastU>, Append<MemberList, LastU>>
+  1: MemberList
+}[IsExtending<[Union], [never]>]
 
 // This is a helper type to prevent infinite recursion in typing rules.
 //
 // Use this with your `depth` variable in your types.
 type Prev = [
-  never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-  11, 12, 13, 14, 15, 16, 17, 18, 19, 20, ...0[]
+  never,
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  ...0[]
 ]
 
 // Combines the both sides of the array of the results into a tuple of the
 // union of the ok types and the union of the err types.
 //
 // T     - The array of the results
-// Oks   - The initial `Ok` type values 
+// Oks   - The initial `Ok` type values
 // Errs  - The initial `Err` type values
 // Depth - The maximum depth.
-type Combine<
-  T,
-  Oks extends any[] = [],
-  Errs extends any[] = [],
-  Depth extends number = 5
-  >
-  =
+type Combine<T, Oks extends unknown[] = [], Errs extends unknown[] = [], Depth extends number = 5> =
   // If we have reached to the maximum depth, return unknown for both sides
-  [ Depth ] extends [ never ] ? Result<unknown, unknown>
-
-  // Otherwise test whether T is the list of possible values
-  : T extends [ infer H, ...infer Rest ] ? (
-    // And test whether the head of the list is a result
-    H extends Result<infer L, infer R> ? (
-      // Continue combining...
-      Combine<
-        // the rest of the elements
-        Rest,
-
-        // excluding the `unknown` type variables for `Ok` results
-        [ unknown ] extends [ L ] ? Oks : [ L, ...Oks ],
-
-        // excluding the `unknown` type variables for `Err` results
-        [ unknown ] extends [ R ] ? Errs : [ R, ...Errs ],
-
-        // and one less of the current depth
-        Prev[ Depth ]
-      >
-    ) : never // Impossible
-  ) : [ Oks, Errs ] // the results combined
+  [Depth] extends [never]
+    ? Result<unknown, unknown>
+    : // Otherwise test whether T is the list of possible values
+    T extends [infer H, ...infer Rest]
+    ? // And test whether the head of the list is a result
+      H extends Result<infer L, infer R>
+      ? // Continue combining...
+        Combine<
+          // the rest of the elements
+          Rest,
+          // excluding the `unknown` type variables for `Ok` results
+          [unknown] extends [L] ? Oks : [L, ...Oks],
+          // excluding the `unknown` type variables for `Err` results
+          [unknown] extends [R] ? Errs : [R, ...Errs],
+          // and one less of the current depth
+          Prev[Depth]
+        >
+      : never // Impossible
+    : [Oks, Errs] // the results combined
 
 // Reverses the given array
-type Reverse<A>
-  = A extends [ infer H, ...infer R ] ? (
-    [ ...Reverse<R>, H ]
-  ) : A
+type Reverse<A> = A extends [infer H, ...infer R] ? [...Reverse<R>, H] : A
 
 // Deduplicates the result, as the result type is a union of Err and Ok types.
-type Dedup<T>
-  = T extends Result<infer RL, infer RR>
-  ? Ok<RL, RR> : T
+type Dedup<T> = T extends Result<infer RL, infer RR> ? Ok<RL, RR> : T
 
 // Converts an empty array to never.
-type EmptyArrayToNever<T>
-  = T extends [] ? never : T
+type EmptyArrayToNever<T> = T extends [] ? never : T
 
 // Gets the member type of the array or never.
-type MembersToUnion<T>
-  = T extends any[] ? T[ number ] : never
+type MembersToUnion<T> = T extends unknown[] ? T[number] : never
 
 // Checks if the given type is a literal array.
-type IsLiteralArray<T>
-  = T extends { length: infer L } ? (
-    L extends number ? (
-      number extends L ? 0 : 1
-    ) : 0
-  ) : 0
+type IsLiteralArray<T> = T extends { length: infer L }
+  ? L extends number
+    ? number extends L
+      ? 0
+      : 1
+    : 0
+  : 0
 
 // Traverses an array of results and returns a single result containing
 // the oks and errs union-ed/combined.
 type Traverse<
   T,
-  Oks extends any[] = [],
-  Errs extends any[] = [],
+  Oks extends unknown[] = [],
+  Errs extends unknown[] = [],
   Depth extends number = 5
-  >
-  = Combine<T, Oks, Errs, Depth> extends [ infer Oks, infer Errs ] ? (
-    Result<EmptyArrayToNever<Oks>, Errs extends any[] ? Errs[ number ] : never>
-  ) : never
+> = Combine<T, Oks, Errs, Depth> extends [infer Oks, infer Errs]
+  ? Result<EmptyArrayToNever<Oks>, Errs extends unknown[] ? Errs[number] : never>
+  : never
 
 // Traverses an array of results and returns a single result containing
 // the oks combined and the array of errors combined.
 type TraverseWithAllErrors<
   T,
-  Oks extends any[] = [],
-  Errs extends any[] = [],
+  Oks extends unknown[] = [],
+  Errs extends unknown[] = [],
   Depth extends number = 5
-  >
-  = Combine<T, Oks, Errs, Depth> extends [ infer Oks, infer Errs ] ? (
-    Result<EmptyArrayToNever<Oks>, EmptyArrayToNever<MembersToUnion<Errs>>[]>
-  ) : never
+> = Combine<T, Oks, Errs, Depth> extends [infer Oks, infer Errs]
+  ? Result<EmptyArrayToNever<Oks>, EmptyArrayToNever<MembersToUnion<Errs>>[]>
+  : never
 
 // Combines the array of results into one result.
-export type CombineResults<T extends readonly Result<unknown, unknown>[]>
-  = T extends ReadonlyArray<infer U> ? (
-    Traverse<MemberListOf<Dedup<U>>> extends Result<infer L, infer R> ? (
-      IsLiteralArray<T> extends 1 ? Result<L, R> : Result<Reverse<L>, R>
-    ) : never
-  ) : never
-
+export type CombineResults<T extends readonly Result<unknown, unknown>[]> = T extends ReadonlyArray<
+  infer U
+>
+  ? Traverse<MemberListOf<Dedup<U>>> extends Result<infer L, infer R>
+    ? IsLiteralArray<T> extends 1
+      ? Result<L, R>
+      : Result<Reverse<L>, R>
+    : never
+  : never
 
 // Combines the array of results into one result with all errors.
-export type CombineResultsWithAllErrorsArray<T extends readonly Result<unknown, unknown>[]>
-  = T extends ReadonlyArray<infer U> ? (
-    TraverseWithAllErrors<MemberListOf<Dedup<U>>> extends Result<infer L, infer R> ? (
-      IsLiteralArray<T> extends 1 ? Result<L, R> : Result<Reverse<L>, R>
-    ) : never
-  ) : never
+export type CombineResultsWithAllErrorsArray<
+  T extends readonly Result<unknown, unknown>[]
+> = T extends ReadonlyArray<infer U>
+  ? TraverseWithAllErrors<MemberListOf<Dedup<U>>> extends Result<infer L, infer R>
+    ? IsLiteralArray<T> extends 1
+      ? Result<L, R>
+      : Result<Reverse<L>, R>
+    : never
+  : never
 
 //#endregion
