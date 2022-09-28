@@ -380,7 +380,7 @@ type Prev = [
 type Combine<T, Oks extends unknown[] = [], Errs extends unknown[] = [], Depth extends number = 5> =
   // If we have reached to the maximum depth, return unknown for both sides
   [Depth] extends [never]
-    ? Result<unknown, unknown>
+    ? [unknown[], unknown[]]
     : // Otherwise test whether T is the list of possible values
     T extends [infer H, ...infer Rest]
     ? // And test whether the head of the list is a result
