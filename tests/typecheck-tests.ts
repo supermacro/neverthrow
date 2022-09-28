@@ -544,7 +544,7 @@ import { ok, err, okAsync, errAsync, Result, ResultAsync } from '../src'
 (function describe(_ = 'Combine on Unbounded lists') {
   (function describe(_ = 'combine') {
     (function it(_ = 'combines different results into one') {
-      type Expectation = Result<number | string, Error | string[]>;
+      type Expectation = Result<[ number, string ], Error | string[]>;
 
       const result: Expectation = Result.combine([
         ok(1),
@@ -555,7 +555,7 @@ import { ok, err, okAsync, errAsync, Result, ResultAsync } from '../src'
     });
 
     (function it(_ = 'combines only ok results into one') {
-      type Expectation = Result<number | string, never>;
+      type Expectation = Result<[ number, string ], never>;
 
       const result: Expectation = Result.combine([
         ok(1),
@@ -581,9 +581,9 @@ import { ok, err, okAsync, errAsync, Result, ResultAsync } from '../src'
 
   (function describe(_ = 'combineWithAllErrors') {
     (function it(_ = 'combines different results into one') {
-      type Expectation = Result<number | string, (Error | string[])[]>;
+      type Expectation = Result<[ number, string ], (Error | string[])[]>;
 
-      const result = Result.combineWithAllErrors([
+      const result: Expectation = Result.combineWithAllErrors([
         ok(1),
         ok('string'),
         err([ 'string', 'string2' ]),
@@ -592,7 +592,7 @@ import { ok, err, okAsync, errAsync, Result, ResultAsync } from '../src'
     });
 
     (function it(_ = 'combines only ok results into one') {
-      type Expectation = Result<number | string, never[]>;
+      type Expectation = Result<[ number, string ], never[]>;
 
       const result: Expectation = Result.combineWithAllErrors([
         ok(1),
