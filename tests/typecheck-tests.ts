@@ -542,7 +542,72 @@ import { ok, err, okAsync, errAsync, Result, ResultAsync } from '../src'
 
 
 (function describe(_ = 'Combine on Unbounded lists') {
-  // TODO:
-  // https://github.com/supermacro/neverthrow/issues/226
+  (function describe(_ = 'combine') {
+    (function it(_ = 'combines different results into one') {
+      type Expectation = Result<number | string, Error | string[]>;
+
+      const result: Expectation = Result.combine([
+        ok(1),
+        ok('string'),
+        err([ 'string', 'string2' ]),
+        err(new Error('error content')),
+      ]);
+    });
+
+    (function it(_ = 'combines only ok results into one') {
+      type Expectation = Result<number | string, never>;
+
+      const result: Expectation = Result.combine([
+        ok(1),
+        ok('string'),
+      ]);
+    });
+
+    (function it(_ = 'combines only err results into one') {
+      type Expectation = Result<never, number | string>;
+
+      const result: Expectation = Result.combine([
+        err(1),
+        err('string'),
+      ]);
+    });
+
+    (function it(_ = 'combines empty list results into one') {
+      type Expectation = Result<never, never>;
+
+      const result: Expectation = Result.combine([]);
+    });
+  });
+
+  (function describe(_ = 'combineWithAllErrors') {
+    (function it(_ = 'combines different results into one') {
+      type Expectation = Result<number | string, (Error | string[])[]>;
+
+      const result = Result.combineWithAllErrors([
+        ok(1),
+        ok('string'),
+        err([ 'string', 'string2' ]),
+        err(new Error('error content')),
+      ]);
+    });
+
+    (function it(_ = 'combines only ok results into one') {
+      type Expectation = Result<number | string, never[]>;
+
+      const result: Expectation = Result.combineWithAllErrors([
+        ok(1),
+        ok('string'),
+      ]);
+    });
+
+    (function it(_ = 'combines only err results into one') {
+      type Expectation = Result<never, (string | number)[]>;
+
+      const result: Expectation = Result.combineWithAllErrors([
+        err(1),
+        err('string'),
+      ]);
+    });
+  });
 })();
 
