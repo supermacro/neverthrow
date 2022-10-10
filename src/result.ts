@@ -63,8 +63,6 @@ export const ok = <T, E = never>(value: T): Ok<T, E> => new Ok(value)
 export const err = <T = never, E = unknown>(err: E): Err<T, E> => new Err(err)
 
 interface IResult<T, E> {
-  readonly _tag: 'Ok' | 'Err'
-
   /**
    * Used to check if a `Result` is an `OK`
    *
@@ -191,8 +189,6 @@ interface IResult<T, E> {
 }
 
 export class Ok<T, E> implements IResult<T, E> {
-  readonly _tag = 'Ok'
-
   constructor(readonly value: T) {}
 
   isOk(): this is Ok<T, E> {
@@ -256,8 +252,6 @@ export class Ok<T, E> implements IResult<T, E> {
 }
 
 export class Err<T, E> implements IResult<T, E> {
-  readonly _tag = 'Err'
-
   constructor(readonly error: E) {}
 
   isOk(): this is Ok<T, E> {
