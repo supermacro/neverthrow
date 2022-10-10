@@ -403,9 +403,6 @@ type Combine<T, Depth extends number = 5> = Transpose<CollectResults<T>, [], Dep
   ? [UnknownMembersToNever<L>, UnknownMembersToNever<R>]
   : never
 
-// Reverses the given array
-type Reverse<A> = A extends [infer H, ...infer R] ? [...Reverse<R>, H] : A
-
 // Deduplicates the result, as the result type is a union of Err and Ok types.
 type Dedup<T> = T extends Result<infer RL, infer RR>
   ? [unknown] extends [RL]
@@ -481,9 +478,7 @@ export type CombineResultsWithAllErrorsArray<
   ? IsLiteralArray<T> extends 1
     ? TraverseWithAllErrors<T>
     : TraverseWithAllErrors<MemberListOf<Dedup<U>>> extends Result<infer L, infer R>
-    ? IsLiteralArray<T> extends 1
-      ? Result<EmptyArrayToNever<L>, EmptyArrayToNever<R>>
-      : Result<Reverse<L>, R>
+    ? Result<EmptyArrayToNever<L>, EmptyArrayToNever<R>>
     : never
   : never
 
