@@ -17,8 +17,8 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     this._promise = res
   }
 
-  static fromSafePromise<T, E>(promise: PromiseLike<T>): ResultAsync<T, E>
-  static fromSafePromise<T, E>(promise: Promise<T>): ResultAsync<T, E> {
+  static fromSafePromise<T, E = never>(promise: PromiseLike<T>): ResultAsync<T, E>
+  static fromSafePromise<T, E = never>(promise: Promise<T>): ResultAsync<T, E> {
     const newPromise = promise.then((value: T) => new Ok<T, E>(value))
 
     return new ResultAsync(newPromise)

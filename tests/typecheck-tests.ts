@@ -3,7 +3,8 @@
  *
  * This file is ran during CI to ensure that there aren't breaking changes with types
  */
-import { err, errAsync, ok, okAsync, Result, ResultAsync } from '../src'
+
+import { ok, err, okAsync, errAsync, fromSafePromise, Result, ResultAsync } from '../src'
 
 (function describe(_ = 'Result') {
   (function describe(_ = 'andThen') {
@@ -460,6 +461,15 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from '../src'
           })
       });
     });
+
+    (function describe(_ = 'fromSafePromise') {
+      (function it(_ = 'infers err type from usage') {
+        type Expectation = ResultAsync<number, 'impossible error'>
+
+        const result: Expectation = fromSafePromise(new Promise<number>((resolve) => resolve(123)))
+          .map((val) => val)
+      });
+    });
   });
 
   (function describe(_ = 'orElse') {
@@ -610,4 +620,3 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from '../src'
     });
   });
 })();
-
