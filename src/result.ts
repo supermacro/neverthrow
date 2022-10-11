@@ -376,10 +376,11 @@ type CollectResults<T, Collected extends unknown[] = [], Depth extends number = 
 // A          - The array source
 // Transposed - The collected transposed array
 // Depth      - The maximum depth.
-type Transpose<A, Transposed extends unknown[][] = [], Depth extends number = 10> = A extends [
-  infer T,
-  ...infer Rest
-]
+export type Transpose<
+  A,
+  Transposed extends unknown[][] = [],
+  Depth extends number = 10
+> = A extends [infer T, ...infer Rest]
   ? T extends [infer L, infer R]
     ? Transposed extends [infer PL, infer PR]
       ? PL extends unknown[]

@@ -4,7 +4,16 @@
  * This file is ran during CI to ensure that there aren't breaking changes with types
  */
 
-import { ok, err, okAsync, errAsync, fromSafePromise, Result, ResultAsync } from '../src'
+import {
+  err,
+  errAsync,
+  fromSafePromise,
+  ok,
+  okAsync,
+  Result,
+  ResultAsync,
+} from '../src'
+import { Transpose } from '../src/result'
 
 (function describe(_ = 'Result') {
   (function describe(_ = 'andThen') {
@@ -620,3 +629,58 @@ import { ok, err, okAsync, errAsync, fromSafePromise, Result, ResultAsync } from
     });
   });
 })();
+
+
+(function describe(_ = 'Utility types') {
+  (function describe(_ = 'Transpose') {
+    (function it(_ = 'should transpose an array') {
+      const input: [
+        [ 1, 2 ],
+        [ 3, 4 ],
+        [ 5, 6 ]
+      ] = [
+        [ 1, 2 ],
+        [ 3, 4 ],
+        [ 5, 6 ]
+        ]
+      
+      type Expectation = [
+        [ 1, 3, 5 ],
+        [ 2, 4, 6 ]
+      ]
+
+      const transposed: Expectation = transpose(input)
+    });
+
+    (function it(_ = 'should transpose an empty array') {
+      const input: [] = []
+
+      type Expectation = []
+
+      const transposed: Expectation = transpose(input)
+    });
+
+    (function it(_ = 'should transpose incomplete array') {
+      const input: [
+        [ 1, 3 ],
+        [ 2,   ]
+      ] = [
+        [ 1, 3 ],
+        [ 2,   ]
+      ]
+
+      type Expectation = [[1], [3]]
+
+      const transposed: Expectation = transpose<typeof input>(input)
+    });
+  });
+})();
+
+//#region Utility function declarations for type testing
+
+// Transpose method converts [x, y] pairs into [xs, ys] array.
+declare function transpose<
+  A extends unknown[][]
+>(input: A): Transpose<[ ...A ]>;
+
+//#endregion
