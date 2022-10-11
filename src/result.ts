@@ -397,7 +397,7 @@ export type Transpose<
 //
 // T     - The array of the results
 // Depth - The maximum depth.
-type Combine<T, Depth extends number = 5> = Transpose<CollectResults<T>, [], Depth> extends [
+export type Combine<T, Depth extends number = 5> = Transpose<CollectResults<T>, [], Depth> extends [
   infer L,
   infer R,
 ]
@@ -405,14 +405,14 @@ type Combine<T, Depth extends number = 5> = Transpose<CollectResults<T>, [], Dep
   : never
 
 // Deduplicates the result, as the result type is a union of Err and Ok types.
-type Dedup<T> = T extends Result<infer RL, infer RR>
+export type Dedup<T> = T extends Result<infer RL, infer RR>
   ? [unknown] extends [RL]
     ? Err<RL, RR>
     : Ok<RL, RR>
   : T
 
 // Given a union, this gives the array of the union members.
-type MemberListOf<T> = (
+export type MemberListOf<T> = (
   (T extends unknown ? (t: T) => T : never) extends infer U
     ? (U extends unknown ? (u: U) => unknown : never) extends (v: infer V) => unknown
       ? V
@@ -437,10 +437,10 @@ type UnknownMembersToNever<T> = T extends [infer H, ...infer R]
   : T
 
 // Gets the member type of the array or never.
-type MembersToUnion<T> = T extends unknown[] ? T[number] : never
+export type MembersToUnion<T> = T extends unknown[] ? T[number] : never
 
 // Checks if the given type is a literal array.
-type IsLiteralArray<T> = T extends { length: infer L }
+export type IsLiteralArray<T> = T extends { length: infer L }
   ? L extends number
     ? number extends L
       ? 0
