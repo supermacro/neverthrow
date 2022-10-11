@@ -423,12 +423,12 @@ type MemberListOf<T> = (
   : []
 
 // Converts an empty array to never.
-type EmptyArrayToNever<T> = T extends [infer H, ...infer R]
-  ? [never] extends [H]
-    ? EmptyArrayToNever<R>
-    : T
-  : T extends []
+export type EmptyArrayToNever<T> = T extends []
   ? never
+  : T extends [never, ...infer Rest]
+  ? [EmptyArrayToNever<Rest>] extends [never]
+    ? never
+    : T
   : T
 
 // Converts the `unknown` items of an array to `never`s.
