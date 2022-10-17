@@ -233,6 +233,34 @@ import { ok, err, okAsync, errAsync, fromSafePromise, Result, ResultAsync } from
         .asyncAndThen((val) => errAsync<string, string[]>(['oh nooooo']))
     });
   });
+
+  (function combine(_ = 'combine') {
+    (function it(_ = 'creates a tuple type of input results') {
+      type Expectation = Result<[number, string], unknown>
+
+      const result: Expectation = Result.combine([ok(123), ok('string')])
+    });
+
+    (function it(_ = 'still creates array type when input is array') {
+      type Expectation = Result<number[], unknown>;
+
+      const result: Expectation = Result.combine([].map((_, i) => ok(i)));
+    });
+  });
+
+  (function combine(_ = 'combineWithAllErrors') {
+    (function it(_ = 'creates a tuple type of input results') {
+      type Expectation = Result<[number, string], unknown>
+
+      const result: Expectation = Result.combineWithAllErrors([ok(123), ok('string')]);
+    });
+
+    (function it(_ = 'still creates array type when input is array') {
+      type Expectation = Result<number[], unknown>;
+
+      const result: Expectation = Result.combine([].map((_, i) => ok(i)));
+    });
+  });
 });
 
 
@@ -545,6 +573,34 @@ import { ok, err, okAsync, errAsync, fromSafePromise, Result, ResultAsync } from
               return errAsync('1')
           }
         })
+    });
+  });
+
+  (function combine(_ = 'combine') {
+    (function it(_ = 'creates a tuple type of input results') {
+      type Expectation = ResultAsync<[number, string], unknown>
+
+      const result: Expectation = ResultAsync.combine([okAsync(123), okAsync('string')])
+    });
+
+    (function it(_ = 'still creates array type when input is array') {
+      type Expectation = ResultAsync<number[], unknown>;
+
+      const result: Expectation = ResultAsync.combine([].map((_, i) => okAsync(i)));
+    });
+  });
+
+  (function combine(_ = 'combineWithAllErrors') {
+    (function it(_ = 'creates a tuple type of input results') {
+      type Expectation = ResultAsync<[number, string], unknown>
+
+      const result: Expectation = ResultAsync.combineWithAllErrors([okAsync(123), okAsync('string')]);
+    });
+
+    (function it(_ = 'still creates array type when input is array') {
+      type Expectation = ResultAsync<number[], unknown>;
+
+      const result: Expectation = ResultAsync.combine([].map((_, i) => okAsync(i)));
     });
   });
 });

@@ -34,7 +34,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   }
 
   static combine<T extends readonly ResultAsync<unknown, unknown>[]>(
-    asyncResultList: T,
+    asyncResultList: [...T],
   ): ResultAsync<ExtractOkAsyncTypes<T>, ExtractErrAsyncTypes<T>[number]> {
     return combineResultAsyncList(asyncResultList) as ResultAsync<
       ExtractOkAsyncTypes<T>,
@@ -43,7 +43,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   }
 
   static combineWithAllErrors<T extends readonly ResultAsync<unknown, unknown>[]>(
-    asyncResultList: T,
+    asyncResultList: [...T],
   ): ResultAsync<ExtractOkAsyncTypes<T>, ExtractErrAsyncTypes<T>[number][]> {
     return combineResultAsyncListWithAllErrors(asyncResultList) as ResultAsync<
       ExtractOkAsyncTypes<T>,

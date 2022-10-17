@@ -34,13 +34,13 @@ export namespace Result {
   }
 
   export function combine<T extends readonly Result<unknown, unknown>[]>(
-    resultList: T,
+    resultList: [...T],
   ): Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number]> {
     return combineResultList(resultList) as Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number]>
   }
 
   export function combineWithAllErrors<T extends readonly Result<unknown, unknown>[]>(
-    resultList: T,
+    resultList: [...T],
   ): Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number][]> {
     return combineResultListWithAllErrors(resultList) as Result<
       ExtractOkTypes<T>,

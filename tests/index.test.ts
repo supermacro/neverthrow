@@ -587,7 +587,7 @@ describe('Utils', () => {
       it('Combines `testdouble` proxies from mocks generated via interfaces', async () => {
         const mock = td.object<ITestInterface>()
 
-        const result = await ResultAsync.combine([okAsync(mock)] as const)
+        const result = await ResultAsync.combine([okAsync(mock)])
 
         expect(result).toBeDefined()
         expect(result.isErr()).toBeFalsy()
