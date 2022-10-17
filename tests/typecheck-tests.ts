@@ -620,7 +620,7 @@ import { Transpose } from '../src/result'
     });
 
     (function it(_ = 'combines only err results into one') {
-      type Expectation = Result<never, [number, string]>;
+      type Expectation = Result<[ never, never ], [number, string]>;
 
       const result: Expectation = Result.combineWithAllErrors([
         err(1),

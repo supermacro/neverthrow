@@ -423,11 +423,19 @@ export type MemberListOf<T> = (
   : []
 
 // Converts an empty array to never.
-export type EmptyArrayToNever<T> = T extends []
+//
+// The second type parameter here will affect how to behave to `never[]`s.
+// If a precise type is required, pass `1` here so that it will resolve
+// a literal array such as `[ never, never ]`. Otherwise, set `0` or the default
+// type value will cause this to resolve the arrays containing only `never`
+// items as `never` only.
+export type EmptyArrayToNever<T, NeverArrayToNever extends number = 0> = T extends []
   ? never
-  : T extends [never, ...infer Rest]
-  ? [EmptyArrayToNever<Rest>] extends [never]
-    ? never
+  : NeverArrayToNever extends 1
+  ? T extends [never, ...infer Rest]
+    ? [EmptyArrayToNever<Rest>] extends [never]
+      ? never
+      : T
     : T
   : T
 
@@ -451,7 +459,7 @@ export type IsLiteralArray<T> = T extends { length: infer L }
 // Traverses an array of results and returns a single result containing
 // the oks and errs union-ed/combined.
 type Traverse<T, Depth extends number = 5> = Combine<T, Depth> extends [infer Oks, infer Errs]
-  ? Result<EmptyArrayToNever<Oks>, MembersToUnion<Errs>>
+  ? Result<EmptyArrayToNever<Oks, 1>, MembersToUnion<Errs>>
   : never
 
 // Traverses an array of results and returns a single result containing
