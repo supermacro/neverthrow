@@ -1,5 +1,18 @@
-import { ok, err, Ok, Err, Result, ResultAsync, okAsync, errAsync, fromPromise, fromSafePromise, fromThrowable } from '../src'
 import * as td from 'testdouble'
+
+import {
+  err,
+  Err,
+  errAsync,
+  fromPromise,
+  fromSafePromise,
+  fromThrowable,
+  ok,
+  Ok,
+  okAsync,
+  Result,
+  ResultAsync,
+} from '../src'
 
 describe('Result.Ok', () => {
   it('Creates an Ok value', () => {
@@ -430,7 +443,7 @@ describe('Utils', () => {
       it('Combines a list of async results into an Ok value', async () => {
         const asyncResultList = [okAsync(123), okAsync(456), okAsync(789)]
 
-        const resultAsync: ResultAsync<number[], unknown> = ResultAsync.combine(asyncResultList)
+        const resultAsync: ResultAsync<number[], never[]> = ResultAsync.combine(asyncResultList)
         
         expect(resultAsync).toBeInstanceOf(ResultAsync)
 
@@ -569,7 +582,7 @@ describe('Utils', () => {
           okAsync(true),
         ]
 
-        type ExpecteResult = Result<[ string, number, boolean ], (string | number | boolean)[]>
+        type ExpecteResult = Result<[ string, number, boolean ], [string, number, boolean]>
 
         const result: ExpecteResult = await ResultAsync.combineWithAllErrors(heterogenousList)
 
