@@ -11,6 +11,8 @@ import { Err, Ok, Result } from './'
 import {
   combineResultAsyncList,
   combineResultAsyncListWithAllErrors,
+  ExtractErrAsyncTypes,
+  ExtractOkAsyncTypes,
   InferAsyncErrTypes,
   InferAsyncOkTypes,
   InferErrTypes,
@@ -154,10 +156,18 @@ export const fromPromise = ResultAsync.fromPromise
 export const fromSafePromise = ResultAsync.fromSafePromise
 
 // Combines the array of async results into one result.
-export type CombineResultAsyncs<T> = TraverseAsync<UnwrapAsync<T>>
+export type CombineResultAsyncs<
+  T extends readonly ResultAsync<unknown, unknown>[]
+> = IsLiteralArray<T> extends 1
+  ? TraverseAsync<UnwrapAsync<T>>
+  : ResultAsync<ExtractOkAsyncTypes<T>, ExtractErrAsyncTypes<T>[number]>
 
 // Combines the array of async results into one result with all errors.
-export type CombineResultsWithAllErrorsArrayAsync<T> = TraverseWithAllErrorsAsync<UnwrapAsync<T>>
+export type CombineResultsWithAllErrorsArrayAsync<
+  T extends readonly ResultAsync<unknown, unknown>[]
+> = IsLiteralArray<T> extends 1
+  ? TraverseWithAllErrorsAsync<UnwrapAsync<T>>
+  : ResultAsync<ExtractOkAsyncTypes<T>, ExtractErrAsyncTypes<T>[number][]>
 
 // Unwraps the inner `Result` from a `ResultAsync` for all elements.
 type UnwrapAsync<T> = IsLiteralArray<T> extends 1

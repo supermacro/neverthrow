@@ -3,6 +3,8 @@ import { createNeverThrowError, ErrorConfig } from './_internals/error'
 import {
   combineResultList,
   combineResultListWithAllErrors,
+  ExtractErrTypes,
+  ExtractOkTypes,
   InferErrTypes,
   InferOkTypes,
 } from './_internals/utils'
@@ -402,6 +404,8 @@ export type Combine<T, Depth extends number = 5> = Transpose<CollectResults<T>, 
   infer R,
 ]
   ? [UnknownMembersToNever<L>, UnknownMembersToNever<R>]
+  : Transpose<CollectResults<T>, [], Depth> extends []
+  ? [[], []]
   : never
 
 // Deduplicates the result, as the result type is a union of Err and Ok types.
@@ -472,23 +476,17 @@ type TraverseWithAllErrors<T, Depth extends number = 5> = Combine<T, Depth> exte
   : never
 
 // Combines the array of results into one result.
-export type CombineResults<T> = T extends ReadonlyArray<infer U>
-  ? IsLiteralArray<T> extends 1
-    ? Traverse<T>
-    : Traverse<MemberListOf<Dedup<U>>> extends Result<infer L, infer R>
-    ? Result<L, EmptyArrayToNever<R>>
-    : never
-  : never
+export type CombineResults<
+  T extends readonly Result<unknown, unknown>[]
+> = IsLiteralArray<T> extends 1
+  ? Traverse<T>
+  : Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number]>
 
 // Combines the array of results into one result with all errors.
 export type CombineResultsWithAllErrorsArray<
   T extends readonly Result<unknown, unknown>[]
-> = T extends ReadonlyArray<infer U>
-  ? IsLiteralArray<T> extends 1
-    ? TraverseWithAllErrors<T>
-    : TraverseWithAllErrors<MemberListOf<Dedup<U>>> extends Result<infer L, infer R>
-    ? Result<EmptyArrayToNever<L>, EmptyArrayToNever<R>>
-    : never
-  : never
+> = IsLiteralArray<T> extends 1
+  ? TraverseWithAllErrors<T>
+  : Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number][]>
 
 //#endregion
