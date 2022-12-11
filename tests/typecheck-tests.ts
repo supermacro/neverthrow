@@ -243,6 +243,116 @@ import { Transpose } from '../src/result'
         .asyncAndThen((val) => errAsync<string, string[]>(['oh nooooo']))
     });
   });
+
+  (function describe(_ = 'combine') {
+    (function it(_ = 'combines different results into one') {
+      type Expectation = Result<[ number, string, boolean, boolean ], Error | string | string[]>;
+
+      const result = Result.combine([
+        ok<number, string>(1),
+        ok<string, string>('string'),
+        err<boolean, string[]>([ 'string', 'string2' ]),
+        err<boolean, Error>(new Error('error content')),
+      ])
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
+    });
+
+    (function it(_ = 'combines only ok results into one') {
+      type Expectation = Result<[ number, string ], never>;
+
+      const result = Result.combine([
+        ok(1),
+        ok('string'),
+      ]);
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
+    });
+
+    (function it(_ = 'combines only err results into one') {
+      type Expectation = Result<[ never, never ], number | string>;
+
+      const result = Result.combine([
+        err(1),
+        err('string'),
+      ]);
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
+    });
+
+    (function it(_ = 'combines empty list results into one') {
+      type Expectation = Result<never, never>;
+      const results: [] = [];
+
+      const result = Result.combine(results);
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
+    });
+
+    (function it(_ = 'combines arrays of results to a result of an array') {
+      type Expectation = Result<string[], string>;
+      const results: Result<string, string>[] = [];
+
+      const result = Result.combine(results);
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
+    });
+  });
+
+  (function describe(_ = 'combineWithAllErrors') {
+    (function it(_ = 'combines different results into one') {
+      type Expectation = Result<[ number, string, never, never ], [never, never, string[], Error]>;
+
+      const result = Result.combineWithAllErrors([
+        ok(1),
+        ok('string'),
+        err([ 'string', 'string2' ]),
+        err(new Error('error content')),
+      ]);
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
+    });
+
+    (function it(_ = 'combines only ok results into one') {
+      type Expectation = Result<[ number, string ], [never, never]>;
+
+      const result = Result.combineWithAllErrors([
+        ok(1),
+        ok('string'),
+      ]);
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
+    });
+
+    (function it(_ = 'combines only err results into one') {
+      type Expectation = Result<[ never, never ], [number, string]>;
+
+      const result = Result.combineWithAllErrors([
+        err(1),
+        err('string'),
+      ]);
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
+    });
+
+    (function it(_ = 'combines arrays of results to a result of an array') {
+      type Expectation = Result<string[], (number | string)[]>;
+      const results: Result<string, number | string>[] = [];
+
+      const result = Result.combineWithAllErrors(results);
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
+    });
+  });
 });
 
 
@@ -557,79 +667,117 @@ import { Transpose } from '../src/result'
         })
     });
   });
-});
 
-
-(function describe(_ = 'Combine on Unbounded lists') {
   (function describe(_ = 'combine') {
-    (function it(_ = 'combines different results into one') {
-      type Expectation = Result<[ number, string, boolean, boolean ], Error | string | string[]>;
+    (function it(_ = 'combines different result asyncs into one') {
+      type Expectation = ResultAsync<[ number, string, boolean, boolean ], Error | string | string[]>;
 
-      const result: Expectation = Result.combine([
-        ok<number, string>(1),
-        ok<string, string>('string'),
-        err<boolean, string[]>([ 'string', 'string2' ]),
-        err<boolean, Error>(new Error('error content')),
+      const result = ResultAsync.combine([
+        okAsync<number, string>(1),
+        okAsync<string, string>('string'),
+        errAsync<boolean, string[]>([ 'string', 'string2' ]),
+        errAsync<boolean, Error>(new Error('error content')),
       ])
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
     });
 
-    (function it(_ = 'combines only ok results into one') {
-      type Expectation = Result<[ number, string ], never>;
+    (function it(_ = 'combines only ok result asyncs into one') {
+      type Expectation = ResultAsync<[ number, string ], never>;
 
-      const result: Expectation = Result.combine([
-        ok(1),
-        ok('string'),
+      const result = ResultAsync.combine([
+        okAsync(1),
+        okAsync('string'),
       ]);
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
     });
 
     (function it(_ = 'combines only err results into one') {
-      type Expectation = Result<[ never, never ], number | string>;
+      type Expectation = ResultAsync<[ never, never ], number | string>;
 
-      const result: Expectation = Result.combine([
-        err(1),
-        err('string'),
+      const result = ResultAsync.combine([
+        errAsync(1),
+        errAsync('string'),
       ]);
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
     });
 
-    (function it(_ = 'combines empty list results into one') {
-      type Expectation = Result<never[], never>;
+    (function it(_ = 'combines empty list result asyncs into one') {
+      type Expectation = ResultAsync<never, never>;
+      const results: [] = [];
 
-      const result: Expectation = Result.combine([]);
+      const result = ResultAsync.combine(results);
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
+    });
+
+    (function it(_ = 'combines arrays of result asyncs to a result async of an array') {
+      type Expectation = ResultAsync<string[], string>;
+      const results: ResultAsync<string, string>[] = [];
+
+      const result = ResultAsync.combine(results);
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
     });
   });
 
   (function describe(_ = 'combineWithAllErrors') {
-    (function it(_ = 'combines different results into one') {
-      type Expectation = Result<[ number, string, never, never ], [never, never, string[], Error]>;
+    (function it(_ = 'combines different result asyncs into one') {
+      type Expectation = ResultAsync<[ number, string, never, never ], [never, never, string[], Error]>;
 
-      const result: Expectation = Result.combineWithAllErrors([
-        ok(1),
-        ok('string'),
-        err([ 'string', 'string2' ]),
-        err(new Error('error content')),
+      const result = ResultAsync.combineWithAllErrors([
+        okAsync(1),
+        okAsync('string'),
+        errAsync([ 'string', 'string2' ]),
+        errAsync(new Error('error content')),
       ]);
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
     });
 
-    (function it(_ = 'combines only ok results into one') {
-      type Expectation = Result<[ number, string ], never[]>;
+    (function it(_ = 'combines only ok result asyncs into one') {
+      type Expectation = ResultAsync<[ number, string ], [never, never]>;
 
-      const result: Expectation = Result.combineWithAllErrors([
-        ok(1),
-        ok('string'),
+      const result = ResultAsync.combineWithAllErrors([
+        okAsync(1),
+        okAsync('string'),
       ]);
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
     });
 
-    (function it(_ = 'combines only err results into one') {
-      type Expectation = Result<[ never, never ], [number, string]>;
+    (function it(_ = 'combines only err result asyncs into one') {
+      type Expectation = ResultAsync<[ never, never ], [number, string]>;
 
-      const result: Expectation = Result.combineWithAllErrors([
-        err(1),
-        err('string'),
+      const result = ResultAsync.combineWithAllErrors([
+        errAsync(1),
+        errAsync('string'),
       ]);
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
+    });
+
+    (function it(_ = 'combines arrays of result asyncs to a result of an array') {
+      type Expectation = ResultAsync<string[], (number | string)[]>;
+      const results: ResultAsync<string, number | string>[] = [];
+
+      const result = ResultAsync.combineWithAllErrors(results);
+
+      const assignableToCheck: Expectation = result;
+      const assignablefromCheck: typeof result = assignableToCheck;
     });
   });
-})();
-
+});
 
 (function describe(_ = 'Utility types') {
   (function describe(_ = 'Transpose') {
