@@ -219,6 +219,21 @@ export class Ok<T, E> implements IResult<T, E> {
     return f(this.value)
   }
 
+  andTee<R extends Result<unknown, unknown>>(
+    f: (t: T) => R,
+  ): Result<T, InferErrTypes<R> | E>
+  andTee<F>(f: (t: T) => Result<unknown, F>): Result<T, E | F> 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  andTee(f: any): any {
+    return f(this.value).map((_value: unknown) => this.value)
+  }
+
+  // TODO: Is thiks a good idea?
+  andSafeTee(f: (t: T) => unknown): Result<T, E>{
+    f(this.value)
+    return ok<T, E>(this.value)
+  }
+
   orElse<R extends Result<unknown, unknown>>(_f: (e: E) => R): Result<T, InferErrTypes<R>>
   orElse<A>(_f: (e: E) => Result<T, A>): Result<T, A>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
@@ -228,6 +243,10 @@ export class Ok<T, E> implements IResult<T, E> {
 
   asyncAndThen<U, F>(f: (t: T) => ResultAsync<U, F>): ResultAsync<U, E | F> {
     return f(this.value)
+  }
+
+  asyncAndTee<F>(f: (t: T) => ResultAsync<unknown, F>): ResultAsync<T, F> {
+    return f(this.value).map<T>((_value: unknown) => this.value)
   }
 
   asyncMap<U>(f: (t: T) => Promise<U>): ResultAsync<U, E> {
@@ -272,6 +291,14 @@ export class Err<T, E> implements IResult<T, E> {
   mapErr<U>(f: (e: E) => U): Result<T, U> {
     return err(f(this.error))
   }
+  
+  andTee<F>(_f: (t: T) => Result<unknown, F>): Result<T, E | F> {
+    return err(this.error)
+  }
+
+  andSafeTee(_f: (t: T) => unknown): Result<T, E>{
+    return err(this.error)
+  }
 
   andThen<R extends Result<unknown, unknown>>(
     _f: (t: T) => R,
@@ -292,6 +319,10 @@ export class Err<T, E> implements IResult<T, E> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   asyncAndThen<U, F>(_f: (t: T) => ResultAsync<U, F>): ResultAsync<U, E | F> {
     return errAsync<U, E>(this.error)
+  }
+
+  asyncAndTee<F>(_f: (t: T) => ResultAsync<unknown, F>): ResultAsync<T, E> {
+    return errAsync<T, E>(this.error)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
