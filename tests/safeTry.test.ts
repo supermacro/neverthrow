@@ -109,6 +109,5 @@ describe("Returns the first occurence of Err instance as yiled*'s operand", () =
 
     expect(result).toBeInstanceOf(Err)
     expect(result._unsafeUnwrapErr()).toBe(errVal)
-
   })
 })
