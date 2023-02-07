@@ -368,7 +368,7 @@ export class Err<T, E> implements IResult<T, E> {
     return (function* () {
       yield err(error)
 
-      throw new Error('Do not use this generator out of `Result.fromEscapable`')
+      throw new Error('Do not use this generator out of `safeTry`')
     })()
   }
 
