@@ -80,6 +80,18 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     )
   }
 
+  mapTap<A>(f: (t: T) => A | Promise<A>): ResultAsync<T, E> {
+    return new ResultAsync(
+      this._promise.then(async (res: Result<T, E>) => {
+        if (res.isErr()) {
+          return new Err<T, E>(res.error)
+        }
+        await f(res.value)
+        return res
+      }),
+    )
+  }
+
   mapErr<U>(f: (e: E) => U | Promise<U>): ResultAsync<T, U> {
     return new ResultAsync(
       this._promise.then(async (res: Result<T, E>) => {
@@ -88,6 +100,27 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
         }
 
         return new Err<T, U>(await f(res.error))
+      }),
+    )
+  }
+
+  andThenTap<R extends Result<unknown, unknown>>(
+    f: (t: T) => R,
+  ): ResultAsync<InferOkTypes<T>, InferErrTypes<T> | E>
+  andThenTap<R extends ResultAsync<unknown, unknown>>(
+    f: (t: T) => R,
+  ): ResultAsync<InferAsyncOkTypes<T>, InferAsyncErrTypes<T> | E>
+  andThenTap<U, F>(f: (t: T) => Result<U, F> | ResultAsync<U, F>): ResultAsync<T, E | F>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  andThenTap(f: any): any {
+    return new ResultAsync(
+      this._promise.then((res) => {
+        if (res.isErr()) {
+          return new Err<never, E>(res.error)
+        }
+
+        f(res.value)
+        return this instanceof ResultAsync ? this._promise : this
       }),
     )
   }
