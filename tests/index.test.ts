@@ -927,6 +927,14 @@ describe('ResultAsync', () => {
     })
   })
 
+  describe('fromResultPromise', () => {
+    it('Converts a succeeding promise to an Ok Result', () => {
+      const promise: Promise<Result<string, never>> = Promise.resolve(ok('Success!'))
+
+      const result: ResultAsync<string, never> = ResultAsync.fromResultPromise()
+    })
+  })
+
   describe('okAsync', () => {
     it('Creates a ResultAsync that resolves to an Ok', async () => {
       const val = okAsync(12)

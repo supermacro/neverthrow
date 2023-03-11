@@ -42,6 +42,12 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     return new ResultAsync(newPromise)
   }
 
+  static fromResultPromise<T, E>(promise: PromiseLike<Result<T, E>>, errorFn: (e: unknown) => E): ResultAsync<T, E>
+  static fromResultPromise<T, E>(promise: Promise<Result<T, E>>, errorFn: (e: unknown) => E): ResultAsync<T, E> {
+    return ResultAsync.fromPromise(promise, errorFn)
+      .andThen((innerResult) => innerResult)
+  }
+
   static combine<
     T extends readonly [ResultAsync<unknown, unknown>, ...ResultAsync<unknown, unknown>[]]
   >(asyncResultList: T): CombineResultAsyncs<T>
