@@ -224,7 +224,7 @@ class Result<T, E> {
 **Example**:
 
 ```typescript
-const { getLines } from 'imaginary-parser'
+import { getLines } from 'imaginary-parser'
 // ^ assume getLines has the following signature:
 // getLines(str: string): Result<Array<string>, Error>
 
@@ -262,7 +262,7 @@ class Result<T, E> {
 **Example**:
 
 ```typescript
-import { parseHeaders } 'imaginary-http-parser'
+import { parseHeaders } from 'imaginary-http-parser'
 // imagine that parseHeaders has the following signature:
 // parseHeaders(raw: string): Result<SomeKeyValueMap, ParseError>
 
@@ -522,7 +522,7 @@ class Result<T, E> {
 **Example:**
 
 ```typescript
-import { parseHeaders } 'imaginary-http-parser'
+import { parseHeaders } from 'imaginary-http-parser'
 // imagine that parseHeaders has the following signature:
 // parseHeaders(raw: string): Result<SomeKeyValueMap, ParseError>
 
@@ -822,7 +822,7 @@ class ResultAsync<T, E> {
 **Example**:
 
 ```typescript
-const { findUsersIn } from 'imaginary-database'
+import { findUsersIn } from 'imaginary-database'
 // ^ assume findUsersIn has the following signature:
 // findUsersIn(country: string): ResultAsync<Array<User>, Error>
 
@@ -868,7 +868,7 @@ class ResultAsync<T, E> {
 **Example**:
 
 ```typescript
-const { findUsersIn } from 'imaginary-database'
+import { findUsersIn } from 'imaginary-database'
 // ^ assume findUsersIn has the following signature:
 // findUsersIn(country: string): ResultAsync<Array<User>, Error>
 
@@ -954,9 +954,9 @@ class ResultAsync<T, E> {
 
 ```typescript
 
-const { validateUser } from 'imaginary-validator'
-const { insertUser } from 'imaginary-database'
-const { sendNotification } from 'imaginary-service'
+import { validateUser } from 'imaginary-validator'
+import { insertUser } from 'imaginary-database'
+import { sendNotification } from 'imaginary-service'
 
 // ^ assume validateUser, insertUser and sendNotification have the following signatures:
 // validateUser(user: User): Result<User, Error>
@@ -1022,8 +1022,8 @@ class ResultAsync<T, E> {
 
 ```typescript
 
-const { validateUser } from 'imaginary-validator'
-const { insertUser } from 'imaginary-database'
+import { validateUser } from 'imaginary-validator'
+import { insertUser } from 'imaginary-database'
 
 // ^ assume validateUser and insertUser have the following signatures:
 // validateUser(user: User): Result<User, Error>
