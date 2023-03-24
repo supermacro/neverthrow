@@ -80,6 +80,14 @@ interface IResult<T, E> {
   isErr(): this is Err<T, E>
 
   /**
+   * Performs a side effect for the `Ok` variant of `Result`.
+   *
+   * @param f The function to apply an `OK` value
+   * @returns the result of applying `f` or an `Err` untouched
+   */
+  tap(f: (t: T) => void): Result<T, E>
+
+  /**
    * Maps a `Result<T, E>` to `Result<U, E>`
    * by applying a function to a contained `Ok` value, leaving an `Err` value
    * untouched.
@@ -201,6 +209,11 @@ export class Ok<T, E> implements IResult<T, E> {
     return !this.isOk()
   }
 
+  tap(f: (t: T) => void): Result<T, E> {
+    f(this.value)
+    return ok(this.value)
+  }
+
   map<A>(f: (t: T) => A): Result<A, E> {
     return ok(f(this.value))
   }
@@ -262,6 +275,10 @@ export class Err<T, E> implements IResult<T, E> {
 
   isErr(): this is Err<T, E> {
     return !this.isOk()
+  }
+
+  tap(_f: (t: T) => void): Result<T, E> {
+    return err(this.error)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
