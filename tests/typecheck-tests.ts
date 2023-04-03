@@ -142,12 +142,12 @@ import { Transpose } from '../src/result'
     });
   });
 
-  (function describe(_ = 'andTee') {
+  (function describe(_ = 'andThrough') {
     (function it(_ = 'Combines two equal error types (native scalar types)') {
       type Expectation = Result<number, string>
 
       const result: Expectation = ok<number, string>(123)
-        .andTee((val) => err('yoooooo dude' + val))
+        .andThrough((val) => err('yoooooo dude' + val))
     });
 
     (function it(_ = 'Combines two equal error types (custom types)') {
@@ -159,7 +159,7 @@ import { Transpose } from '../src/result'
       type Expectation = Result<number, MyError>
 
       const result: Expectation = ok<number, MyError>(123)
-        .andTee((val) => err<string, MyError>({ stack: '/blah', code: 500 }))
+        .andThrough((val) => err<string, MyError>({ stack: '/blah', code: 500 }))
     });
 
     (function it(_ = 'Creates a union of error types for disjoint types') {
@@ -171,14 +171,14 @@ import { Transpose } from '../src/result'
       type Expectation = Result<number, MyError | string[]>
 
       const result: Expectation = ok<number, MyError>(123)
-        .andTee((val) => err<string, string[]>(['oh nooooo']))
+        .andThrough((val) => err<string, string[]>(['oh nooooo']))
     });
 
     (function it(_ = 'Infers error type when returning disjoint types (native scalar types)') {
       type Expectation = Result<number, string | number | boolean>
 
       const result: Expectation = ok<number, string>(123)
-        .andTee((val) => {
+        .andThrough((val) => {
           switch (val) {
             case 1:
               return err('yoooooo dude' + val)
@@ -198,7 +198,7 @@ import { Transpose } from '../src/result'
       type Expectation = Result<number, string | number | MyError>
 
       const result: Expectation = ok<number, string>(123)
-        .andTee((val) => {
+        .andThrough((val) => {
           switch (val) {
             case 1:
               return err('yoooooo dude' + val)
@@ -214,7 +214,7 @@ import { Transpose } from '../src/result'
       type Expectation = Result<number, unknown>
 
       const result: Expectation = ok<number, string>(123)
-        .andTee((val) => {
+        .andThrough((val) => {
           switch (val) {
             case 1:
               return err('yoooooo dude' + val)
@@ -229,7 +229,7 @@ import { Transpose } from '../src/result'
       type Expectation = Result<number, unknown>
 
       const result: Expectation = initial
-        .andTee((val) => {
+        .andThrough((val) => {
           switch (val) {
             case 1:
               return err('yoooooo dude' + val)
@@ -247,7 +247,7 @@ import { Transpose } from '../src/result'
       type Expectation = Result<number, string | number | MyError>
   
       const result: Expectation = ok<number, string>(123)
-        .andTee((val) => {
+        .andThrough((val) => {
           switch (val) {
             case 1:
               return err('yoooooo dude' + val)
@@ -262,7 +262,7 @@ import { Transpose } from '../src/result'
     (function it(_ = 'allows specifying the E type explicitly') {
       type Expectation = Result<number, string>
 
-      const result: Expectation = ok(123).andTee<string>(val => {
+      const result: Expectation = ok(123).andThrough<string>(val => {
         return ok('yo')
       })
     });
@@ -370,12 +370,12 @@ import { Transpose } from '../src/result'
     });
   });
 
-  (function describe(_ = 'asyncAndTee') {
+  (function describe(_ = 'asyncAndThrough') {
     (function it(_ = 'Combines two equal error types (native scalar types)') {
       type Expectation = ResultAsync<unknown, string>
 
       const result: Expectation = ok<number, string>(123)
-        .asyncAndTee((val) => errAsync('yoooooo dude' + val))
+        .asyncAndThrough((val) => errAsync('yoooooo dude' + val))
     });
 
     (function it(_ = 'Combines two equal error types (custom types)') {
@@ -387,7 +387,7 @@ import { Transpose } from '../src/result'
       type Expectation = ResultAsync<number, MyError>
 
       const result: Expectation = ok<number, MyError>(123)
-        .asyncAndTee((val) => errAsync<string, MyError>({ stack: '/blah', code: 500 }))
+        .asyncAndThrough((val) => errAsync<string, MyError>({ stack: '/blah', code: 500 }))
     });
 
     (function it(_ = 'Creates a union of error types for disjoint types') {
@@ -399,14 +399,14 @@ import { Transpose } from '../src/result'
       type Expectation = ResultAsync<number, MyError | string[]>
 
       const result: Expectation = ok<number, MyError>(123)
-        .asyncAndTee((val) => errAsync<string, string[]>(['oh nooooo']))
+        .asyncAndThrough((val) => errAsync<string, string[]>(['oh nooooo']))
     });
 
     // (function it(_ = 'Infers error type when returning disjoint types (native scalar types)') {
     //   type Expectation = ResultAsync<number, string | number | boolean>
 
     //   const result: Expectation = ok<number, string>(123)
-    //     .asyncAndTee((val) => {
+    //     .asyncAndThrough((val) => {
     //       switch (val) {
     //         case 1:
     //           return errAsync('yoooooo dude' + val)
@@ -426,7 +426,7 @@ import { Transpose } from '../src/result'
       type Expectation = Result<number, string | number | MyError>
 
       const result: Expectation = ok<number, string>(123)
-        .andTee((val) => {
+        .andThrough((val) => {
           switch (val) {
             case 1:
               return err('yoooooo dude' + val)
@@ -442,7 +442,7 @@ import { Transpose } from '../src/result'
       type Expectation = Result<number, unknown>
 
       const result: Expectation = ok<number, string>(123)
-        .andTee((val) => {
+        .andThrough((val) => {
           switch (val) {
             case 1:
               return err('yoooooo dude' + val)
@@ -457,7 +457,7 @@ import { Transpose } from '../src/result'
       type Expectation = Result<number, unknown>
 
       const result: Expectation = initial
-        .andTee((val) => {
+        .andThrough((val) => {
           switch (val) {
             case 1:
               return err('yoooooo dude' + val)
@@ -475,7 +475,7 @@ import { Transpose } from '../src/result'
       type Expectation = Result<number, string | number | MyError>
   
       const result: Expectation = ok<number, string>(123)
-        .andTee((val) => {
+        .andThrough((val) => {
           switch (val) {
             case 1:
               return err('yoooooo dude' + val)
@@ -490,7 +490,7 @@ import { Transpose } from '../src/result'
     (function it(_ = 'allows specifying the E type explicitly') {
       type Expectation = Result<number, string>
 
-      const result: Expectation = ok(123).andTee<string>(val => {
+      const result: Expectation = ok(123).andThrough<string>(val => {
         return ok('yo')
       })
     });
@@ -504,7 +504,7 @@ import { Transpose } from '../src/result'
       type Expectation = ResultAsync<number, string | number | MyError>
   
       const result: Expectation = ok<number, string>(123)
-        .asyncAndTee((val) => {
+        .asyncAndThrough((val) => {
           switch (val) {
             case 1:
               return errAsync('yoooooo dude' + val)

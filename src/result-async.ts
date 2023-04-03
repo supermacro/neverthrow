@@ -79,9 +79,10 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
       }),
     )
   }
-  andTee<F>(f: (t: T) => Result<unknown, F> | ResultAsync<unknown, F>): ResultAsync<T, E | F> {
+
+  andThrough<F>(f: (t: T) => Result<unknown, F> | ResultAsync<unknown, F>): ResultAsync<T, E | F> {
     return new ResultAsync(
-      this._promise.then(async (res: Result<T,E>) => {
+      this._promise.then(async (res: Result<T, E>) => {
         if (res.isErr()) {
           return new Err<T, E>(res.error)
         }
@@ -91,24 +92,25 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
           return new Err<T, F>(newRes.error)
         }
         return new Ok<T, F>(res.value)
-      })
+      }),
     )
   }
 
-  // TODO: Is this a good idea?
-  andSafeTee(f: (t: T) => unknown | Promise<unknown>): ResultAsync<T, E> {
+  andTee(f: (t: T) => unknown): ResultAsync<T, E> {
     return new ResultAsync(
-      this._promise.then(async (res: Result<T,E>) => {
+      this._promise.then(async (res: Result<T, E>) => {
         if (res.isErr()) {
           return new Err<T, E>(res.error)
         }
-
-        await f(res.value)
+        try {
+          await f(res.value)
+        } catch (e) {
+          // Tee does not care about the error
+        }
         return new Ok<T, E>(res.value)
-      })
+      }),
     )
   }
-
 
   mapErr<U>(f: (e: E) => U | Promise<U>): ResultAsync<T, U> {
     return new ResultAsync(
