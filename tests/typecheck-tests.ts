@@ -14,6 +14,24 @@ import {
   ResultAsync,
 } from '../src'
 import { Transpose } from '../src/result'
+import { type N, Test } from 'ts-toolbelt'
+
+type CreateTuple<L, V = string> =
+  // Length must always be a number
+  L extends number
+    ? N.IsNegative<L> extends 1
+      // Length must always be non-negative
+      ? never 
+      // base case
+      : L extends 0
+        ? []
+        // recursion depth check
+        // typescript has a limit.
+        : N.Lower<L, 50> extends 1
+          ? [V, ...CreateTuple<N.Sub<L, 1>, V>] 
+          : never
+    : never;
+
 
 (function describe(_ = 'Result') {
   (function describe(_ = 'andThen') {
@@ -301,6 +319,536 @@ import { Transpose } from '../src/result'
 
       const assignableToCheck: Expectation = result;
       const assignablefromCheck: typeof result = assignableToCheck;
+    });
+
+    (function describe(_ = 'inference on large tuples') {
+      (function it(_ = 'Should correctly infer the type on tuples with 6 elements') {
+        type Input = CreateTuple<6, Result<string, never>>
+        type Expectation = Result<CreateTuple<6, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 7 elements') {
+        type Input = CreateTuple<7, Result<string, never>>
+        type Expectation = Result<CreateTuple<7, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 8 elements') {
+        type Input = CreateTuple<8, Result<string, never>>
+        type Expectation = Result<CreateTuple<8, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 9 elements') {
+        type Input = CreateTuple<9, Result<string, never>>
+        type Expectation = Result<CreateTuple<9, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 10 elements') {
+        type Input = CreateTuple<10, Result<string, never>>
+        type Expectation = Result<CreateTuple<10, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 11 elements') {
+        type Input = CreateTuple<11, Result<string, never>>
+        type Expectation = Result<CreateTuple<11, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 12 elements') {
+        type Input = CreateTuple<12, Result<string, never>>
+        type Expectation = Result<CreateTuple<12, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 13 elements') {
+        type Input = CreateTuple<13, Result<string, never>>
+        type Expectation = Result<CreateTuple<13, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 14 elements') {
+        type Input = CreateTuple<14, Result<string, never>>
+        type Expectation = Result<CreateTuple<14, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 15 elements') {
+        type Input = CreateTuple<15, Result<string, never>>
+        type Expectation = Result<CreateTuple<15, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 16 elements') {
+        type Input = CreateTuple<16, Result<string, never>>
+        type Expectation = Result<CreateTuple<16, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 17 elements') {
+        type Input = CreateTuple<17, Result<string, never>>
+        type Expectation = Result<CreateTuple<17, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 18 elements') {
+        type Input = CreateTuple<18, Result<string, never>>
+        type Expectation = Result<CreateTuple<18, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 19 elements') {
+        type Input = CreateTuple<19, Result<string, never>>
+        type Expectation = Result<CreateTuple<19, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 20 elements') {
+        type Input = CreateTuple<20, Result<string, never>>
+        type Expectation = Result<CreateTuple<20, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 21 elements') {
+        type Input = CreateTuple<21, Result<string, never>>
+        type Expectation = Result<CreateTuple<21, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 22 elements') {
+        type Input = CreateTuple<22, Result<string, never>>
+        type Expectation = Result<CreateTuple<22, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 23 elements') {
+        type Input = CreateTuple<23, Result<string, never>>
+        type Expectation = Result<CreateTuple<23, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 24 elements') {
+        type Input = CreateTuple<24, Result<string, never>>
+        type Expectation = Result<CreateTuple<24, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 25 elements') {
+        type Input = CreateTuple<25, Result<string, never>>
+        type Expectation = Result<CreateTuple<25, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 26 elements') {
+        type Input = CreateTuple<26, Result<string, never>>
+        type Expectation = Result<CreateTuple<26, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 27 elements') {
+        type Input = CreateTuple<27, Result<string, never>>
+        type Expectation = Result<CreateTuple<27, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 28 elements') {
+        type Input = CreateTuple<28, Result<string, never>>
+        type Expectation = Result<CreateTuple<28, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 29 elements') {
+        type Input = CreateTuple<29, Result<string, never>>
+        type Expectation = Result<CreateTuple<29, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 30 elements') {
+        type Input = CreateTuple<30, Result<string, never>>
+        type Expectation = Result<CreateTuple<30, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 31 elements') {
+        type Input = CreateTuple<31, Result<string, never>>
+        type Expectation = Result<CreateTuple<31, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 32 elements') {
+        type Input = CreateTuple<32, Result<string, never>>
+        type Expectation = Result<CreateTuple<32, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 33 elements') {
+        type Input = CreateTuple<33, Result<string, never>>
+        type Expectation = Result<CreateTuple<33, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 34 elements') {
+        type Input = CreateTuple<34, Result<string, never>>
+        type Expectation = Result<CreateTuple<34, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 35 elements') {
+        type Input = CreateTuple<35, Result<string, never>>
+        type Expectation = Result<CreateTuple<35, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 36 elements') {
+        type Input = CreateTuple<36, Result<string, never>>
+        type Expectation = Result<CreateTuple<36, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 37 elements') {
+        type Input = CreateTuple<37, Result<string, never>>
+        type Expectation = Result<CreateTuple<37, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 38 elements') {
+        type Input = CreateTuple<38, Result<string, never>>
+        type Expectation = Result<CreateTuple<38, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 39 elements') {
+        type Input = CreateTuple<39, Result<string, never>>
+        type Expectation = Result<CreateTuple<39, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 40 elements') {
+        type Input = CreateTuple<40, Result<string, never>>
+        type Expectation = Result<CreateTuple<40, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 41 elements') {
+        type Input = CreateTuple<41, Result<string, never>>
+        type Expectation = Result<CreateTuple<41, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 42 elements') {
+        type Input = CreateTuple<42, Result<string, never>>
+        type Expectation = Result<CreateTuple<42, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 43 elements') {
+        type Input = CreateTuple<43, Result<string, never>>
+        type Expectation = Result<CreateTuple<43, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 44 elements') {
+        type Input = CreateTuple<44, Result<string, never>>
+        type Expectation = Result<CreateTuple<44, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 45 elements') {
+        type Input = CreateTuple<45, Result<string, never>>
+        type Expectation = Result<CreateTuple<45, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 46 elements') {
+        type Input = CreateTuple<46, Result<string, never>>
+        type Expectation = Result<CreateTuple<46, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 47 elements') {
+        type Input = CreateTuple<47, Result<string, never>>
+        type Expectation = Result<CreateTuple<47, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 48 elements') {
+        type Input = CreateTuple<48, Result<string, never>>
+        type Expectation = Result<CreateTuple<48, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'Should correctly infer the type on tuples with 49 elements') {
+        type Input = CreateTuple<49, Result<string, never>>
+        type Expectation = Result<CreateTuple<49, string>, never>
+
+        const inputValues = input<Input>()
+        const result = Result.combine(inputValues)
+
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
     });
   });
 
@@ -832,3 +1380,6 @@ declare function transpose<
 >(input: A): Transpose<[ ...A ]>;
 
 //#endregion
+
+// create dummy values with a desired type
+const input = <T>(): T => 123 as any
