@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
-      "target": "es2015",
+      "target": "es2016",
       "module": "ES2015",
       "noImplicitAny": true,
       "sourceMap": false,
       "downlevelIteration": true,
-      "noUnusedLocals": true,
-      "noUnusedParameters": true,
+      "noUnusedLocals": false,
+      "noUnusedParameters": false,
       "strictNullChecks": true,
       "strictFunctionTypes": true,
       "declaration": true,
@@ -20,10 +20,7 @@
       "outDir": "dist",
   },
   "include": [
-    "src/**/*.ts"
+    "./index.test.ts",
+    "./typecheck-tests.ts"
   ],
-  "exclude": [
-      "node_modules",
-      "**/*.spec.ts"
-  ]
 }

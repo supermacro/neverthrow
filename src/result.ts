@@ -411,6 +411,35 @@ type Prev = [
   18,
   19,
   20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38,
+  39,
+  40,
+  41,
+  42,
+  43,
+  44,
+  45,
+  46,
+  47,
+  48,
+  49,
   ...0[]
 ]
 
@@ -419,7 +448,7 @@ type Prev = [
 // T         - The array of the results
 // Collected - The collected tuples.
 // Depth     - The maximum depth.
-type CollectResults<T, Collected extends unknown[] = [], Depth extends number = 5> = [
+type CollectResults<T, Collected extends unknown[] = [], Depth extends number = 50> = [
   Depth,
 ] extends [never]
   ? []
