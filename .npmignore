@@ -2,7 +2,7 @@
 .gitignore
 .eslintrc.js
 .prettierrc.js
-.travis.yml
+.circleci/
 
 src/
 tmp/
@@ -10,7 +10,6 @@ node_modules/
 tsconfig.json
 publish.sh
 renovate.json
-
 
 tests/
 jest.config.js
