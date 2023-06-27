@@ -854,7 +854,7 @@ type CreateTuple<L, V = string> =
 
   (function describe(_ = 'combineWithAllErrors') {
     (function it(_ = 'combines different results into one') {
-      type Expectation = Result<[ number, string, never, never ], [string[] | Error, ...(string[] | Error)[]]>;
+      type Expectation = Result<[ number, string, never, never ], (string[] | Error)[]>;
 
       const result = Result.combineWithAllErrors([
         ok(1),
@@ -868,7 +868,7 @@ type CreateTuple<L, V = string> =
     });
 
     (function it(_ = 'combines only ok results into one') {
-      type Expectation = Result<[ number, string ], never>;
+      type Expectation = Result<[ number, string ], never[]>;
 
       const result = Result.combineWithAllErrors([
         ok(1),
@@ -880,7 +880,7 @@ type CreateTuple<L, V = string> =
     });
 
     (function it(_ = 'combines only err results into one') {
-      type Expectation = Result<[ never, never ], [number | string, ...(number | string)[]]>;
+      type Expectation = Result<[ never, never ], (number | string)[]>;
 
       const result = Result.combineWithAllErrors([
         err(1),
@@ -914,7 +914,7 @@ type CreateTuple<L, V = string> =
     (function describe(_ = 'inference on large tuples') {
       (function it(_ = 'Should correctly infer the type on tuples with 6 elements') {
         type Input = CreateTuple<6, Result<string, number>>
-        type Expectation = Result<CreateTuple<6, string>, [number, ...number[]]>
+        type Expectation = Result<CreateTuple<6, string>, number[]>
 
         const inputValues = input<Input>()
         const result = Result.combineWithAllErrors(inputValues)
@@ -926,7 +926,7 @@ type CreateTuple<L, V = string> =
 
       (function it(_ = 'Should correctly infer the type on tuples with 15 elements') {
         type Input = CreateTuple<15, Result<string, number>>
-        type Expectation = Result<CreateTuple<15, string>, [number, ...number[]]>
+        type Expectation = Result<CreateTuple<15, string>, number[]>
 
         const inputValues = input<Input>()
         const result = Result.combineWithAllErrors(inputValues)
@@ -938,7 +938,7 @@ type CreateTuple<L, V = string> =
 
       (function it(_ = 'Should correctly infer the type on tuples with 30 elements') {
         type Input = CreateTuple<30, Result<string, number>>
-        type Expectation = Result<CreateTuple<30, string>, [number, ...number[]]>
+        type Expectation = Result<CreateTuple<30, string>, number[]>
 
         const inputValues = input<Input>()
         const result = Result.combineWithAllErrors(inputValues)
@@ -950,7 +950,7 @@ type CreateTuple<L, V = string> =
 
       (function it(_ = 'Should correctly infer the type on tuples with 49 elements') {
         type Input = CreateTuple<49 , Result<string, number>>
-        type Expectation = Result<CreateTuple<49, string>, [number, ...number[]]>
+        type Expectation = Result<CreateTuple<49, string>, number[]>
 
         const inputValues = input<Input>()
         const result = Result.combineWithAllErrors(inputValues)
@@ -1868,7 +1868,7 @@ type CreateTuple<L, V = string> =
 
   (function describe(_ = 'combineWithAllErrors') {
     (function it(_ = 'combines different result asyncs into one') {
-      type Expectation = ResultAsync<[ number, string, never, never ], [string[] | Error, ...(string[] | Error)[]]>;
+      type Expectation = ResultAsync<[ number, string, never, never ], (string[] | Error)[]>;
 
       const result = ResultAsync.combineWithAllErrors([
         okAsync(1),
@@ -1882,7 +1882,7 @@ type CreateTuple<L, V = string> =
     });
 
     (function it(_ = 'combines only ok result asyncs into one') {
-      type Expectation = ResultAsync<[ number, string ], never>;
+      type Expectation = ResultAsync<[ number, string ], never[]>;
 
       const result = ResultAsync.combineWithAllErrors([
         okAsync(1),
@@ -1894,7 +1894,7 @@ type CreateTuple<L, V = string> =
     });
 
     (function it(_ = 'combines only err result asyncs into one') {
-      type Expectation = ResultAsync<[ never, never ], [number | string, ...(number | string)[]]>;
+      type Expectation = ResultAsync<[ never, never ], (number | string)[]>;
 
       const result = ResultAsync.combineWithAllErrors([
         errAsync(1),
@@ -1928,7 +1928,7 @@ type CreateTuple<L, V = string> =
     (function describe(_ = 'inference on large tuples') {
       (function it(_ = 'Should correctly infer the type on tuples with 6 elements') {
         type Input = CreateTuple<6, ResultAsync<string, number>>
-        type Expectation = ResultAsync<CreateTuple<6, string>, [number, ...number[]]>
+        type Expectation = ResultAsync<CreateTuple<6, string>, number[]>
 
         const inputValues = input<Input>()
         const result = ResultAsync.combineWithAllErrors(inputValues)
@@ -1940,7 +1940,7 @@ type CreateTuple<L, V = string> =
 
       (function it(_ = 'Should correctly infer the type on tuples with 15 elements') {
         type Input = CreateTuple<15, ResultAsync<string, number>>
-        type Expectation = ResultAsync<CreateTuple<15, string>, [number, ...number[]]>
+        type Expectation = ResultAsync<CreateTuple<15, string>, number[]>
 
         const inputValues = input<Input>()
         const result = ResultAsync.combineWithAllErrors(inputValues)
@@ -1952,7 +1952,7 @@ type CreateTuple<L, V = string> =
 
       (function it(_ = 'Should correctly infer the type on tuples with 30 elements') {
         type Input = CreateTuple<30, ResultAsync<string, number>>
-        type Expectation = ResultAsync<CreateTuple<30, string>, [number, ...number[]]>
+        type Expectation = ResultAsync<CreateTuple<30, string>, number[]>
 
         const inputValues = input<Input>()
         const result = ResultAsync.combineWithAllErrors(inputValues)
@@ -1964,7 +1964,7 @@ type CreateTuple<L, V = string> =
 
       (function it(_ = 'Should correctly infer the type on tuples with 49 elements') {
         type Input = CreateTuple<49 , ResultAsync<string, number>>
-        type Expectation = ResultAsync<CreateTuple<49, string>, [number, ...number[]]>
+        type Expectation = ResultAsync<CreateTuple<49, string>, number[]>
 
         const inputValues = input<Input>()
         const result = ResultAsync.combineWithAllErrors(inputValues)

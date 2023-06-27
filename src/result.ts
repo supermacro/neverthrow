@@ -501,7 +501,7 @@ type TraverseWithAllErrors<T, Depth extends number = 5> = Traverse<T, Depth> ext
   infer Oks,
   infer Errs
 >
-  ? Result<Oks, [Errs] extends [never] ? never : [Errs, ...Errs[]]>
+  ? Result<Oks, Errs[]>
   : never
 
 // Combines the array of results into one result.

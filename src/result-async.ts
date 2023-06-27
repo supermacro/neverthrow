@@ -225,7 +225,7 @@ type TraverseWithAllErrorsAsync<T, Depth extends number = 5> = TraverseAsync<
   T,
   Depth
 > extends ResultAsync<infer Oks, infer Errs>
-  ? ResultAsync<Oks, [Errs] extends [never] ? never : [Errs, ...Errs[]]>
+  ? ResultAsync<Oks, Errs[]>
   : never
 
 // Converts a reaodnly array into a writable array
