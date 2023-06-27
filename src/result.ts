@@ -497,11 +497,11 @@ type Traverse<T, Depth extends number = 5> = Combine<T, Depth> extends [infer Ok
 
 // Traverses an array of results and returns a single result containing
 // the oks combined and the array of errors combined.
-type TraverseWithAllErrors<T, Depth extends number = 5> = Combine<T, Depth> extends [
+type TraverseWithAllErrors<T, Depth extends number = 5> = Traverse<T, Depth> extends Result<
   infer Oks,
-  infer Errs,
-]
-  ? Result<EmptyArrayToNever<Oks>, EmptyArrayToNever<Errs>>
+  infer Errs
+>
+  ? Result<Oks, [Errs] extends [never] ? never : [Errs, ...Errs[]]>
   : never
 
 // Combines the array of results into one result.
