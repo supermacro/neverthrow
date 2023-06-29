@@ -113,10 +113,10 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     )
   }
 
-  orElse<R extends Result<T, unknown>>(
+  orElse<R extends Result<unknown, unknown>>(
     f: (e: E) => R,
   ): ResultAsync<InferOkTypes<R> | T, InferErrTypes<R>>
-  orElse<R extends ResultAsync<T, unknown>>(
+  orElse<R extends ResultAsync<unknown, unknown>>(
     f: (e: E) => R,
   ): ResultAsync<InferAsyncOkTypes<R> | T, InferAsyncErrTypes<R>>
   orElse<U, A>(f: (e: E) => Result<U, A> | ResultAsync<U, A>): ResultAsync<U | T, A>
