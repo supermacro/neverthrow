@@ -35,7 +35,7 @@
     "babel-jest": "27.5.1",
     "eslint": "7.30.0",
     "eslint-config-prettier": "7.1.0",
-    "eslint-plugin-prettier": "3.4.0",
+    "eslint-plugin-prettier": "5.0.0",
     "jest": "27.5.1",
     "prettier": "2.2.1",
     "rollup": "2.75.6",
