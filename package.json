@@ -5,6 +5,9 @@
   "main": "dist/index.cjs.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "jest && npm run test-types",
     "test-types": "tsc --noEmit -p ./tests/tsconfig.tests.json",
