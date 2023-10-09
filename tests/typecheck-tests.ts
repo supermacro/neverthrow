@@ -262,17 +262,17 @@ type CreateTuple<L, V = string> =
     });
 
     (function it(_ = 'infers the resulting value from match callbacks (different type)') {
-      type Expectation = string | boolean
+      type Expectation = boolean | bigint
 
-      const okResult: Expectation = ok<number, number>(123)
+      const okResult: Expectation = ok<string, number>('123')
         .match(
-          (val) => String(val),
           (val) => !!val,
+          (val) => BigInt(val),
         );
-      const errResult: Expectation = err<number, number>(123)
+      const errResult: Expectation = err<string, number>(123)
         .match(
-          (val) => String(val),
           (val) => !!val,
+          (val) => BigInt(val),
         );
     });
   });
