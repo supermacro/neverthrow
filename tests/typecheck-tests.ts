@@ -262,7 +262,7 @@ type CreateTuple<L, V = string> =
     });
 
     (function it(_ = 'infers the resulting value from match callbacks (different type)') {
-      type Expectation = string | number
+      type Expectation = string | boolean
 
       const okResult: Expectation = ok<number, number>(123)
         .match(
