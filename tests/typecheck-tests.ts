@@ -236,44 +236,44 @@ type CreateTuple<L, V = string> =
 
       ok<number, string>(123)
         .match(
-      (val: OKExpectation): void => void val,
-    (val: ErrExpectation) => void val,
+          (val: OKExpectation): void => void val,
+          (val: ErrExpectation): void => void val,
         );
       err<number, string>("123")
-          .match(
-              (val: OKExpectation): void => void val,
-              (val: ErrExpectation) => void val,
-          );
+        .match(
+          (val: OKExpectation): void => void val,
+          (val: ErrExpectation): void => void val,
+        );
     });
 
     (function it(_ = 'infers the resulting value from match callbacks (same type)') {
       type Expectation = boolean
 
       const okResult: Expectation = ok<number, string>(123)
-          .match(
-              (val) => !!val,
-              (val) => !!val,
-          );
+        .match(
+          (val) => !!val,
+          (val) => !!val,
+        );
       const errResult: Expectation = err<number, string>('123')
-          .match(
-              (val) => !!val,
-              (val) => !!val,
-          );
+        .match(
+          (val) => !!val,
+          (val) => !!val,
+        );
     });
 
     (function it(_ = 'infers the resulting value from match callbacks (different type)') {
       type Expectation = string | number
 
       const okResult: Expectation = ok<number, number>(123)
-          .match(
-              (val) => String(val),
-              (val) => !!val,
-          );
+        .match(
+          (val) => String(val),
+          (val) => !!val,
+        );
       const errResult: Expectation = err<number, number>(123)
-          .match(
-              (val) => String(val),
-              (val) => !!val,
-          );
+        .match(
+          (val) => String(val),
+          (val) => !!val,
+        );
     });
   });
 
