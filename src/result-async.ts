@@ -129,7 +129,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     )
   }
 
-  match<A>(ok: (t: T) => A, _err: (e: E) => A): Promise<A> {
+  match<A, B = A>(ok: (t: T) => A, _err: (e: E) => B): Promise<A | B> {
     return this._promise.then((res) => res.match(ok, _err))
   }
 

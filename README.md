@@ -441,10 +441,10 @@ Match callbacks do not necessitate to return a `Result`, however you can return 
 
 ```typescript
 class Result<T, E> {
-  match<A>(
+  match<A, B = A>(
     okCallback: (value: T) =>  A,
-    errorCallback: (error: E) =>  A
-  ): A => { ... }
+    errorCallback: (error: E) =>  B
+  ): A | B => { ... }
 }
 ```
 
@@ -1011,10 +1011,10 @@ The difference with `Result.match` is that it always returns a `Promise` because
 
 ```typescript
 class ResultAsync<T, E> {
-  match<A>(
+  match<A, B = A>(
     okCallback: (value: T) =>  A,
-    errorCallback: (error: E) =>  A
-  ): Promise<A> => { ... }
+    errorCallback: (error: E) =>  B
+  ): Promise<A | B> => { ... }
 }
 ```
 
