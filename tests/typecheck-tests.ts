@@ -229,6 +229,54 @@ type CreateTuple<L, V = string> =
     });
   });
 
+  (function describe(_ = 'match') {
+    (function it(_ = 'the type of the arguments match the types of the result') {
+      type OKExpectation = number
+      type ErrExpectation = string
+
+      ok<number, string>(123)
+        .match(
+      (val: OKExpectation): void => void val,
+    (val: ErrExpectation) => void val,
+        );
+      err<number, string>("123")
+          .match(
+              (val: OKExpectation): void => void val,
+              (val: ErrExpectation) => void val,
+          );
+    });
+
+    (function it(_ = 'infers the resulting value from match callbacks (same type)') {
+      type Expectation = boolean
+
+      const okResult: Expectation = ok<number, string>(123)
+          .match(
+              (val) => !!val,
+              (val) => !!val,
+          );
+      const errResult: Expectation = err<number, string>('123')
+          .match(
+              (val) => !!val,
+              (val) => !!val,
+          );
+    });
+
+    (function it(_ = 'infers the resulting value from match callbacks (different type)') {
+      type Expectation = string | number
+
+      const okResult: Expectation = ok<number, number>(123)
+          .match(
+              (val) => String(val),
+              (val) => !!val,
+          );
+      const errResult: Expectation = err<number, number>(123)
+          .match(
+              (val) => String(val),
+              (val) => !!val,
+          );
+    });
+  });
+
   (function describe(_ = 'asyncAndThen') {
     (function it(_ = 'Combines two equal error types (native scalar types)') {
       type Expectation = ResultAsync<unknown, string>
