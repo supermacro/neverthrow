@@ -142,7 +142,7 @@ describe('Result.Ok', () => {
       // network calls
       // disk io
       // etc ...
-      return Promise.resolve(ok('Very Nice!'))
+      return Promise.resolve('Very Nice!')
     })
 
     const okVal = ok(12)
@@ -155,6 +155,7 @@ describe('Result.Ok', () => {
 
     expect(newResult.isOk()).toBe(true)
     expect(asyncMapper).toHaveBeenCalledTimes(1)
+    expect(newResult._unsafeUnwrap()).toStrictEqual('Very Nice!')
   })
 
   it('Matches on an Ok', () => {
@@ -265,7 +266,7 @@ describe('Result.Err', () => {
       // network calls
       // disk io
       // etc ...
-      return Promise.resolve(ok('Very Nice!'))
+      return Promise.resolve('Very Nice!')
     })
 
     const errVal = err('nooooooo')

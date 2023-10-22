@@ -2,9 +2,6 @@
 
 [![supermacro](https://circleci.com/gh/supermacro/neverthrow.svg?style=svg)](https://app.circleci.com/pipelines/github/supermacro/neverthrow)
 
-
-[![Package Size](https://badgen.net/bundlephobia/minzip/neverthrow)](https://bundlephobia.com/result?p=neverthrow)
-
 ## Description
 
 Encode failure into your program.
@@ -41,6 +38,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.fromThrowable` (static class method)](#resultfromthrowable-static-class-method)
     - [`Result.combine` (static class method)](#resultcombine-static-class-method)
     - [`Result.combineWithAllErrors` (static class method)](#resultcombinewithallerrors-static-class-method)
+    - [`Result.safeUnwrap()`](#resultsafeunwrap)
   + [Asynchronous API (`ResultAsync`)](#asynchronous-api-resultasync)
     - [`okAsync`](#okasync)
     - [`errAsync`](#errasync)
@@ -54,10 +52,12 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.match` (method)](#resultasyncmatch-method)
     - [`ResultAsync.combine` (static class method)](#resultasynccombine-static-class-method)
     - [`ResultAsync.combineWithAllErrors` (static class method)](#resultasynccombinewithallerrors-static-class-method)
+    - [`ResultAsync.safeUnwrap()`](#resultasyncsafeunwrap)
   + [Utilities](#utilities)
     - [`fromThrowable`](#fromthrowable)
     - [`fromPromise`](#frompromise)
     - [`fromSafePromise`](#fromsafepromise)
+    - [`safeTry`](#safetry)
   + [Testing](#testing)
 * [A note on the Package Name](#a-note-on-the-package-name)
 
@@ -114,6 +114,7 @@ import {
   fromThrowable,
   fromPromise,
   fromSafePromise,
+  safeTry,
 } from 'neverthrow'
 ```
 
@@ -224,7 +225,7 @@ class Result<T, E> {
 **Example**:
 
 ```typescript
-const { getLines } from 'imaginary-parser'
+import { getLines } from 'imaginary-parser'
 // ^ assume getLines has the following signature:
 // getLines(str: string): Result<Array<string>, Error>
 
@@ -262,7 +263,7 @@ class Result<T, E> {
 **Example**:
 
 ```typescript
-import { parseHeaders } 'imaginary-http-parser'
+import { parseHeaders } from 'imaginary-http-parser'
 // imagine that parseHeaders has the following signature:
 // parseHeaders(raw: string): Result<SomeKeyValueMap, ParseError>
 
@@ -522,7 +523,7 @@ class Result<T, E> {
 **Example:**
 
 ```typescript
-import { parseHeaders } 'imaginary-http-parser'
+import { parseHeaders } from 'imaginary-http-parser'
 // imagine that parseHeaders has the following signature:
 // parseHeaders(raw: string): Result<SomeKeyValueMap, ParseError>
 
@@ -659,7 +660,16 @@ const result = Result.combineWithAllErrors(resultList)
 // result is Err(['boooom!', 'ahhhhh!'])
 ```
 
+[⬆️  Back to top](#toc)
 
+#### `Result.safeUnwrap()`
+
+**⚠️ You must use `.safeUnwrap` in a generator context with `safeTry`**
+
+Allows for unwrapping a `Result` or returning an `Err` implicitly, thereby reducing boilerplate.
+
+
+[⬆️  Back to top](#toc)
 
 ---
 
@@ -822,7 +832,7 @@ class ResultAsync<T, E> {
 **Example**:
 
 ```typescript
-const { findUsersIn } from 'imaginary-database'
+import { findUsersIn } from 'imaginary-database'
 // ^ assume findUsersIn has the following signature:
 // findUsersIn(country: string): ResultAsync<Array<User>, Error>
 
@@ -868,7 +878,7 @@ class ResultAsync<T, E> {
 **Example**:
 
 ```typescript
-const { findUsersIn } from 'imaginary-database'
+import { findUsersIn } from 'imaginary-database'
 // ^ assume findUsersIn has the following signature:
 // findUsersIn(country: string): ResultAsync<Array<User>, Error>
 
@@ -954,9 +964,9 @@ class ResultAsync<T, E> {
 
 ```typescript
 
-const { validateUser } from 'imaginary-validator'
-const { insertUser } from 'imaginary-database'
-const { sendNotification } from 'imaginary-service'
+import { validateUser } from 'imaginary-validator'
+import { insertUser } from 'imaginary-database'
+import { sendNotification } from 'imaginary-service'
 
 // ^ assume validateUser, insertUser and sendNotification have the following signatures:
 // validateUser(user: User): Result<User, Error>
@@ -1022,8 +1032,8 @@ class ResultAsync<T, E> {
 
 ```typescript
 
-const { validateUser } from 'imaginary-validator'
-const { insertUser } from 'imaginary-database'
+import { validateUser } from 'imaginary-validator'
+import { insertUser } from 'imaginary-database'
 
 // ^ assume validateUser and insertUser have the following signatures:
 // validateUser(user: User): Result<User, Error>
@@ -1128,6 +1138,13 @@ const result = ResultAsync.combineWithAllErrors(resultList)
 // result is Err(['boooom!', 'ahhhhh!'])
 ```
 
+#### `ResultAsync.safeUnwrap()`
+
+**⚠️ You must use `.safeUnwrap` in a generator context with `safeTry`**
+
+Allows for unwrapping a `Result` or returning an `Err` implicitly, thereby reducing boilerplate.
+
+[⬆️  Back to top](#toc)
 
 ---
 
@@ -1151,6 +1168,15 @@ Please find documentation at [ResultAsync.fromPromise](#resultasyncfrompromise-s
 
 Top level export of `ResultAsync.fromSafePromise`.
 Please find documentation at [ResultAsync.fromSafePromise](#resultasyncfromsafepromise-static-class-method)
+
+[⬆️  Back to top](#toc)
+
+
+#### `safeTry`
+
+Used to implicityly return errors and reduce boilerplate.
+
+See https://github.com/supermacro/neverthrow/pull/448 and https://github.com/supermacro/neverthrow/issues/444
 
 [⬆️  Back to top](#toc)
 

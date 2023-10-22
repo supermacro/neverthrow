@@ -64,6 +64,49 @@ export const ok = <T, E = never>(value: T): Ok<T, E> => new Ok(value)
 
 export const err = <T = never, E = unknown>(err: E): Err<T, E> => new Err(err)
 
+/**
+ * Evaluates the given generator to a Result returned or an Err yielded from it,
+ * whichever comes first.
+ *
+ * This function, in combination with `Result.safeUnwrap()`, is intended to emulate
+ * Rust's ? operator.
+ * See `/tests/safeTry.test.ts` for examples.
+ *
+ * @param body - What is evaluated. In body, `yield* result.safeUnwrap()` works as
+ * Rust's `result?` expression.
+ * @returns The first occurence of either an yielded Err or a returned Result.
+ */
+export function safeTry<T, E>(body: () => Generator<Err<never, E>, Result<T, E>>): Result<T, E>
+/**
+ * Evaluates the given generator to a Result returned or an Err yielded from it,
+ * whichever comes first.
+ *
+ * This function, in combination with `Result.safeUnwrap()`, is intended to emulate
+ * Rust's ? operator.
+ * See `/tests/safeTry.test.ts` for examples.
+ *
+ * @param body - What is evaluated. In body, `yield* result.safeUnwrap()` and
+ * `yield* resultAsync.safeUnwrap()` work as Rust's `result?` expression.
+ * @returns The first occurence of either an yielded Err or a returned Result.
+ */
+// NOTE:
+// Since body is potentially throwable because `await` can be used in it,
+// Promise<Result<T, E>>, not ResultAsync<T, E>, is used as the return type.
+export function safeTry<T, E>(
+  body: () => AsyncGenerator<Err<never, E>, Result<T, E>>,
+): Promise<Result<T, E>>
+export function safeTry<T, E>(
+  body:
+    | (() => Generator<Err<never, E>, Result<T, E>>)
+    | (() => AsyncGenerator<Err<never, E>, Result<T, E>>),
+): Result<T, E> | Promise<Result<T, E>> {
+  const n = body().next()
+  if (n instanceof Promise) {
+    return n.then((r) => r.value)
+  }
+  return n.value
+}
+
 interface IResult<T, E> {
   /**
    * Used to check if a `Result` is an `OK`
@@ -171,6 +214,11 @@ interface IResult<T, E> {
   match<A>(ok: (t: T) => A, err: (e: E) => A): A
 
   /**
+   * Emulates Rust's `?` operator in `safeTry`'s body. See also `safeTry`.
+   */
+  safeUnwrap(): Generator<Err<never, E>, T>
+
+  /**
    * **This method is unsafe, and should only be used in a test environments**
    *
    * Takes a `Result<T, E>` and returns a `T` when the result is an `Ok`, otherwise it throws a custom object.
@@ -244,6 +292,14 @@ export class Ok<T, E> implements IResult<T, E> {
     return ok(this.value)
   }
 
+  safeUnwrap(): Generator<Err<never, E>, T> {
+    const value = this.value
+    /* eslint-disable-next-line require-yield */
+    return (function* () {
+      return value
+    })()
+  }
+
   _unsafeUnwrap(_?: ErrorConfig): T {
     return this.value
   }
@@ -307,6 +363,15 @@ export class Err<T, E> implements IResult<T, E> {
     return err(this.error)
   }
 
+  safeUnwrap(): Generator<Err<never, E>, T> {
+    const error = this.error
+    return (function* () {
+      yield err(error)
+
+      throw new Error('Do not use this generator out of `safeTry`')
+    })()
+  }
+
   _unsafeUnwrap(config?: ErrorConfig): T {
     throw createNeverThrowError('Called `_unsafeUnwrap` on an Err', this, config)
   }
@@ -346,6 +411,35 @@ type Prev = [
   18,
   19,
   20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38,
+  39,
+  40,
+  41,
+  42,
+  43,
+  44,
+  45,
+  46,
+  47,
+  48,
+  49,
   ...0[]
 ]
 
@@ -354,7 +448,7 @@ type Prev = [
 // T         - The array of the results
 // Collected - The collected tuples.
 // Depth     - The maximum depth.
-type CollectResults<T, Collected extends unknown[] = [], Depth extends number = 5> = [
+type CollectResults<T, Collected extends unknown[] = [], Depth extends number = 50> = [
   Depth,
 ] extends [never]
   ? []
