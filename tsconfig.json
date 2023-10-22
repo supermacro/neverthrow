@@ -1,16 +1,16 @@
 {
+  "extends": "@tsconfig/node14/tsconfig.json",
   "compilerOptions": {
       "target": "es2015",
       "module": "ES2015",
+      "strict": false,
       "noImplicitAny": true,
       "sourceMap": false,
-      "downlevelIteration": true,
       "noUnusedLocals": true,
       "noUnusedParameters": true,
       "strictNullChecks": true,
       "strictFunctionTypes": true,
       "declaration": true,
-      "moduleResolution": "Node",
       "baseUrl": "./src",
       "lib": [
         "dom",

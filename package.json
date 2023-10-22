@@ -31,6 +31,7 @@
     "@babel/core": "7.16.7",
     "@babel/preset-env": "7.16.8",
     "@babel/preset-typescript": "7.16.7",
+    "@tsconfig/node14": "^1.0.3",
     "@types/jest": "27.4.1",
     "@types/node": "14.17.4",
     "@typescript-eslint/eslint-plugin": "4.28.1",
