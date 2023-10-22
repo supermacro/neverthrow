@@ -41,6 +41,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.fromThrowable` (static class method)](#resultfromthrowable-static-class-method)
     - [`Result.combine` (static class method)](#resultcombine-static-class-method)
     - [`Result.combineWithAllErrors` (static class method)](#resultcombinewithallerrors-static-class-method)
+    - [`Result.safeUnwrap()`](#resultsafeunwrap)
   + [Asynchronous API (`ResultAsync`)](#asynchronous-api-resultasync)
     - [`okAsync`](#okasync)
     - [`errAsync`](#errasync)
@@ -54,10 +55,12 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.match` (method)](#resultasyncmatch-method)
     - [`ResultAsync.combine` (static class method)](#resultasynccombine-static-class-method)
     - [`ResultAsync.combineWithAllErrors` (static class method)](#resultasynccombinewithallerrors-static-class-method)
+    - [`ResultAsync.safeUnwrap()`](#resultasyncsafeunwrap)
   + [Utilities](#utilities)
     - [`fromThrowable`](#fromthrowable)
     - [`fromPromise`](#frompromise)
     - [`fromSafePromise`](#fromsafepromise)
+    - [`safeTry`](#safetry)
   + [Testing](#testing)
 * [A note on the Package Name](#a-note-on-the-package-name)
 
@@ -114,6 +117,7 @@ import {
   fromThrowable,
   fromPromise,
   fromSafePromise,
+  safeTry,
 } from 'neverthrow'
 ```
 
@@ -659,7 +663,16 @@ const result = Result.combineWithAllErrors(resultList)
 // result is Err(['boooom!', 'ahhhhh!'])
 ```
 
+[⬆️  Back to top](#toc)
 
+#### `Result.safeUnwrap()`
+
+**⚠️ You must use `.safeUnwrap` in a generator context with `safeTry`**
+
+Allows for unwrapping a `Result` or returning an `Err` implicitly, thereby reducing boilerplate.
+
+
+[⬆️  Back to top](#toc)
 
 ---
 
@@ -1128,6 +1141,13 @@ const result = ResultAsync.combineWithAllErrors(resultList)
 // result is Err(['boooom!', 'ahhhhh!'])
 ```
 
+#### `ResultAsync.safeUnwrap()`
+
+**⚠️ You must use `.safeUnwrap` in a generator context with `safeTry`**
+
+Allows for unwrapping a `Result` or returning an `Err` implicitly, thereby reducing boilerplate.
+
+[⬆️  Back to top](#toc)
 
 ---
 
@@ -1151,6 +1171,15 @@ Please find documentation at [ResultAsync.fromPromise](#resultasyncfrompromise-s
 
 Top level export of `ResultAsync.fromSafePromise`.
 Please find documentation at [ResultAsync.fromSafePromise](#resultasyncfromsafepromise-static-class-method)
+
+[⬆️  Back to top](#toc)
+
+
+#### `safeTry`
+
+Used to implicityly return errors and reduce boilerplate.
+
+See https://github.com/supermacro/neverthrow/pull/448 and https://github.com/supermacro/neverthrow/issues/444
 
 [⬆️  Back to top](#toc)
 
