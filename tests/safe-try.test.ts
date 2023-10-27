@@ -111,3 +111,17 @@ describe("Returns the first occurence of Err instance as yiled*'s operand", () =
     expect(result._unsafeUnwrapErr()).toBe(errVal)
   })
 })
+
+describe("test", () => {
+  test("test", () => {
+    safeTry<unknown, { type: "error" }>(function*() {
+      yield* ok(undefined)
+        .mapErr(() => ({
+          type: "error"
+        }))
+        .safeUnwrap()
+
+      return ok(undefined)
+    })
+  })
+})
