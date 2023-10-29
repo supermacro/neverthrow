@@ -126,9 +126,9 @@ type SafeTryBoundedHelpers<T, E> = {
    * which is not compatible with the enclosing safeTry's `E`: { type: "foo" }.
    * ```typescript
    * safeTry<unknown, { type: "foo" }>(function*() {
-   *   yield* err(undefeind).mapErr(() => ({
+   *   yield* err(undefined).mapErr(() => ({
    *     type: "foo"
-   *   }))
+   *   })).safeUnwrap()
    *   return ok("something")
    * })
    * ```
@@ -139,7 +139,7 @@ type SafeTryBoundedHelpers<T, E> = {
    * safeTry<unknown, { type: "foo" }>(function*({ error }) {
    *   yield* err(undefined).mapErr(() => error({
    *     type: "foo"
-   *   }))
+   *   })).safeUnwrap()
    *   return ok("something")
    * })
    * ```
