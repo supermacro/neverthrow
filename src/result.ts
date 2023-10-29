@@ -73,48 +73,59 @@ type SafeTryBoundedHelpers<T, E> = {
    * those of the enclosing safeTry.
    * Intended to be used to help type-checkers to infer the `Ok`'s value type.
    *
-   * The following will not pass type-check,
-   * because the body's `T` is inferred to be `{ type: string }`,
-   * which is not compatible with the enclosing safeTry's `T`: `{ type: "foo" }`.
+   * When a wrongly typed value is returned from the body, the compiler emits
+   * puzzling type-check errors for the type of the body, while we expect
+   * an error is emitted where we write the wrong value.
+   *
+   * You can use this helper to safely assert that
+   * the value type is the same as the enclosing safeTry's `T`,
+   * so that if the value is wrongly typed the compiler emits an error at that place.
+   *
    * ```typescript
-   * safeTry<{ type: "foo" }, unknown>(function*() {
-   *   // This `ok` is what is exported by neverthrow
-   *   return ok({ type: "foo" })
+   * // If you use neverthrow's ok,
+   * safeTry<"ok", unknown>(function*() { // puzzling errors are emitted here
+   *   return ok("OK") // but here is the place where we expect an error.
    * })
    * ```
    *
-   * You can use this helper to safely assert that
-   * the value type is the same as the enclosing safeTry's `T`.
    * ```typescript
-   * safeTry<number, { type: "foo" }>(function*({ ok }) {
-   *   // This `ok` is what is passed to as the body's parameter
-   *   return ok({ type: "foo" })
+   * // If you use this helper,
+   * safeTry<"ok", unknown>(function*({ ok }) {
+   *   return ok("OK") // an error is emitted here, as we expect.
    * })
    * ```
+   *
+   * See https://github.com/supermacro/neverthrow/pull/501 for actual errors.
    */
   ok: (value: T) => Ok<T, E>
   /**
-   * The same function as neverthrow's `err` with its `T` and `E` bound to
+   * The same function as neverthrow's `error` with its `T` and `E` bound to
    * those of the enclosing safeTry.
-   * Intended to be used to help type-checkers to infer the `Err`'s error type.
+   * Intended to be used to help type-checkers to infer the `Ok`'s value type.
    *
-   * The following will not pass type-check,
-   * because the body's `E` is inferred to be `{ type: string }`,
-   * which is not compatible with the enclosing safeTry's `E`: `{ type: "foo" }`.
+   * When a wrongly typed value is returned from the body, the compiler emits
+   * puzzling type-check errors for the type of the body, while we expect
+   * an error is emitted where we write the wrong value.
+   *
+   * You can use this helper to safely assert that
+   * the error type is the same as the enclosing safeTry's `E`,
+   * so that if the error is wrongly typed the compiler emits an error at that place.
+   *
    * ```typescript
-   * safeTry<unknown, { type: "foo" }>(function*() {
-   *   // This `err` is what is exported by neverthrow
-   *   return err({ type: "foo" })
+   * // If you use neverthrow's err,
+   * safeTry<unknown, "error">(function*() { // puzzling errors are emitted here
+   *   return err("ERROR") // but here is the place where we expect an error.
    * })
    * ```
    *
-   * You can use this helper to safely assert that
-   * the error type is the same as the enclosing safeTry's `E`.
    * ```typescript
-   * safeTry<number, { type: "foo" }>(function*({ err }) {
-   *   // This `err` is what is passed to as the body's parameter
-   *   return err({ type: "foo" })
+   * // If you use this helper,
+   * safeTry<unknown, "error">(function*({ error }) {
+   *   return err("ERROR") // an error is emitted here, as we expect.
    * })
+   * ```
+   *
+   * See https://github.com/supermacro/neverthrow/pull/501 for actual errors.
    */
   err: (error: E) => Err<T, E>
   /**
@@ -122,8 +133,8 @@ type SafeTryBoundedHelpers<T, E> = {
    * Intended to be used to help type-checkers to infer the error type.
    *
    * The following will not pass type-check,
-   * because the body's `E` is inferred to be { type: string },
-   * which is not compatible with the enclosing safeTry's `E`: { type: "foo" }.
+   * because the body's `E` is inferred to be string,
+   * which is not compatible with the enclosing safeTry's `E`: "error".
    * ```typescript
    * safeTry<unknown, { type: "foo" }>(function*() {
    *   yield* err(undefined).mapErr(() => ({
