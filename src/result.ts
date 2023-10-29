@@ -136,22 +136,18 @@ type SafeTryBoundedHelpers<T, E> = {
    * because the body's `E` is inferred to be string,
    * which is not compatible with the enclosing safeTry's `E`: "error".
    * ```typescript
-   * safeTry<unknown, { type: "foo" }>(function*() {
-   *   yield* err(undefined).mapErr(() => ({
-   *     type: "foo"
-   *   })).safeUnwrap()
-   *   return ok("something")
+   * safeTry<unknown, "error">(function*() {
+   *   yield* ok(undefined).mapErr(() => "error").safeUnwrap()
+   *   return ok(undefined)
    * })
    * ```
    *
    * You can use this helper to safely assert that
    * the error type is the same as the enclosing safeTry's E.
    * ```typescript
-   * safeTry<unknown, { type: "foo" }>(function*({ error }) {
-   *   yield* err(undefined).mapErr(() => error({
-   *     type: "foo"
-   *   })).safeUnwrap()
-   *   return ok("something")
+   * safeTry<unknown, "error">(function*({ error }) {
+   *   yield* ok(undefined).mapErr(() => error("error")).safeUnwrap()
+   *   return ok(undefined)
    * })
    * ```
    */
