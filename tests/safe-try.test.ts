@@ -118,14 +118,14 @@ describe("Type-check error samples", () => {
   // yield*'s E is not narrowed well
   safeTry<unknown, "error">(function*() {
     yield* ok(undefined)
-      .mapErr(() => "error") // This should be narrowed to "error", but is inferred to string
+      .mapErr(() => "error") // This should be narrowed to "error", but is inferred as string
       .safeUnwrap()
 
     return ok(undefined)
   })
 
-  // Type-check error is not emitted where the wrong value is made, but is always emitted
-  // as the generator-function's error
+  // Type-check errors are not emitted where the wrong value is made, but are emitted
+  // as the generator-function's errors
   safeTry<"ok", unknown>(function*() { // Here errors are emitted, but they are not easy to understand.
     return ok("OK") // A type-check error should be emitted here, but is not.
   })
