@@ -57,6 +57,20 @@ describe('Result.Ok', () => {
     expect(sideEffect).toHaveBeenCalledTimes(1)
   })
 
+  it('Cannot change a value with .tap', () => {
+    const original = { name: 'John' }
+    const okVal = ok(original)
+
+    // value can be accessed, but is not changed
+    const sideEffect = jest.fn((_person) => ({ name: 'Alice' }))
+
+    const mapped = okVal.tap(sideEffect)
+
+    expect(mapped.isOk()).toBe(true)
+    expect(mapped._unsafeUnwrap()).toEqual(original)
+    expect(sideEffect).toHaveBeenCalledTimes(1)
+  })
+
   it('Maps over an Ok value', () => {
     const okVal = ok(12)
     const mapFn = jest.fn((number) => number.toString())
@@ -709,6 +723,24 @@ describe('ResultAsync', () => {
 
       expect(newVal.isOk()).toBe(true)
       expect(newVal._unsafeUnwrap()).toBe(12)
+      expect(sideEffect).toHaveBeenCalledTimes(1)
+    })
+
+    it('Cannot change an async value with .tap', async () => {
+      const original = { name: 'John' }
+      const asyncVal = okAsync(original)
+
+      const sideEffect = jest.fn((_person) => okAsync({ name: 'Alice' }))
+
+      //@ts-ignore  Ignoring this to run "dangerous code"
+      const mapped = asyncVal.tap(sideEffect)
+
+      expect(mapped).toBeInstanceOf(ResultAsync)
+
+      const newVal = await mapped
+
+      expect(newVal.isOk()).toBe(true)
+      expect(newVal._unsafeUnwrap()).toEqual(original)
       expect(sideEffect).toHaveBeenCalledTimes(1)
     })
 
