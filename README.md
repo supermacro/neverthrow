@@ -2,7 +2,6 @@
 
 [![supermacro](https://circleci.com/gh/supermacro/neverthrow.svg?style=svg)](https://app.circleci.com/pipelines/github/supermacro/neverthrow)
 
-
 [![Package Size](https://badgen.net/bundlephobia/minzip/neverthrow)](https://bundlephobia.com/result?p=neverthrow)
 
 ## Description
@@ -21,11 +20,11 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
 
 ## Table Of Contents
 
-* [Installation](#installation)
-* [Recommended: Use `eslint-plugin-neverthrow`](#recommended-use-eslint-plugin-neverthrow)
-* [Top-Level API](#top-level-api)
-* [API Documentation](#api-documentation)
-  + [Synchronous API (`Result`)](#synchronous-api-result)
+- [Installation](#installation)
+- [Recommended: Use `eslint-plugin-neverthrow`](#recommended-use-eslint-plugin-neverthrow)
+- [Top-Level API](#top-level-api)
+- [API Documentation](#api-documentation)
+  - [Synchronous API (`Result`)](#synchronous-api-result)
     - [`ok`](#ok)
     - [`err`](#err)
     - [`Result.isOk` (method)](#resultisok-method)
@@ -41,7 +40,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.fromThrowable` (static class method)](#resultfromthrowable-static-class-method)
     - [`Result.combine` (static class method)](#resultcombine-static-class-method)
     - [`Result.combineWithAllErrors` (static class method)](#resultcombinewithallerrors-static-class-method)
-  + [Asynchronous API (`ResultAsync`)](#asynchronous-api-resultasync)
+  - [Asynchronous API (`ResultAsync`)](#asynchronous-api-resultasync)
     - [`okAsync`](#okasync)
     - [`errAsync`](#errasync)
     - [`ResultAsync.fromPromise` (static class method)](#resultasyncfrompromise-static-class-method)
@@ -54,12 +53,12 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.match` (method)](#resultasyncmatch-method)
     - [`ResultAsync.combine` (static class method)](#resultasynccombine-static-class-method)
     - [`ResultAsync.combineWithAllErrors` (static class method)](#resultasynccombinewithallerrors-static-class-method)
-  + [Utilities](#utilities)
+  - [Utilities](#utilities)
     - [`fromThrowable`](#fromthrowable)
     - [`fromPromise`](#frompromise)
     - [`fromSafePromise`](#fromsafepromise)
-  + [Testing](#testing)
-* [A note on the Package Name](#a-note-on-the-package-name)
+  - [Testing](#testing)
+- [A note on the Package Name](#a-note-on-the-package-name)
 
 ## Installation
 
@@ -85,8 +84,7 @@ With `eslint-plugin-neverthrow`, you are forced to consume the result in one of 
 
 This ensures that you're explicitly handling the error of your `Result`.
 
-This plugin is essentially a porting of Rust's [`must-use`](https://doc.rust-lang.org/std/result/#results-must-be-used) attribute. 
-
+This plugin is essentially a porting of Rust's [`must-use`](https://doc.rust-lang.org/std/result/#results-must-be-used) attribute.
 
 ## Top-Level API
 
@@ -150,7 +148,7 @@ myResult.isOk() // true
 myResult.isErr() // false
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -175,7 +173,7 @@ myResult.isOk() // false
 myResult.isErr() // true
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -189,7 +187,7 @@ Returns `true` if the result is an `Ok` variant
 isOk(): boolean { ... }
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -203,7 +201,7 @@ Returns `true` if the result is an `Err` variant
 isErr(): boolean { ... }
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -234,14 +232,12 @@ import { getLines } from 'imaginary-parser'
 const linesResult = getLines('1\n2\n3\n4\n')
 
 // this Result now has a Array<number> inside it
-const newResult = linesResult.map(
-  (arr: Array<string>) => arr.map(parseInt)
-)
+const newResult = linesResult.map((arr: Array<string>) => arr.map(parseInt))
 
 newResult.isOk() // true
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -270,16 +266,16 @@ const rawHeaders = 'nonsensical gibberish and badly formatted stuff'
 
 const parseResult = parseHeaders(rawHeaders)
 
-parseResult.mapErr(parseError => {
+parseResult.mapErr((parseError) => {
   res.status(400).json({
-    error: parseError
+    error: parseError,
   })
 })
 
 parseResult.isErr() // true
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -305,7 +301,7 @@ const multiply = (value: number): number => value * 2
 const unwrapped: number = myResult.map(multiply).unwrapOr(10)
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -339,21 +335,13 @@ import { err, ok } from 'neverthrow'
 
 const sq = (n: number): Result<number, number> => ok(n ** 2)
 
-ok(2)
-  .andThen(sq)
-  .andThen(sq) // Ok(16)
+ok(2).andThen(sq).andThen(sq) // Ok(16)
 
-ok(2)
-  .andThen(sq)
-  .andThen(err) // Err(4)
+ok(2).andThen(sq).andThen(err) // Err(4)
 
-ok(2)
-  .andThen(err)
-  .andThen(sq) // Err(2)
+ok(2).andThen(err).andThen(sq) // Err(2)
 
-err(3)
-  .andThen(sq)
-  .andThen(sq) // Err(3)
+err(3).andThen(sq).andThen(sq) // Err(3)
 ```
 
 **Example 2: Flattening Nested Results**
@@ -366,7 +354,7 @@ const nested = ok(ok(1234))
 const notNested = nested.andThen((innerResult) => innerResult)
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -386,7 +374,7 @@ class Result<T, E> {
 }
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -417,17 +405,17 @@ const dbQueryResult: Result<string, DatabaseError> = err(DatabaseError.NotFound)
 const updatedQueryResult = dbQueryResult.orElse((dbError) =>
   dbError === DatabaseError.NotFound
     ? ok('User does not exist') // error recovery branch: ok() must be called with a value of type string
-    //
-    //
-    // err() can be called with a value of any new type that you want
-    // it could also be called with the same error value
-    //     
-    //     err(dbError)
-    : err(500) 
+    : //
+      //
+      // err() can be called with a value of any new type that you want
+      // it could also be called with the same error value
+      //
+      //     err(dbError)
+      err(500),
 )
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -450,6 +438,7 @@ class Result<T, E> {
 
 `match` is like chaining `map` and `mapErr`, with the distinction that with `match` both functions must have the same return type.
 The differences between `match` and chaining `map` and `mapErr` are that:
+
 - with `match` both functions must have the same return type `A`
 - `match` unwraps the `Result<T, E>` into an `A` (the match functions' return type)
   - This makes no difference if you are performing side effects only
@@ -477,16 +466,17 @@ const attempt = computationThatMightFail()
 
 const answer = computationThatMightFail().match(
   (str) => str.toUpperCase(),
-  (err) => `Error: ${err}`
+  (err) => `Error: ${err}`,
 )
 // `answer` is of type `string`
 ```
 
 If you don't use the error parameter in your match callback then `match` is equivalent to chaining `map` with `unwrapOr`:
+
 ```ts
 const answer = computationThatMightFail().match(
   (str) => str.toUpperCase(),
-  () => 'ComputationError'
+  () => 'ComputationError',
 )
 // `answer` is of type `string`
 
@@ -495,8 +485,7 @@ const answer = computationThatMightFail()
   .unwrapOr('ComputationError')
 ```
 
-
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -527,13 +516,13 @@ import { parseHeaders } from 'imaginary-http-parser'
 // parseHeaders(raw: string): Result<SomeKeyValueMap, ParseError>
 
 const asyncRes = parseHeaders(rawHeader)
-  .map(headerKvMap => headerKvMap.Authorization)
+  .map((headerKvMap) => headerKvMap.Authorization)
   .asyncMap(findUserInDatabase)
 ```
 
 Note that in the above example if `parseHeaders` returns an `Err` then `.map` and `.asyncMap` will not be invoked, and `asyncRes` variable will resolve to an `Err` when turned into a `Result` using `await` or `.then()`.
-  
-[⬆️  Back to top](#toc)
+
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -558,15 +547,15 @@ map what is thrown to a known type.
 import { Result } from 'neverthrow'
 
 type ParseError = { message: string }
-const toParseError = (): ParseError => ({ message: "Parse Error" })
+const toParseError = (): ParseError => ({ message: 'Parse Error' })
 
 const safeJsonParse = Result.fromThrowable(JSON.parse, toParseError)
 
 // the function can now be used safely, if the function throws, the result will be an Err
-const res = safeJsonParse("{");
+const res = safeJsonParse('{')
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -599,27 +588,25 @@ function combine<T1, T2, T3, T4, E1, E2, E3, E4> => Result<[ T1, T2, T3, T4 ], E
 ```
 
 Example:
-```typescript
-const resultList: Result<number, never>[] =
-  [ok(1), ok(2)]
 
-const combinedList: Result<number[], unknown> =
-  Result.combine(resultList)
+```typescript
+const resultList: Result<number, never>[] = [ok(1), ok(2)]
+
+const combinedList: Result<number[], unknown> = Result.combine(resultList)
 ```
 
 Example with tuples:
+
 ```typescript
 /** @example tuple(1, 2, 3) === [1, 2, 3] // with type [number, number, number] */
 const tuple = <T extends any[]>(...args: T): T => args
 
-const resultTuple: [Result<string, never>, Result<string, never>] =
-  tuple(ok('a'), ok('b'))
+const resultTuple: [Result<string, never>, Result<string, never>] = tuple(ok('a'), ok('b'))
 
-const combinedTuple: Result<[string, string], unknown> =
-  Result.combine(resultTuple)
+const combinedTuple: Result<[string, string], unknown> = Result.combine(resultTuple)
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -647,19 +634,42 @@ function combineWithAllErrors<T1, T2, T3, T4, E1, E2, E3, E4> => Result<[ T1, T2
 Example usage:
 
 ```typescript
-const resultList: Result<number, string>[] = [
-  ok(123),
-  err('boooom!'),
-  ok(456),
-  err('ahhhhh!'),
-]
+const resultList: Result<number, string>[] = [ok(123), err('boooom!'), ok(456), err('ahhhhh!')]
 
 const result = Result.combineWithAllErrors(resultList)
 
 // result is Err(['boooom!', 'ahhhhh!'])
 ```
 
+[⬆️ Back to top](#toc)
 
+---
+
+#### `Result.tap` (method)
+
+Executes a function if the result contains an `Ok` value and is ignored in case of an `Err` result.
+The function does not change the value of the `Result`. This is useful for side effects, like logging.
+
+**Signature:**
+
+```typescript
+class Result<T, E> {
+  tap<U>(callback: (value: T) => void): Result<T, E> { ... }
+}
+```
+
+**Example**:
+
+```typescript
+import { getUser } from 'database'
+
+const linesResult = getUser({ id: 1 })
+
+// this Result now has a user inside it
+linesResult.tap((user) => console.log(user))
+```
+
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -688,7 +698,7 @@ myResult.isOk() // true
 myResult.isErr() // false
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -715,7 +725,7 @@ myResult.isOk() // false
 myResult.isErr() // true
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -724,7 +734,6 @@ myResult.isErr() // true
 Transforms a `PromiseLike<T>` (that may throw) into a `ResultAsync<T, E>`.
 
 The second argument handles the rejection case of the promise and maps the error from `unknown` into some type `E`.
-
 
 **Signature:**
 
@@ -751,7 +760,7 @@ const res = ResultAsync.fromPromise(insertIntoDb(myUser), () => new Error('Datab
 // `res` has a type of ResultAsync<User, Error>
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -783,7 +792,7 @@ export const slowDown = <T>(ms: number) => (value: T) =>
       setTimeout(() => {
         resolve(value)
       }, ms)
-    })
+    }),
   )
 
 export const signupHandler = route<User>((req, sessionManager) =>
@@ -792,12 +801,11 @@ export const signupHandler = route<User>((req, sessionManager) =>
       .andThen(slowDown(3000)) // slowdown by 3 seconds
       .andThen(sessionManager.createSession)
       .map(({ sessionToken, admin }) => AppData.init(admin, sessionToken))
-  })
+  }),
 )
 ```
 
-
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -826,24 +834,23 @@ import { findUsersIn } from 'imaginary-database'
 // ^ assume findUsersIn has the following signature:
 // findUsersIn(country: string): ResultAsync<Array<User>, Error>
 
-const usersInCanada = findUsersIn("Canada")
+const usersInCanada = findUsersIn('Canada')
 
 // Let's assume we only need their names
-const namesInCanada = usersInCanada.map((users: Array<User>) => users.map(user => user.name))
+const namesInCanada = usersInCanada.map((users: Array<User>) => users.map((user) => user.name))
 // namesInCanada is of type ResultAsync<Array<string>, Error>
 
 // We can extract the Result using .then() or await
 namesInCanada.then((namesResult: Result<Array<string>, Error>) => {
-  if(namesResult.isErr()){
+  if (namesResult.isErr()) {
     console.log("Couldn't get the users from the database", namesResult.error)
-  }
-  else{
-    console.log("Users in Canada are named: " + namesResult.value.join(','))
+  } else {
+    console.log('Users in Canada are named: ' + namesResult.value.join(','))
   }
 })
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -873,32 +880,31 @@ import { findUsersIn } from 'imaginary-database'
 // findUsersIn(country: string): ResultAsync<Array<User>, Error>
 
 // Let's say we need to low-level errors from findUsersIn to be more readable
-const usersInCanada = findUsersIn("Canada").mapErr((error: Error) => {
+const usersInCanada = findUsersIn('Canada').mapErr((error: Error) => {
   // The only error we want to pass to the user is "Unknown country"
-  if(error.message === "Unknown country"){
+  if (error.message === 'Unknown country') {
     return error.message
   }
   // All other errors will be labelled as a system error
-  return "System error, please contact an administrator."
+  return 'System error, please contact an administrator.'
 })
 
 // usersInCanada is of type ResultAsync<Array<User>, string>
 
 usersInCanada.then((usersResult: Result<Array<User>, string>) => {
-  if(usersResult.isErr()){
+  if (usersResult.isErr()) {
     res.status(400).json({
-      error: usersResult.error
+      error: usersResult.error,
     })
-  }
-  else{
+  } else {
     res.status(200).json({
-      users: usersResult.value
+      users: usersResult.value,
     })
   }
 })
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -922,7 +928,7 @@ const unwrapped: number = await errAsync(0).unwrapOr(10)
 // unwrapped = 10
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -953,7 +959,6 @@ class ResultAsync<T, E> {
 **Example**
 
 ```typescript
-
 import { validateUser } from 'imaginary-validator'
 import { insertUser } from 'imaginary-database'
 import { sendNotification } from 'imaginary-service'
@@ -963,23 +968,20 @@ import { sendNotification } from 'imaginary-service'
 // insertUser(user): ResultAsync<User, Error>
 // sendNotification(user): ResultAsync<void, Error>
 
-const resAsync = validateUser(user)
-               .andThen(insertUser)
-               .andThen(sendNotification)
+const resAsync = validateUser(user).andThen(insertUser).andThen(sendNotification)
 
 // resAsync is a ResultAsync<void, Error>
 
 resAsync.then((res: Result<void, Error>) => {
-  if(res.isErr()){
-    console.log("Oops, at least one step failed", res.error)
-  }
-  else{
-    console.log("User has been validated, inserted and notified successfully.")
+  if (res.isErr()) {
+    console.log('Oops, at least one step failed', res.error)
+  } else {
+    console.log('User has been validated, inserted and notified successfully.')
   }
 })
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -997,7 +999,7 @@ class ResultAsync<T, E> {
 }
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -1021,7 +1023,6 @@ class ResultAsync<T, E> {
 **Example:**
 
 ```typescript
-
 import { validateUser } from 'imaginary-validator'
 import { insertUser } from 'imaginary-database'
 
@@ -1031,16 +1032,16 @@ import { insertUser } from 'imaginary-database'
 
 // Handle both cases at the end of the chain using match
 const resultMessage = await validateUser(user)
-        .andThen(insertUser)
-        .match(
-            (user: User) => `User ${user.name} has been successfully created`,
-            (error: Error) =>  `User could not be created because ${error.message}`
-        )
+  .andThen(insertUser)
+  .match(
+    (user: User) => `User ${user.name} has been successfully created`,
+    (error: Error) => `User could not be created because ${error.message}`,
+  )
 
 // resultMessage is a string
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -1071,26 +1072,28 @@ function combine<T1, T2, T3, T4, E1, E2, E3, E4> => ResultAsync<[ T1, T2, T3, T4
 ```
 
 Example:
-```typescript
-const resultList: ResultAsync<number, never>[] =
-  [okAsync(1), okAsync(2)]
 
-const combinedList: ResultAsync<number[], unknown> =
-  ResultAsync.combine(resultList)
+```typescript
+const resultList: ResultAsync<number, never>[] = [okAsync(1), okAsync(2)]
+
+const combinedList: ResultAsync<number[], unknown> = ResultAsync.combine(resultList)
 ```
 
 Example with tuples:
+
 ```typescript
 /** @example tuple(1, 2, 3) === [1, 2, 3] // with type [number, number, number] */
 const tuple = <T extends any[]>(...args: T): T => args
 
-const resultTuple: [ResultAsync<string, never>, ResultAsync<string, never>] =
-  tuple(okAsync('a'), okAsync('b'))
+const resultTuple: [ResultAsync<string, never>, ResultAsync<string, never>] = tuple(
+  okAsync('a'),
+  okAsync('b'),
+)
 
-const combinedTuple: ResultAsync<[string, string], unknown> =
-  ResultAsync.combine(resultTuple)
+const combinedTuple: ResultAsync<[string, string], unknown> = ResultAsync.combine(resultTuple)
 ```
-[⬆️  Back to top](#toc)
+
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -1128,6 +1131,36 @@ const result = ResultAsync.combineWithAllErrors(resultList)
 // result is Err(['boooom!', 'ahhhhh!'])
 ```
 
+---
+
+#### `ResultAsync.tap` (method)
+
+Executes a function if the ` ResultAsync` contains an `Ok` value and is ignored in case of an`Err`result. The applied function can be synchronous or asynchronous (returning a`Promise<void>`) with no impact to the return type.
+
+The function does not change the value of the `Result`. This is useful for side effects, like logging.
+
+**Signature:**
+
+```typescript
+class ResultAsync<T, E> {
+  tap<U>(
+    callback: (value: T) => void | Promise<void>
+  ): ResultAsync<T, E> { ... }
+}
+```
+
+**Example**:
+
+```typescript
+import { getUser } from 'database'
+
+const linesResult = getUser({ id: 1 })
+
+// this Result now has a user inside it
+linesResult.tap((user) => console.log(user))
+```
+
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -1138,21 +1171,21 @@ const result = ResultAsync.combineWithAllErrors(resultList)
 Top level export of `Result.fromThrowable`.
 Please find documentation at [Result.fromThrowable](#resultfromthrowable-static-class-method)
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 #### `fromPromise`
 
 Top level export of `ResultAsync.fromPromise`.
 Please find documentation at [ResultAsync.fromPromise](#resultasyncfrompromise-static-class-method)
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 #### `fromSafePromise`
 
 Top level export of `ResultAsync.fromSafePromise`.
 Please find documentation at [ResultAsync.fromSafePromise](#resultasyncfromsafepromise-static-class-method)
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -1177,7 +1210,7 @@ import { ok } from 'neverthrow'
 
 // ...
 
-expect(callSomeFunctionThatReturnsAResult("with", "some", "args")).toEqual(ok(someExpectation));
+expect(callSomeFunctionThatReturnsAResult('with', 'some', 'args')).toEqual(ok(someExpectation))
 ```
 
 By default, the thrown value does not contain a stack trace. This is because stack trace generation [makes error messages in Jest harder to understand](https://github.com/supermacro/neverthrow/pull/215). If you want stack traces to be generated, call `_unsafeUnwrap` and / or `_unsafeUnwrapErr` with a config object:
