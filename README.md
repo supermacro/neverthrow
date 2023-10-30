@@ -664,7 +664,7 @@ const result = Result.combineWithAllErrors(resultList)
 
 #### `Result.safeUnwrap()`
 
-**⚠️ You must use `.safeUnwrap` in a generator context with `safeTry`**
+**⚠️ You must use `.safeUnwrap` in a generator context with `safeTry`**. Please see [safeTry](#safeTry).
 
 Allows for unwrapping a `Result` or returning an `Err` implicitly, thereby reducing boilerplate.
 
@@ -1140,7 +1140,7 @@ const result = ResultAsync.combineWithAllErrors(resultList)
 
 #### `ResultAsync.safeUnwrap()`
 
-**⚠️ You must use `.safeUnwrap` in a generator context with `safeTry`**
+**⚠️ You must use `.safeUnwrap` in a generator context with `safeTry`**. Please see [safeTry](#safeTry).
 
 Allows for unwrapping a `Result` or returning an `Err` implicitly, thereby reducing boilerplate.
 
@@ -1176,7 +1176,85 @@ Please find documentation at [ResultAsync.fromSafePromise](#resultasyncfromsafep
 
 Used to implicityly return errors and reduce boilerplate.
 
-See https://github.com/supermacro/neverthrow/pull/448 and https://github.com/supermacro/neverthrow/issues/444
+Let's say we are writing a function that returns a `Result`, and in that function we call some functions which also return `Result`s and we check those results to see whether we shold keep going or abort. Usually, we will write like the following.
+```typescript
+declare function mayFail1(): Result<number, string>;
+declare function mayFail2(): Result<number, string>;
+
+function myFunc(): Result<number, string> {
+    // We have to define a constant to hold the result to check and unwrap its value.
+    const result1 = mayFail1();
+    if (result1.isErr()) {
+        return err(`aborted by an error from 1st function, ${result1.error}`);
+    }
+    const value1 = result1.value
+
+    // Again, we need to define a constant and then check and unwrap.
+    const result2 = mayFail2();
+    if (result2.isErr()) {
+        return err(`aborted by an error from 2nd function, ${result2.error}`);
+    }
+    const value2 = result2.value
+
+    // And finally we return what we want to calculate
+    return ok(value1 + value2);
+}
+```
+Basically, we need to define a constant for each result to check whether it's a `Ok` and read its `.value` or `.error`.
+
+With safeTry, we can state 'Return here if its an `Err`, otherwise unwrap it here and keep going.' in just one expression.
+```typescript
+declare function mayFail1(): Result<number, string>;
+declare function mayFail2(): Result<number, string>;
+
+function myFunc(): Result<number, string> {
+    return safeTry<number, string>(function*() {
+        return ok(
+            // If the result of mayFail1().mapErr() is an `Err`, the evaluation is
+            // aborted here and the enclosing `safeTry` block is evaluated to that `Err`.
+            // Otherwise, this `(yield* ...)` is evaluated to its `.value`.
+            (yield* mayFail1()
+                .mapErr(e => `aborted by an error from 1st function, ${e}`)
+                .safeUnwrap())
+            +
+            // The same as above.
+            (yield* mayFail2()
+                .mapErr(e => `aborted by an error from 2nd function, ${e}`)
+                .safeUnwrap())
+        )
+    })
+}
+```
+
+To use `safeTry`, the points are as follows.
+* Wrap the entire block in a [generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*)
+* In that block, you can use `yield* <RESULT>` to state 'Return `<RESULT>` if it's an `Err`, otherwise evaluate to its `.value`'
+* Pass the generator function to `safeTry`
+
+You can also use [async generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*) to pass an async block to `safeTry`.
+```typescript
+// You can use either Promise<Result> or ResultAsync.
+declare function mayFail1(): Promise<Result<number, string>>;
+declare function mayFail2(): ResultAsync<number, string>;
+
+function myFunc(): Promise<Result<number, string>> {
+    return safeTry<number, string>(async function*() {
+        return ok(
+            // You have to await if the expression is Promise<Result>
+            (yield* (await mayFail1())
+                .mapErr(e => `aborted by an error from 1st function, ${e}`)
+                .safeUnwrap())
+            +
+            // You can call `safeUnwrap` directly if its ResultAsync
+            (yield* mayFail2()
+                .mapErr(e => `aborted by an error from 2nd function, ${e}`)
+                .safeUnwrap())
+        )
+    })
+}
+```
+
+For more information, see https://github.com/supermacro/neverthrow/pull/448 and https://github.com/supermacro/neverthrow/issues/444
 
 [⬆️  Back to top](#toc)
 
