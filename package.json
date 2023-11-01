@@ -41,7 +41,7 @@
     "eslint-config-prettier": "7.1.0",
     "eslint-plugin-prettier": "3.4.0",
     "jest": "27.5.1",
-    "prettier": "2.2.1",
+    "prettier": "2.8.8",
     "rollup": "2.75.6",
     "rollup-plugin-dts": "3.0.1",
     "rollup-plugin-typescript2": "^0.32.1",
