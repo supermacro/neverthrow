@@ -1307,3 +1307,7 @@ Although the package is called `neverthrow`, please don't take this literally. I
 `Throw`ing and `catching` is very similar to using `goto` statements - in other words; it makes reasoning about your programs harder. Secondly, by using `throw` you make the assumption that the caller of your function is implementing `catch`. This is a known source of errors. Example: One dev `throw`s and another dev uses the function without prior knowledge that the function will throw. Thus, and edge case has been left unhandled and now you have unhappy users, bosses, cats, etc.
 
 With all that said, there are definitely good use cases for throwing in your program. But much less than you might think.
+
+### License
+
+The neverthrow project is available as open source under the terms of the [MIT license](https://github.com/supermacro/neverthrow/blob/master/LICENSE).
