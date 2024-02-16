@@ -17,6 +17,7 @@ import {
   InferAsyncOkTypes,
   InferErrTypes,
   InferOkTypes,
+  partitionResultAsyncList,
 } from './_internals/utils'
 
 export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
@@ -66,6 +67,18 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     return combineResultAsyncListWithAllErrors(
       asyncResultList,
     ) as CombineResultsWithAllErrorsArrayAsync<T>
+  }
+
+  static partition<
+    T extends readonly [ResultAsync<unknown, unknown>, ...ResultAsync<unknown, unknown>[]]
+  >(asyncResultList: T): PartitionResultAsync<T>
+  static partition<T extends readonly ResultAsync<unknown, unknown>[]>(
+    asyncResultList: T,
+  ): PartitionResultAsync<T>
+  static partition<T extends readonly ResultAsync<unknown, unknown>[]>(
+    asyncResultList: T,
+  ): PartitionResultAsync<T> {
+    return partitionResultAsyncList(asyncResultList) as PartitionResultAsync<T>
   }
 
   map<A>(f: (t: T) => A | Promise<A>): ResultAsync<A, E> {
@@ -175,6 +188,10 @@ export type CombineResultsWithAllErrorsArrayAsync<
 > = IsLiteralArray<T> extends 1
   ? TraverseWithAllErrorsAsync<UnwrapAsync<T>>
   : ResultAsync<ExtractOkAsyncTypes<T>, ExtractErrAsyncTypes<T>[number][]>
+
+export type PartitionResultAsync<T extends readonly ResultAsync<unknown, unknown>[]> = Promise<
+  [ExtractOkAsyncTypes<T>[number][], ExtractErrAsyncTypes<T>[number][]]
+>
 
 // Unwraps the inner `Result` from a `ResultAsync` for all elements.
 type UnwrapAsync<T> = IsLiteralArray<T> extends 1
