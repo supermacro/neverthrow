@@ -1224,7 +1224,7 @@ const resultList: ResultAsync<number, string>[] = [
   errAsync('ahhhhh!'),
 ]
 
-const [results, errors] = ResultAsync.partition(resultList)
+const [results, errors] = await ResultAsync.partition(resultList)
 
 // results is [123, 456]
 // errors is ['boooom!', 'ahhhhh!']
