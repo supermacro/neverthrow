@@ -7,6 +7,7 @@ import {
   ExtractOkTypes,
   InferErrTypes,
   InferOkTypes,
+  partitionResultList,
 } from './_internals/utils'
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -55,6 +56,18 @@ export namespace Result {
     resultList: T,
   ): CombineResultsWithAllErrorsArray<T> {
     return combineResultListWithAllErrors(resultList) as CombineResultsWithAllErrorsArray<T>
+  }
+
+  export function partition<
+    T extends readonly [Result<unknown, unknown>, ...Result<unknown, unknown>[]]
+  >(resultList: T): PartitionResult<T>
+  export function partition<T extends readonly Result<unknown, unknown>[]>(
+    resultList: T,
+  ): PartitionResult<T>
+  export function partition<T extends readonly Result<unknown, unknown>[]>(
+    resultList: T,
+  ): PartitionResult<T> {
+    return partitionResultList(resultList) as PartitionResult<T>
   }
 }
 
@@ -582,5 +595,10 @@ export type CombineResultsWithAllErrorsArray<
 > = IsLiteralArray<T> extends 1
   ? TraverseWithAllErrors<T>
   : Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number][]>
+
+export type PartitionResult<T extends readonly Result<unknown, unknown>[]> = [
+  ExtractOkTypes<T>[number][],
+  ExtractErrTypes<T>[number][],
+]
 
 //#endregion
