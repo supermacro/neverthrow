@@ -77,6 +77,16 @@ export const err = <T = never, E = unknown>(err: E): Err<T, E> => new Err(err)
  * @returns The first occurence of either an yielded Err or a returned Result.
  */
 export function safeTry<T, E>(body: () => Generator<Err<never, E>, Result<T, E>>): Result<T, E>
+export function safeTry<
+  YieldErr extends Err<never, unknown>,
+  GeneratorReturnResult extends Result<unknown, unknown>
+>(
+  body: () => Generator<YieldErr, GeneratorReturnResult>,
+): Result<
+  InferOkTypes<GeneratorReturnResult>,
+  InferErrTypes<YieldErr> | InferErrTypes<GeneratorReturnResult>
+>
+
 /**
  * Evaluates the given generator to a Result returned or an Err yielded from it,
  * whichever comes first.
@@ -95,6 +105,17 @@ export function safeTry<T, E>(body: () => Generator<Err<never, E>, Result<T, E>>
 export function safeTry<T, E>(
   body: () => AsyncGenerator<Err<never, E>, Result<T, E>>,
 ): Promise<Result<T, E>>
+export function safeTry<
+  YieldErr extends Err<never, unknown>,
+  GeneratorReturnResult extends Result<unknown, unknown>
+>(
+  body: () => AsyncGenerator<YieldErr, GeneratorReturnResult>,
+): Promise<
+  Result<
+    InferOkTypes<GeneratorReturnResult>,
+    InferErrTypes<YieldErr> | InferErrTypes<GeneratorReturnResult>
+  >
+>
 export function safeTry<T, E>(
   body:
     | (() => Generator<Err<never, E>, Result<T, E>>)
