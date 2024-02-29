@@ -42,6 +42,24 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     return new ResultAsync(newPromise)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static fromThrowable<A extends readonly any[], R, E>(
+    fn: (...args: A) => Promise<R>,
+    errorFn?: (err: unknown) => E,
+  ): (...args: A) => ResultAsync<R, E> {
+    return (...args) => {
+      return new ResultAsync(
+        (async () => {
+          try {
+            return new Ok(await fn(...args))
+          } catch (error) {
+            return new Err(errorFn ? errorFn(error) : error)
+          }
+        })(),
+      )
+    }
+  }
+
   static combine<
     T extends readonly [ResultAsync<unknown, unknown>, ...ResultAsync<unknown, unknown>[]]
   >(asyncResultList: T): CombineResultAsyncs<T>
@@ -161,6 +179,8 @@ export const errAsync = <T = never, E = unknown>(err: E): ResultAsync<T, E> =>
 
 export const fromPromise = ResultAsync.fromPromise
 export const fromSafePromise = ResultAsync.fromSafePromise
+
+export const fromAsyncThrowable = ResultAsync.fromThrowable
 
 // Combines the array of async results into one result.
 export type CombineResultAsyncs<

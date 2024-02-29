@@ -42,6 +42,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
   + [Asynchronous API (`ResultAsync`)](#asynchronous-api-resultasync)
     - [`okAsync`](#okasync)
     - [`errAsync`](#errasync)
+    - [`ResultAsync.fromThrowable` (static class method)](#resultasyncfromthrowable-static-class-method)
     - [`ResultAsync.fromPromise` (static class method)](#resultasyncfrompromise-static-class-method)
     - [`ResultAsync.fromSafePromise` (static class method)](#resultasyncfromsafepromise-static-class-method)
     - [`ResultAsync.map` (method)](#resultasyncmap-method)
@@ -55,6 +56,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.safeUnwrap()`](#resultasyncsafeunwrap)
   + [Utilities](#utilities)
     - [`fromThrowable`](#fromthrowable)
+    - [`fromAsyncThrowable`](#fromasyncthrowable)
     - [`fromPromise`](#frompromise)
     - [`fromSafePromise`](#fromsafepromise)
     - [`safeTry`](#safetry)
@@ -111,6 +113,7 @@ import {
   okAsync,
   errAsync,
   ResultAsync,
+  fromAsyncThrowable,
   fromThrowable,
   fromPromise,
   fromSafePromise,
@@ -729,6 +732,47 @@ myResult.isErr() // true
 
 ---
 
+#### `ResultAsync.fromThrowable` (static class method)
+
+Similar to [Result.fromThrowable](#resultfromthrowable-static-class-method), but for functions that return a `Promise`.
+
+**Example**:
+
+```typescript
+import { ResultAsync } from 'neverthrow'
+import { insertIntoDb } from 'imaginary-database'
+// insertIntoDb(user: User): Promise<User>
+
+const insertUser = ResultAsync.fromThrowable(insertIntoDb, () => new Error('Database error'))
+// `res` has a type of (user: User) => ResultAsync<User, Error>
+```
+
+Note that this can be safer than using [ResultAsync.fromPromise](#resultasyncfrompromise-static-class-method) with
+the result of a function call, because not all functions that return a `Promise` are `async`, and thus they can throw
+errors synchronously rather than returning a rejected `Promise`. For example:
+
+```typescript
+// NOT SAFE !!
+import { ResultAsync } from 'neverthrow'
+import { db } from 'imaginary-database'
+// db.insert<T>(table: string, value: T): Promise<T>
+
+const insertUser = (user: User): Promise<User> => {
+  if (!user.id) {
+    // this throws synchronously!
+    throw new TypeError('missing user id')
+  }
+  return db.insert('users', user)
+}
+
+// this will throw, NOT return a `ResultAsync`
+const res = ResultAsync.fromPromise(insertIntoDb(myUser), () => new Error('Database error'))
+```
+
+[⬆️  Back to top](#toc)
+
+---
+
 #### `ResultAsync.fromPromise` (static class method)
 
 Transforms a `PromiseLike<T>` (that may throw) into a `ResultAsync<T, E>`.
@@ -805,7 +849,6 @@ export const signupHandler = route<User>((req, sessionManager) =>
   })
 )
 ```
-
 
 [⬆️  Back to top](#toc)
 
@@ -1157,6 +1200,13 @@ Please find documentation at [Result.fromThrowable](#resultfromthrowable-static-
 
 [⬆️  Back to top](#toc)
 
+#### `fromAsyncThrowable`
+
+Top level export of `ResultAsync.fromSafePromise`.
+Please find documentation at [ResultAsync.fromThrowable](#resultasyncfromthrowable-static-class-method)
+
+[⬆️  Back to top](#toc)
+
 #### `fromPromise`
 
 Top level export of `ResultAsync.fromPromise`.
@@ -1171,12 +1221,11 @@ Please find documentation at [ResultAsync.fromSafePromise](#resultasyncfromsafep
 
 [⬆️  Back to top](#toc)
 
-
 #### `safeTry`
 
-Used to implicityly return errors and reduce boilerplate.
+Used to implicitly return errors and reduce boilerplate.
 
-Let's say we are writing a function that returns a `Result`, and in that function we call some functions which also return `Result`s and we check those results to see whether we shold keep going or abort. Usually, we will write like the following.
+Let's say we are writing a function that returns a `Result`, and in that function we call some functions which also return `Result`s and we check those results to see whether we should keep going or abort. Usually, we will write like the following.
 ```typescript
 declare function mayFail1(): Result<number, string>;
 declare function mayFail2(): Result<number, string>;
