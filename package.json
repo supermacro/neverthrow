@@ -1,60 +1,148 @@
 {
-  "name": "neverthrow",
-  "version": "6.1.0",
-  "description": "Stop throwing errors, and instead return Results!",
-  "main": "dist/index.cjs.js",
-  "module": "dist/index.es.js",
+  "name": "resultar",
+  "version": "1.0.0",
+  "description": "Result pattern for typescript",
+  "type": "module",
+  "packageManager": "pnpm@8.15.5",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    }
+  },
   "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=18"
+  },
+  "outDir": "./dist",
   "files": [
     "dist"
   ],
   "scripts": {
-    "test": "jest && npm run test-types",
-    "test-types": "tsc --noEmit -p ./tests/tsconfig.tests.json",
-    "lint": "eslint ./src --ext .ts",
-    "format": "prettier --write 'src/**/*.ts?(x)' && npm run lint -- --fix",
-    "typecheck": "tsc --noEmit",
-    "clean": "rm -rf ./dist ./tmp",
-    "build": "npm run clean && rollup --config && mv tmp/*.js dist"
+    "build": "rimraf ./dist && mkdir dist && tsup && git rev-parse HEAD > BUILD_SHA",
+    "lint": "xo --fix",
+    "prepublishOnly": "pnpm run build",
+    "test": "tsx --test tests/*.ts"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/supermacro/neverthrow.git"
-  },
-  "author": "Giorgio Delgado",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/supermacro/neverthrow/issues"
-  },
-  "homepage": "https://github.com/supermacro/neverthrow#readme",
-  "devDependencies": {
-    "@babel/core": "7.16.7",
-    "@babel/preset-env": "7.16.8",
-    "@babel/preset-typescript": "7.16.7",
-    "@tsconfig/node14": "^1.0.3",
-    "@types/jest": "27.4.1",
-    "@types/node": "14.17.4",
-    "@typescript-eslint/eslint-plugin": "4.28.1",
-    "@typescript-eslint/parser": "4.28.1",
-    "babel-jest": "27.5.1",
-    "eslint": "7.30.0",
-    "eslint-config-prettier": "7.1.0",
-    "eslint-plugin-prettier": "3.4.0",
-    "jest": "27.5.1",
-    "prettier": "2.2.1",
-    "rollup": "2.75.6",
-    "rollup-plugin-dts": "3.0.1",
-    "rollup-plugin-typescript2": "^0.32.1",
-    "testdouble": "3.16.3",
-    "ts-jest": "27.1.5",
-    "ts-toolbelt": "9.6.0",
-    "tslib": "^2.4.0",
-    "typescript": "4.7.2"
+    "url": "git+https://github.com/inaiat/resultar.git"
   },
   "keywords": [
-    "typescript",
-    "functional",
-    "fp",
-    "error"
-  ]
+    "plugin"
+  ],
+  "contributors": [
+    "Inaiat <inaiat@gmail.com>"
+  ],
+  "license": "MIT",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    }
+  ],
+  "bugs": {
+    "url": "https://https://github.com/inaiat/resultar/issues"
+  },
+  "homepage": "https://https://github.com/inaiat/resultar",
+  "devDependencies": {
+    "@types/node": "^20.12.3",
+    "eslint-plugin-unused-imports": "^3.1.0",
+    "rimraf": "^5.0.5",
+    "semver": "^7.6.0",
+    "tsup": "^8.0.2",
+    "tsx": "^4.7.1",
+    "typescript": "5.4.2",
+    "xo": "0.58.0"
+  },
+  "tsup": {
+    "sourcemap": true,
+    "dts": true,
+    "clean": true,
+    "bundle": true,
+    "target": "node18",
+    "format": [
+      "esm",
+      "cjs"
+    ],
+    "entry": [
+      "src/**/*.ts"
+    ]
+  },
+  "directories": {
+    "test": "test"
+  },
+  "ava": {
+    "extensions": {
+      "ts": "module"
+    },
+    "nodeArguments": [
+      "--loader=ts-node/esm"
+    ]
+  },
+  "release": {
+    "branches": [
+      {
+        "name": "main"
+      },
+      {
+        "name": "beta",
+        "channel": "beta",
+        "prerelease": true
+      },
+      {
+        "name": "next",
+        "channel": "channel-next"
+      }
+    ]
+  },
+  "xo": {
+    "semicolon": false,
+    "space": 2,
+    "bracketSpacing": true,
+    "plugins": [
+      "prettier",
+      "unused-imports"
+    ],
+    "rules": {
+      "object-curly-spacing": [
+        "error",
+        "always"
+      ],
+      "capitalized-comments": "off",
+      "unicorn/prevent-abbreviations": "off",
+      "unicorn/no-array-callback-reference": "off",
+      "unicorn/no-array-method-this-argument": "off",
+      "new-cap": "off",
+      "import/no-extraneous-dependencies": "off",
+      "@typescript-eslint/member-delimiter-style": "off",
+      "@typescript-eslint/prefer-readonly-parameter-types": "off",
+      "@typescript-eslint/naming-convention": "off",
+      "@typescript-eslint/consistent-type-imports": "off",
+      "@typescript-eslint/consistent-type-definitions": "off",
+      "@typescript-eslint/no-unsafe-assignment": "warn",
+      "@typescript-eslint/no-empty-function": "warn",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/object-curly-spacing": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "error",
+      "functional/no-classes": "off"
+    },
+    "overrides": [
+      {
+        "files": "tests/**/*.ts",
+        "rules": {
+          "functional/no-method-signature": "off",
+          "@typescript-eslint/prefer-readonly-parameter-types": "off",
+          "@typescript-eslint/no-unsafe-assignment": "off",
+          "functional/prefer-readonly-type": "off",
+          "ava/use-test": "off",
+          "unicorn/no-await-expression-member": "off",
+          "prefer-promise-reject-errors": "off"
+        }
+      }
+    ]
+  },
+  "author": "inaiat@gmail.com"
 }

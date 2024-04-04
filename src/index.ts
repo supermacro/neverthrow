@@ -1,2 +1,3 @@
-export { Result, ok, Ok, err, Err, fromThrowable, safeTry } from './result'
-export { ResultAsync, okAsync, errAsync, fromPromise, fromSafePromise } from './result-async'
+export * from './result.js'
+export * from './result-async.js'
+export * from './error.js'
