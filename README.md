@@ -1,3 +1,6 @@
+> Seeking co-maintainers: I don't have much time to maintain this project these days. If someone would like to jump in and become a co-maintainer, it would be appreciated!
+> See https://github.com/supermacro/neverthrow/issues/531
+
 # NeverThrow 🙅
 
 [![supermacro](https://circleci.com/gh/supermacro/neverthrow.svg?style=svg)](https://app.circleci.com/pipelines/github/supermacro/neverthrow)
