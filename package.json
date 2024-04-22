@@ -15,7 +15,8 @@
     "format": "prettier --write 'src/**/*.ts?(x)' && npm run lint -- --fix",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf ./dist ./tmp",
-    "build": "npm run clean && rollup --config && mv tmp/*.js dist"
+    "build": "npm run clean && rollup --config && mv tmp/*.js dist",
+    "prepack": "npm run build"
   },
   "repository": {
     "type": "git",
