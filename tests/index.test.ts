@@ -100,6 +100,48 @@ describe('Result.Ok', () => {
     })
   })
 
+  describe('andFinally', () => {
+    it('Maps to an Ok', () => {
+      const okVal = ok(1)
+      type ExpectedType = Result<boolean, never>
+      const flattened: ExpectedType = okVal.andFinally((_number) => {
+        return ok(true)
+      })
+
+      expect(flattened.isOk()).toBe(true)
+      expect(flattened._unsafeUnwrap()).toStrictEqual(true)
+    })
+
+    it('Maps to an Err', () => {
+      const okVal = ok('opening db connection')
+      type ExpectedType = Result<never, string>
+      const flattened: ExpectedType = okVal
+        .andThen(() => {
+          return ok('do something')
+        })
+        .andFinally((_number) => {
+          return err('error closing database connection')
+        })
+      expect(flattened.isErr()).toBe(true)
+      expect(flattened._unsafeUnwrapErr()).toStrictEqual('error closing database connection')
+    })
+
+    it('Maps to an Result', () => {
+      const okVal = ok('opening db connection')
+      type ExpectedType = Result<string, Error>
+      const flattened: ExpectedType = okVal
+        .andThen(() => {
+          return ok('do something')
+        })
+        .andFinally((_number) => {
+          const closeDbConnection: Result<'ok', Error> = ok('ok')
+          return closeDbConnection
+        })
+      expect(flattened.isOk()).toBe(true)
+      expect(flattened._unsafeUnwrap()).toStrictEqual('ok')
+    })
+  })
+
   describe('orElse', () => {
     it('Skips orElse on an Ok value', () => {
       const okVal = ok(12)
@@ -315,6 +357,39 @@ describe('Result.Err', () => {
 
       expect(okVal.orElse(errorCallback)).toEqual(err(true))
       expect(errorCallback).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('andFinally', () => {
+    it('Maps to an ok value', () => {
+      const okVal = ok('opening db connection').andThen(() => err('something went wrong'))
+      type ExpectedType = Result<string, never>
+      const flattened: ExpectedType = okVal.andFinally(() => {
+        return ok('close db connection')
+      })
+      expect(flattened.isOk()).toBe(true)
+      expect(flattened._unsafeUnwrap()).toStrictEqual('close db connection')
+    })
+
+    it('Maps to an ok value', () => {
+      const okVal = ok('opening db connection').andThen(() => err('something went wrong'))
+      type ExpectedType = Result<never, string>
+      const flattened: ExpectedType = okVal.andFinally(() => {
+        return err('noo')
+      })
+      expect(flattened.isErr()).toBe(true)
+      expect(flattened._unsafeUnwrapErr()).toStrictEqual('noo')
+    })
+
+    it('Maps to an Result value', () => {
+      const okVal = ok('opening db connection').andThen(() => err('something went wrong'))
+      type ExpectedType = Result<string, string>
+      const flattened: ExpectedType = okVal.andFinally(() => {
+        const closeDbConnection: Result<string, string> = err('noo')
+        return closeDbConnection
+      })
+      expect(flattened.isErr()).toBe(true)
+      expect(flattened._unsafeUnwrapErr()).toStrictEqual('noo')
     })
   })
 })
@@ -855,6 +930,57 @@ describe('ResultAsync', () => {
       const errorCallback = jest.fn((_errVal) => err(true))
 
       const result = await myResult.orElse(errorCallback)
+
+      expect(result).toEqual(err(true))
+      expect(errorCallback).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('andFinally', () => {
+    it('Maps a value using a function returning a ResultAsync', async () => {
+      const asyncVal = okAsync(1)
+      const andThenResultAsyncFn = jest.fn(() => okAsync('good'))
+      type ExpectedType = ResultAsync<string, never>
+      const mapped: ExpectedType = asyncVal.andFinally(andThenResultAsyncFn)
+
+      expect(mapped).toBeInstanceOf(ResultAsync)
+      const newVal = await mapped
+      expect(newVal.isOk()).toBe(true)
+      expect(newVal._unsafeUnwrap()).toBe('good')
+      expect(andThenResultAsyncFn).toHaveBeenCalledTimes(1)
+    })
+
+    it('Maps a value using a function returning a Result', async () => {
+      const asyncVal = okAsync(12)
+
+      const andThenResultFn = jest.fn(() => ok('good'))
+      type ExpectedType = ResultAsync<string, never>
+      const mapped: ExpectedType = asyncVal.andFinally(andThenResultFn)
+
+      expect(mapped).toBeInstanceOf(ResultAsync)
+
+      const newVal = await mapped
+
+      expect(newVal.isOk()).toBe(true)
+      expect(newVal._unsafeUnwrap()).toBe('good')
+      expect(andThenResultFn).toHaveBeenCalledTimes(1)
+    })
+
+    it('Invokes the andFinally callback on an Err value', async () => {
+      const myResult = errAsync('BOOOM!')
+      const finallyCallback = jest.fn((_errVal) => errAsync(true))
+      type ExpectedType = Result<never, boolean>
+      const result: ExpectedType = await myResult.andFinally(finallyCallback)
+
+      expect(result).toEqual(err(true))
+      expect(finallyCallback).toHaveBeenCalledTimes(1)
+    })
+
+    it('Accepts a regular Result in the callback', async () => {
+      const myResult = errAsync('BOOOM!')
+      const errorCallback = jest.fn((_errVal) => err(true))
+      type ExpectedType = Result<never, boolean>
+      const result: ExpectedType = await myResult.andFinally(errorCallback)
 
       expect(result).toEqual(err(true))
       expect(errorCallback).toHaveBeenCalledTimes(1)
