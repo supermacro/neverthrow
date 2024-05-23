@@ -32,6 +32,25 @@ const appendValueToEndOfList = <T>(value: T) => (list: T[]): T[] => [...list, va
 /**
  * Short circuits on the FIRST Err value that we find
  */
+export const combineResultListFast = <T, E>(
+  resultList: readonly Result<T, E>[],
+): Result<readonly T[], E> => {
+  let acc = ok([]) as Result<T[], E>
+
+  for (const result of resultList) {
+    if (result.isErr()) {
+      acc = err(result.error)
+      break
+    } else {
+      acc.map((list) => list.push(result.value))
+    }
+  }
+  return acc
+}
+
+/**
+ * Short circuits on the FIRST Err value that we find
+ */
 export const combineResultList = <T, E>(
   resultList: readonly Result<T, E>[],
 ): Result<readonly T[], E> =>
