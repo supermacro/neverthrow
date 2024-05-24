@@ -27,12 +27,12 @@ export type InferErrTypes<R> = R extends Result<unknown, infer E> ? E : never
 export type InferAsyncOkTypes<R> = R extends ResultAsync<infer T, unknown> ? T : never
 export type InferAsyncErrTypes<R> = R extends ResultAsync<unknown, infer E> ? E : never
 
-const appendValueToEndOfList = <T>(value: T) => (list: T[]): T[] => [...list, value]
+// const appendValueToEndOfList = <T>(value: T) => (list: T[]): T[] => [...list, value]
 
 /**
  * Short circuits on the FIRST Err value that we find
  */
-export const combineResultListFast = <T, E>(
+export const combineResultList = <T, E>(
   resultList: readonly Result<T, E>[],
 ): Result<readonly T[], E> => {
   let acc = ok([]) as Result<T[], E>
@@ -48,21 +48,21 @@ export const combineResultListFast = <T, E>(
   return acc
 }
 
-/**
- * Short circuits on the FIRST Err value that we find
- */
-export const combineResultList = <T, E>(
-  resultList: readonly Result<T, E>[],
-): Result<readonly T[], E> =>
-  resultList.reduce(
-    (acc, result) =>
-      acc.isOk()
-        ? result.isErr()
-          ? err(result.error)
-          : acc.map(appendValueToEndOfList(result.value))
-        : acc,
-    ok([]) as Result<T[], E>,
-  )
+// /**
+//  * Short circuits on the FIRST Err value that we find
+//  */
+// export const combineResultList = <T, E>(
+//   resultList: readonly Result<T, E>[],
+// ): Result<readonly T[], E> =>
+  // resultList.reduce(
+  //   (acc, result) =>
+  //     acc.isOk()
+  //       ? result.isErr()
+  //         ? err(result.error)
+  //         : acc.map(appendValueToEndOfList(result.value))
+  //       : acc,
+  //   ok([]) as Result<T[], E>,
+  // )
 
 /* This is the typesafe version of Promise.all
  *
@@ -81,18 +81,22 @@ export const combineResultAsyncList = <T, E>(
  */
 export const combineResultListWithAllErrors = <T, E>(
   resultList: readonly Result<T, E>[],
-): Result<readonly T[], E[]> =>
-  resultList.reduce(
-    (acc, result) =>
-      result.isErr()
-        ? acc.isErr()
-          ? err([...acc.error, result.error])
-          : err([result.error])
-        : acc.isErr()
-        ? acc
-        : ok([...acc.value, result.value]),
-    ok([]) as Result<T[], E[]>,
-  )
+): Result<readonly T[], E[]> => {
+  let acc = ok([]) as Result<T[], E[]>
+
+  for (const result of resultList) {
+    if (result.isErr() && acc.isErr()) {
+      acc.error.push(result.error)
+    } else if (result.isErr() && acc.isOk()) {
+      acc = err([result.error])
+    } else if (result.isOk() && acc.isErr()) {
+      // do nothing
+    } else if (result.isOk() && acc.isOk()) {
+      acc.value.push(result.value)
+    }
+  }
+  return acc
+}
 
 export const combineResultAsyncListWithAllErrors = <T, E>(
   asyncResultList: readonly ResultAsync<T, E>[],
