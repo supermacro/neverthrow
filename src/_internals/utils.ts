@@ -48,22 +48,6 @@ export const combineResultList = <T, E>(
   return acc
 }
 
-// /**
-//  * Short circuits on the FIRST Err value that we find
-//  */
-// export const combineResultList = <T, E>(
-//   resultList: readonly Result<T, E>[],
-// ): Result<readonly T[], E> =>
-  // resultList.reduce(
-  //   (acc, result) =>
-  //     acc.isOk()
-  //       ? result.isErr()
-  //         ? err(result.error)
-  //         : acc.map(appendValueToEndOfList(result.value))
-  //       : acc,
-  //   ok([]) as Result<T[], E>,
-  // )
-
 /* This is the typesafe version of Promise.all
  *
  * Takes a list of ResultAsync<T, E> and success if all inner results are Ok values
@@ -89,11 +73,10 @@ export const combineResultListWithAllErrors = <T, E>(
       acc.error.push(result.error)
     } else if (result.isErr() && acc.isOk()) {
       acc = err([result.error])
-    } else if (result.isOk() && acc.isErr()) {
-      // do nothing
     } else if (result.isOk() && acc.isOk()) {
       acc.value.push(result.value)
     }
+    // do nothing when result.isOk() && acc.isErr()
   }
   return acc
 }
