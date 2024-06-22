@@ -2,7 +2,7 @@ version: 2
 jobs:
   install_deps:
     docker:
-      - image: cimg/node:14.17.1 
+      - image: cimg/node:14.18.3
     steps:
       - checkout
       - run:
