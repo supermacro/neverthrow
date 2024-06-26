@@ -211,7 +211,7 @@ interface IResult<T, E> {
    * @param ok
    * @param err
    */
-  match<A>(ok: (t: T) => A, err: (e: E) => A): A
+  match<A, B = A>(ok: (t: T) => A, err: (e: E) => B): A | B
 
   /**
    * Emulates Rust's `?` operator in `safeTry`'s body. See also `safeTry`.
@@ -288,7 +288,7 @@ export class Ok<T, E> implements IResult<T, E> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  match<A>(ok: (t: T) => A, _err: (e: E) => A): A {
+  match<A, B = A>(ok: (t: T) => A, _err: (e: E) => B): A | B {
     return ok(this.value)
   }
 
@@ -359,7 +359,7 @@ export class Err<T, E> implements IResult<T, E> {
     return v
   }
 
-  match<A>(_ok: (t: T) => A, err: (e: E) => A): A {
+  match<A, B = A>(_ok: (t: T) => A, err: (e: E) => B): A | B {
     return err(this.error)
   }
 
