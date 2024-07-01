@@ -267,6 +267,15 @@ export class Ok<T, E> implements IResult<T, E> {
     return f(this.value)
   }
 
+  andFinally<R extends Result<unknown, unknown>>(
+    f: (t: T) => R,
+  ): Result<InferOkTypes<R>, InferErrTypes<R>>
+  andFinally<U, F>(f: (t: T) => Result<U, F>): Result<U, F>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  andFinally(f: any): any {
+    return f(this.value)
+  }
+
   orElse<R extends Result<unknown, unknown>>(_f: (e: E) => R): Result<T, InferErrTypes<R>>
   orElse<A>(_f: (e: E) => Result<T, A>): Result<T, A>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
@@ -345,6 +354,14 @@ export class Err<T, E> implements IResult<T, E> {
     return f(this.error)
   }
 
+  andFinally<R extends Result<unknown, unknown>>(
+    f: (t: T) => R,
+  ): Result<InferOkTypes<R>, InferErrTypes<R>>
+  andFinally<U, F>(f: (t: T) => Result<U, F>): Result<U, F>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  andFinally(f: any): any {
+    return f(this.error)
+  }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   asyncAndThen<U, F>(_f: (t: T) => ResultAsync<U, F>): ResultAsync<U, E | F> {
     return errAsync<U, E>(this.error)
