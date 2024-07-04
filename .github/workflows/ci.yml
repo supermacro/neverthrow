@@ -60,6 +60,23 @@ jobs:
       - name: lint
         run: npm run lint
 
+  build:
+    runs-on: ubuntu-latest
+    needs: install_deps
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.RUNNER_NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.RUNNER_NODE_VERSION }}
+      - name: restore dependencies cache
+        uses: actions/cache/restore@v4
+        with:
+          path: "node_modules"
+          key: depends-node${{ env.RUNNER_NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
+      - name: build
+        run: npm run build
+      
   test:
     runs-on: ubuntu-latest
     needs: install_deps
