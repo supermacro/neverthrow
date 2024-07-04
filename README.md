@@ -3,7 +3,7 @@
 
 # NeverThrow 🙅
 
-[![supermacro](https://circleci.com/gh/supermacro/neverthrow.svg?style=svg)](https://app.circleci.com/pipelines/github/supermacro/neverthrow)
+[![GitHub Workflow Status](https://github.com/supermacro/neverthrow/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/supermacro/neverthrow/actions)
 
 ## Description
 
