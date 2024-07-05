@@ -99,3 +99,10 @@ jobs:
           key: depends-node${{ env.RUNNER_NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
       - name: test
         run: npm run test
+  test_result:
+    runs-on: ubuntu-latest
+    needs: test
+    if: ${{ always() }}
+    steps:
+      - run: exit 1
+        if: ${{ needs.test.result != 'success' }}
