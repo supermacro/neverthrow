@@ -8,21 +8,43 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  release:
+  create_pr:
     name: Release
     runs-on: ubuntu-latest
+    outputs:
+      hasChangesets: ${{ steps.changesets.outputs.hasChangesets }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'npm'
 
       - run: npm i
 
-      - name: Create Release Pull Request or Publish to npm
+      - name: Create Release Pull Request
+        id: changesets
         uses: changesets/action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    needs: create_pr
+    if: needs.create_pr.outputs.hasChangesets == 'false'
+    runs-on: ubuntu-latest
+    environment: deploy
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
         with:
-          publish: npm run release
+          node-version: 22
+          cache: 'npm'
+
+      - run: npm i
+
+      - name: Release
+        run: npm run release
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
