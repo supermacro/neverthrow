@@ -44,13 +44,12 @@ jobs:
 
       - run: npm i
 
-      - name: Creating .npmrc
-        run: |
-          cat << EOF > "$HOME/.npmrc"
-            //registry.npmjs.org/:_authToken=$NPM_TOKEN
-          EOF
+      - name: release
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: npm run release
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Release
-        run: npm run release
+  
