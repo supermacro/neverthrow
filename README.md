@@ -1,9 +1,9 @@
+> Seeking co-maintainers: I don't have much time to maintain this project these days. If someone would like to jump in and become a co-maintainer, it would be appreciated!
+> See https://github.com/supermacro/neverthrow/issues/531
+
 # NeverThrow 🙅
 
-[![supermacro](https://circleci.com/gh/supermacro/neverthrow.svg?style=svg)](https://app.circleci.com/pipelines/github/supermacro/neverthrow)
-
-
-[![Package Size](https://badgen.net/bundlephobia/minzip/neverthrow)](https://bundlephobia.com/result?p=neverthrow)
+[![GitHub Workflow Status](https://github.com/supermacro/neverthrow/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/supermacro/neverthrow/actions)
 
 ## Description
 
@@ -41,9 +41,11 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.fromThrowable` (static class method)](#resultfromthrowable-static-class-method)
     - [`Result.combine` (static class method)](#resultcombine-static-class-method)
     - [`Result.combineWithAllErrors` (static class method)](#resultcombinewithallerrors-static-class-method)
+    - [`Result.safeUnwrap()`](#resultsafeunwrap)
   + [Asynchronous API (`ResultAsync`)](#asynchronous-api-resultasync)
     - [`okAsync`](#okasync)
     - [`errAsync`](#errasync)
+    - [`ResultAsync.fromThrowable` (static class method)](#resultasyncfromthrowable-static-class-method)
     - [`ResultAsync.fromPromise` (static class method)](#resultasyncfrompromise-static-class-method)
     - [`ResultAsync.fromSafePromise` (static class method)](#resultasyncfromsafepromise-static-class-method)
     - [`ResultAsync.map` (method)](#resultasyncmap-method)
@@ -54,10 +56,13 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.match` (method)](#resultasyncmatch-method)
     - [`ResultAsync.combine` (static class method)](#resultasynccombine-static-class-method)
     - [`ResultAsync.combineWithAllErrors` (static class method)](#resultasynccombinewithallerrors-static-class-method)
+    - [`ResultAsync.safeUnwrap()`](#resultasyncsafeunwrap)
   + [Utilities](#utilities)
     - [`fromThrowable`](#fromthrowable)
+    - [`fromAsyncThrowable`](#fromasyncthrowable)
     - [`fromPromise`](#frompromise)
     - [`fromSafePromise`](#fromsafepromise)
+    - [`safeTry`](#safetry)
   + [Testing](#testing)
 * [A note on the Package Name](#a-note-on-the-package-name)
 
@@ -111,9 +116,11 @@ import {
   okAsync,
   errAsync,
   ResultAsync,
+  fromAsyncThrowable,
   fromThrowable,
   fromPromise,
   fromSafePromise,
+  safeTry,
 } from 'neverthrow'
 ```
 
@@ -659,7 +666,16 @@ const result = Result.combineWithAllErrors(resultList)
 // result is Err(['boooom!', 'ahhhhh!'])
 ```
 
+[⬆️  Back to top](#toc)
 
+#### `Result.safeUnwrap()`
+
+**⚠️ You must use `.safeUnwrap` in a generator context with `safeTry`**. Please see [safeTry](#safeTry).
+
+Allows for unwrapping a `Result` or returning an `Err` implicitly, thereby reducing boilerplate.
+
+
+[⬆️  Back to top](#toc)
 
 ---
 
@@ -713,6 +729,47 @@ const myResult = await myResultAsync // instance of `Err`
 
 myResult.isOk() // false
 myResult.isErr() // true
+```
+
+[⬆️  Back to top](#toc)
+
+---
+
+#### `ResultAsync.fromThrowable` (static class method)
+
+Similar to [Result.fromThrowable](#resultfromthrowable-static-class-method), but for functions that return a `Promise`.
+
+**Example**:
+
+```typescript
+import { ResultAsync } from 'neverthrow'
+import { insertIntoDb } from 'imaginary-database'
+// insertIntoDb(user: User): Promise<User>
+
+const insertUser = ResultAsync.fromThrowable(insertIntoDb, () => new Error('Database error'))
+// `res` has a type of (user: User) => ResultAsync<User, Error>
+```
+
+Note that this can be safer than using [ResultAsync.fromPromise](#resultasyncfrompromise-static-class-method) with
+the result of a function call, because not all functions that return a `Promise` are `async`, and thus they can throw
+errors synchronously rather than returning a rejected `Promise`. For example:
+
+```typescript
+// NOT SAFE !!
+import { ResultAsync } from 'neverthrow'
+import { db } from 'imaginary-database'
+// db.insert<T>(table: string, value: T): Promise<T>
+
+const insertUser = (user: User): Promise<User> => {
+  if (!user.id) {
+    // this throws synchronously!
+    throw new TypeError('missing user id')
+  }
+  return db.insert('users', user)
+}
+
+// this will throw, NOT return a `ResultAsync`
+const res = ResultAsync.fromPromise(insertIntoDb(myUser), () => new Error('Database error'))
 ```
 
 [⬆️  Back to top](#toc)
@@ -795,7 +852,6 @@ export const signupHandler = route<User>((req, sessionManager) =>
   })
 )
 ```
-
 
 [⬆️  Back to top](#toc)
 
@@ -1128,6 +1184,13 @@ const result = ResultAsync.combineWithAllErrors(resultList)
 // result is Err(['boooom!', 'ahhhhh!'])
 ```
 
+#### `ResultAsync.safeUnwrap()`
+
+**⚠️ You must use `.safeUnwrap` in a generator context with `safeTry`**. Please see [safeTry](#safeTry).
+
+Allows for unwrapping a `Result` or returning an `Err` implicitly, thereby reducing boilerplate.
+
+[⬆️  Back to top](#toc)
 
 ---
 
@@ -1137,6 +1200,13 @@ const result = ResultAsync.combineWithAllErrors(resultList)
 
 Top level export of `Result.fromThrowable`.
 Please find documentation at [Result.fromThrowable](#resultfromthrowable-static-class-method)
+
+[⬆️  Back to top](#toc)
+
+#### `fromAsyncThrowable`
+
+Top level export of `ResultAsync.fromSafePromise`.
+Please find documentation at [ResultAsync.fromThrowable](#resultasyncfromthrowable-static-class-method)
 
 [⬆️  Back to top](#toc)
 
@@ -1151,6 +1221,92 @@ Please find documentation at [ResultAsync.fromPromise](#resultasyncfrompromise-s
 
 Top level export of `ResultAsync.fromSafePromise`.
 Please find documentation at [ResultAsync.fromSafePromise](#resultasyncfromsafepromise-static-class-method)
+
+[⬆️  Back to top](#toc)
+
+#### `safeTry`
+
+Used to implicitly return errors and reduce boilerplate.
+
+Let's say we are writing a function that returns a `Result`, and in that function we call some functions which also return `Result`s and we check those results to see whether we should keep going or abort. Usually, we will write like the following.
+```typescript
+declare function mayFail1(): Result<number, string>;
+declare function mayFail2(): Result<number, string>;
+
+function myFunc(): Result<number, string> {
+    // We have to define a constant to hold the result to check and unwrap its value.
+    const result1 = mayFail1();
+    if (result1.isErr()) {
+        return err(`aborted by an error from 1st function, ${result1.error}`);
+    }
+    const value1 = result1.value
+
+    // Again, we need to define a constant and then check and unwrap.
+    const result2 = mayFail2();
+    if (result2.isErr()) {
+        return err(`aborted by an error from 2nd function, ${result2.error}`);
+    }
+    const value2 = result2.value
+
+    // And finally we return what we want to calculate
+    return ok(value1 + value2);
+}
+```
+Basically, we need to define a constant for each result to check whether it's a `Ok` and read its `.value` or `.error`.
+
+With safeTry, we can state 'Return here if its an `Err`, otherwise unwrap it here and keep going.' in just one expression.
+```typescript
+declare function mayFail1(): Result<number, string>;
+declare function mayFail2(): Result<number, string>;
+
+function myFunc(): Result<number, string> {
+    return safeTry<number, string>(function*() {
+        return ok(
+            // If the result of mayFail1().mapErr() is an `Err`, the evaluation is
+            // aborted here and the enclosing `safeTry` block is evaluated to that `Err`.
+            // Otherwise, this `(yield* ...)` is evaluated to its `.value`.
+            (yield* mayFail1()
+                .mapErr(e => `aborted by an error from 1st function, ${e}`)
+                .safeUnwrap())
+            +
+            // The same as above.
+            (yield* mayFail2()
+                .mapErr(e => `aborted by an error from 2nd function, ${e}`)
+                .safeUnwrap())
+        )
+    })
+}
+```
+
+To use `safeTry`, the points are as follows.
+* Wrap the entire block in a [generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*)
+* In that block, you can use `yield* <RESULT>` to state 'Return `<RESULT>` if it's an `Err`, otherwise evaluate to its `.value`'
+* Pass the generator function to `safeTry`
+
+You can also use [async generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*) to pass an async block to `safeTry`.
+```typescript
+// You can use either Promise<Result> or ResultAsync.
+declare function mayFail1(): Promise<Result<number, string>>;
+declare function mayFail2(): ResultAsync<number, string>;
+
+function myFunc(): Promise<Result<number, string>> {
+    return safeTry<number, string>(async function*() {
+        return ok(
+            // You have to await if the expression is Promise<Result>
+            (yield* (await mayFail1())
+                .mapErr(e => `aborted by an error from 1st function, ${e}`)
+                .safeUnwrap())
+            +
+            // You can call `safeUnwrap` directly if its ResultAsync
+            (yield* mayFail2()
+                .mapErr(e => `aborted by an error from 2nd function, ${e}`)
+                .safeUnwrap())
+        )
+    })
+}
+```
+
+For more information, see https://github.com/supermacro/neverthrow/pull/448 and https://github.com/supermacro/neverthrow/issues/444
 
 [⬆️  Back to top](#toc)
 
@@ -1203,3 +1359,7 @@ Although the package is called `neverthrow`, please don't take this literally. I
 `Throw`ing and `catching` is very similar to using `goto` statements - in other words; it makes reasoning about your programs harder. Secondly, by using `throw` you make the assumption that the caller of your function is implementing `catch`. This is a known source of errors. Example: One dev `throw`s and another dev uses the function without prior knowledge that the function will throw. Thus, and edge case has been left unhandled and now you have unhappy users, bosses, cats, etc.
 
 With all that said, there are definitely good use cases for throwing in your program. But much less than you might think.
+
+### License
+
+The neverthrow project is available as open source under the terms of the [MIT license](https://github.com/supermacro/neverthrow/blob/master/LICENSE).

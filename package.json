@@ -1,6 +1,6 @@
 {
   "name": "neverthrow",
-  "version": "6.0.1-0",
+  "version": "7.0.0",
   "description": "Stop throwing errors, and instead return Results!",
   "main": "dist/index.cjs.js",
   "module": "dist/index.es.js",
@@ -15,7 +15,9 @@
     "format": "prettier --write 'src/**/*.ts?(x)' && npm run lint -- --fix",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf ./dist ./tmp",
-    "build": "npm run clean && rollup --config && mv tmp/*.js dist"
+    "build": "npm run clean && rollup --config && mv tmp/*.js dist",
+    "prepack": "npm run build",
+    "release": "changeset publish"
   },
   "repository": {
     "type": "git",
@@ -28,11 +30,13 @@
   },
   "homepage": "https://github.com/supermacro/neverthrow#readme",
   "devDependencies": {
-    "@babel/core": "7.16.7",
-    "@babel/preset-env": "7.16.8",
-    "@babel/preset-typescript": "7.16.7",
+    "@babel/core": "7.24.7",
+    "@babel/preset-env": "7.24.7",
+    "@babel/preset-typescript": "7.24.7",
+    "@changesets/changelog-github": "^0.5.0",
+    "@changesets/cli": "^2.27.7",
     "@types/jest": "27.4.1",
-    "@types/node": "14.17.4",
+    "@types/node": "^18.19.39",
     "@typescript-eslint/eslint-plugin": "4.28.1",
     "@typescript-eslint/parser": "4.28.1",
     "babel-jest": "27.5.1",
@@ -41,10 +45,10 @@
     "eslint-plugin-prettier": "3.4.0",
     "jest": "27.5.1",
     "prettier": "2.2.1",
-    "rollup": "2.75.6",
-    "rollup-plugin-dts": "3.0.1",
+    "rollup": "^4.18.0",
+    "rollup-plugin-dts": "^6.1.1",
     "rollup-plugin-typescript2": "^0.32.1",
-    "testdouble": "3.16.3",
+    "testdouble": "3.20.2",
     "ts-jest": "27.1.5",
     "ts-toolbelt": "9.6.0",
     "tslib": "^2.4.0",
@@ -55,5 +59,8 @@
     "functional",
     "fp",
     "error"
-  ]
+  ],
+  "engines": {
+    "node": ">=18"
+  }
 }
