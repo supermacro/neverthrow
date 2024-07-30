@@ -65,6 +65,96 @@ export const ok = <T, E = never>(value: T): Ok<T, E> => new Ok(value)
 export const err = <T = never, E = unknown>(err: E): Err<T, E> => new Err(err)
 
 /**
+ * Passed to safeTry's body for helping type-checkers to infer body's types.
+ */
+type SafeTryBoundedHelpers<T, E> = {
+  /**
+   * The same function as neverthrow's `ok` with its `T` and `E` bound to
+   * those of the enclosing safeTry.
+   * Intended to be used to help type-checkers to infer the `Ok`'s value type.
+   *
+   * When a wrongly typed value is returned from the body, the compiler emits
+   * puzzling type-check errors for the type of the body, while we expect
+   * an error is emitted where we write the wrong value.
+   *
+   * You can use this helper to safely assert that
+   * the value type is the same as the enclosing safeTry's `T`,
+   * so that if the value is wrongly typed the compiler emits an error at that place.
+   *
+   * ```typescript
+   * // If you use neverthrow's ok,
+   * safeTry<"ok", unknown>(function*() { // puzzling errors are emitted here
+   *   return ok("OK") // but here is the place where we expect an error.
+   * })
+   * ```
+   *
+   * ```typescript
+   * // If you use this helper,
+   * safeTry<"ok", unknown>(function*({ ok }) {
+   *   return ok("OK") // an error is emitted here, as we expect.
+   * })
+   * ```
+   *
+   * See https://github.com/supermacro/neverthrow/pull/501 for actual errors.
+   */
+  ok: (value: T) => Ok<T, E>
+  /**
+   * The same function as neverthrow's `error` with its `T` and `E` bound to
+   * those of the enclosing safeTry.
+   * Intended to be used to help type-checkers to infer the `Ok`'s value type.
+   *
+   * When a wrongly typed value is returned from the body, the compiler emits
+   * puzzling type-check errors for the type of the body, while we expect
+   * an error is emitted where we write the wrong value.
+   *
+   * You can use this helper to safely assert that
+   * the error type is the same as the enclosing safeTry's `E`,
+   * so that if the error is wrongly typed the compiler emits an error at that place.
+   *
+   * ```typescript
+   * // If you use neverthrow's err,
+   * safeTry<unknown, "error">(function*() { // puzzling errors are emitted here
+   *   return err("ERROR") // but here is the place where we expect an error.
+   * })
+   * ```
+   *
+   * ```typescript
+   * // If you use this helper,
+   * safeTry<unknown, "error">(function*({ error }) {
+   *   return err("ERROR") // an error is emitted here, as we expect.
+   * })
+   * ```
+   *
+   * See https://github.com/supermacro/neverthrow/pull/501 for actual errors.
+   */
+  err: (error: E) => Err<T, E>
+  /**
+   * Identity function with the parameter type bound to the `E` of the enclosing safeTry.
+   * Intended to be used to help type-checkers to infer the error type.
+   *
+   * The following will not pass type-check,
+   * because the body's `E` is inferred to be string,
+   * which is not compatible with the enclosing safeTry's `E`: "error".
+   * ```typescript
+   * safeTry<unknown, "error">(function*() {
+   *   yield* ok(undefined).mapErr(() => "error").safeUnwrap()
+   *   return ok(undefined)
+   * })
+   * ```
+   *
+   * You can use this helper to safely assert that
+   * the error type is the same as the enclosing safeTry's E.
+   * ```typescript
+   * safeTry<unknown, "error">(function*({ error }) {
+   *   yield* ok(undefined).mapErr(() => error("error")).safeUnwrap()
+   *   return ok(undefined)
+   * })
+   * ```
+   */
+  error: (error: E) => E
+}
+
+/**
  * Evaluates the given generator to a Result returned or an Err yielded from it,
  * whichever comes first.
  *
@@ -76,7 +166,9 @@ export const err = <T = never, E = unknown>(err: E): Err<T, E> => new Err(err)
  * Rust's `result?` expression.
  * @returns The first occurence of either an yielded Err or a returned Result.
  */
-export function safeTry<T, E>(body: () => Generator<Err<never, E>, Result<T, E>>): Result<T, E>
+export function safeTry<T, E>(
+  body: (helpers: SafeTryBoundedHelpers<T, E>) => Generator<Err<never, E>, Result<T, E>>,
+): Result<T, E>
 /**
  * Evaluates the given generator to a Result returned or an Err yielded from it,
  * whichever comes first.
@@ -93,14 +185,18 @@ export function safeTry<T, E>(body: () => Generator<Err<never, E>, Result<T, E>>
 // Since body is potentially throwable because `await` can be used in it,
 // Promise<Result<T, E>>, not ResultAsync<T, E>, is used as the return type.
 export function safeTry<T, E>(
-  body: () => AsyncGenerator<Err<never, E>, Result<T, E>>,
+  body: (helpers: SafeTryBoundedHelpers<T, E>) => AsyncGenerator<Err<never, E>, Result<T, E>>,
 ): Promise<Result<T, E>>
 export function safeTry<T, E>(
   body:
-    | (() => Generator<Err<never, E>, Result<T, E>>)
-    | (() => AsyncGenerator<Err<never, E>, Result<T, E>>),
+    | ((helpers: SafeTryBoundedHelpers<T, E>) => Generator<Err<never, E>, Result<T, E>>)
+    | ((helpers: SafeTryBoundedHelpers<T, E>) => AsyncGenerator<Err<never, E>, Result<T, E>>),
 ): Result<T, E> | Promise<Result<T, E>> {
-  const n = body().next()
+  const n = body({
+    ok,
+    err,
+    error: (e) => e,
+  }).next()
   if (n instanceof Promise) {
     return n.then((r) => r.value)
   }
