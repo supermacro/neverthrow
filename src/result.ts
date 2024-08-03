@@ -305,7 +305,11 @@ export class Ok<T, E> implements IResult<T, E> {
   }
 
   _unsafeUnwrapErr(config?: ErrorConfig): E {
-    throw createNeverThrowError('Called `_unsafeUnwrapErr` on an Ok', this, config)
+    throw createNeverThrowError(
+      config?.message ?? 'Called `_unsafeUnwrapErr` on an Ok',
+      this,
+      config,
+    )
   }
 }
 
@@ -373,7 +377,7 @@ export class Err<T, E> implements IResult<T, E> {
   }
 
   _unsafeUnwrap(config?: ErrorConfig): T {
-    throw createNeverThrowError('Called `_unsafeUnwrap` on an Err', this, config)
+    throw createNeverThrowError(config?.message ?? 'Called `_unsafeUnwrap` on an Err', this, config)
   }
 
   _unsafeUnwrapErr(_?: ErrorConfig): E {

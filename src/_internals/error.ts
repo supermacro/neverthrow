@@ -1,7 +1,8 @@
 import { Result } from '../result'
 
 export interface ErrorConfig {
-  withStackTrace: boolean
+  withStackTrace?: boolean;
+  message?: string;
 }
 
 const defaultErrorConfig: ErrorConfig = {
