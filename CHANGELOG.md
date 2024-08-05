@@ -1,5 +1,11 @@
 # neverthrow
 
+## 7.0.1
+
+### Patch Changes
+
+- [#527](https://github.com/supermacro/neverthrow/pull/527) [`2e1f198`](https://github.com/supermacro/neverthrow/commit/2e1f19899800ce5e1164412c6a693cf2f1c40b20) Thanks [@3846masa](https://github.com/3846masa)! - fix: change type definitions to make inferring types of safeTry more strict
+
 ## 7.0.0
 
 ### Major Changes
