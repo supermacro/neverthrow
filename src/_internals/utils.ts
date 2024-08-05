@@ -85,3 +85,14 @@ export const combineResultAsyncListWithAllErrors = <T, E>(
   ResultAsync.fromSafePromise(Promise.all(asyncResultList)).andThen(
     combineResultListWithAllErrors,
   ) as ResultAsync<T[], E[]>
+
+export const partitionResultList = <T, E>(resultList: readonly Result<T, E>[]): [T[], E[]] =>
+  resultList.reduce(
+    ([oks, errors], result) =>
+      result.isErr() ? [oks, [...errors, result.error]] : [[...oks, result.value], errors],
+    [[], []] as [T[], E[]],
+  )
+
+export const partitionResultAsyncList = <T, E>(
+  asyncResultList: readonly ResultAsync<T, E>[],
+): Promise<[T[], E[]]> => Promise.all(asyncResultList).then(partitionResultList)
