@@ -1345,9 +1345,17 @@ _unsafeUnwrapErr({
 
 // ^ Now the error object will have a `.stack` property containing the current stack
 ```
+You can also conditionally add a custom error message that will be propagated with the error object. By default this error message will be `Called '_unsafeUnwrap' on an Err` when called on an `Err` and `Called '_unsafeUnwrapErr' on an Ok` when called on an `Ok`.
+
+```typescript
+_unsafeUnwrapErr({
+  message: 'Your custom error message',
+  withStackTrace: true,
+})
+```
 
 ---
-
+  
 If you find this package useful, please consider [sponsoring me](https://github.com/sponsors/supermacro/) or simply [buying me a coffee](https://ko-fi.com/gdelgado)!
 
 ---
