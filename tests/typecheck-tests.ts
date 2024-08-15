@@ -229,6 +229,54 @@ type CreateTuple<L, V = string> =
     });
   });
 
+  (function describe(_ = 'match') {
+    (function it(_ = 'the type of the arguments match the types of the result') {
+      type OKExpectation = number
+      type ErrExpectation = string
+
+      ok<number, string>(123)
+        .match(
+          (val: OKExpectation): void => void val,
+          (val: ErrExpectation): void => void val,
+        );
+      err<number, string>("123")
+        .match(
+          (val: OKExpectation): void => void val,
+          (val: ErrExpectation): void => void val,
+        );
+    });
+
+    (function it(_ = 'infers the resulting value from match callbacks (same type)') {
+      type Expectation = boolean
+
+      const okResult: Expectation = ok<number, string>(123)
+        .match(
+          (val) => !!val,
+          (val) => !!val,
+        );
+      const errResult: Expectation = err<number, string>('123')
+        .match(
+          (val) => !!val,
+          (val) => !!val,
+        );
+    });
+
+    (function it(_ = 'infers the resulting value from match callbacks (different type)') {
+      type Expectation = boolean | bigint
+
+      const okResult: Expectation = ok<string, number>('123')
+        .match(
+          (val) => !!val,
+          (val) => BigInt(val),
+        );
+      const errResult: Expectation = err<string, number>(123)
+        .match(
+          (val) => !!val,
+          (val) => BigInt(val),
+        );
+    });
+  });
+
   (function describe(_ = 'asyncAndThen') {
     (function it(_ = 'Combines two equal error types (native scalar types)') {
       type Expectation = ResultAsync<unknown, string>

@@ -1,6 +1,3 @@
-> Seeking co-maintainers: I don't have much time to maintain this project these days. If someone would like to jump in and become a co-maintainer, it would be appreciated!
-> See https://github.com/supermacro/neverthrow/issues/531
-
 # NeverThrow 🙅
 
 [![GitHub Workflow Status](https://github.com/supermacro/neverthrow/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/supermacro/neverthrow/actions)
@@ -448,10 +445,10 @@ Match callbacks do not necessitate to return a `Result`, however you can return 
 
 ```typescript
 class Result<T, E> {
-  match<A>(
+  match<A, B = A>(
     okCallback: (value: T) =>  A,
-    errorCallback: (error: E) =>  A
-  ): A => { ... }
+    errorCallback: (error: E) =>  B
+  ): A | B => { ... }
 }
 ```
 
@@ -1067,10 +1064,10 @@ The difference with `Result.match` is that it always returns a `Promise` because
 
 ```typescript
 class ResultAsync<T, E> {
-  match<A>(
+  match<A, B = A>(
     okCallback: (value: T) =>  A,
-    errorCallback: (error: E) =>  A
-  ): Promise<A> => { ... }
+    errorCallback: (error: E) =>  B
+  ): Promise<A | B> => { ... }
 }
 ```
 
