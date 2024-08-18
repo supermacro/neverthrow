@@ -62,7 +62,11 @@ export type Result<T, E> = Ok<T, E> | Err<T, E>
 
 export const ok = <T, E = never>(value: T): Ok<T, E> => new Ok(value)
 
-export const err = <T = never, E = unknown>(err: E): Err<T, E> => new Err(err)
+export function err<T = never, E extends string = string>(err: E): Err<T, E>
+export function err<T = never, E = unknown>(err: E): Err<T, E>
+export function err<T = never, E = unknown>(err: E): Err<T, E> {
+  return new Err(err)
+}
 
 /**
  * Evaluates the given generator to a Result returned or an Err yielded from it,
