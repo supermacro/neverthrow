@@ -34,6 +34,9 @@ type CreateTuple<L, V = string> =
 
 
 (function describe(_ = 'Result') {
+  (function describe(_ = 'fromThrowable') {
+
+  });
   (function describe(_ = 'andThen') {
     (function it(_ = 'Combines two equal error types (native scalar types)') {
       type Expectation = Result<unknown, string>
@@ -1003,6 +1006,22 @@ type CreateTuple<L, V = string> =
 
 
 (function describe(_ = 'ResultAsync') {
+  (function describe(_ = 'fromThrowable') {
+    (function it(_ = 'Should infer functions with overloads properly') {
+      type Func = {
+        (a: string): Promise<void>;
+        (a: string, b: number): Promise<void>;
+      }
+
+      const func: Func = async () => {}
+
+      const result = ResultAsync.fromThrowable(func);
+
+      result('a', 2);
+
+      result('a');
+    });
+  });
   (function describe(_ = 'andThen') {
     (function it(_ = 'Combines two equal error types (native scalar types)') {
       type Expectation = ResultAsync<unknown, string>
