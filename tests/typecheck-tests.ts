@@ -34,9 +34,6 @@ type CreateTuple<L, V = string> =
 
 
 (function describe(_ = 'Result') {
-  (function describe(_ = 'fromThrowable') {
-
-  });
   (function describe(_ = 'andThen') {
     (function it(_ = 'Combines two equal error types (native scalar types)') {
       type Expectation = Result<unknown, string>
