@@ -1,26 +1,19 @@
 {
   "compilerOptions": {
-      "target": "es2016",
-      "module": "ES2015",
-      "noImplicitAny": true,
-      "sourceMap": false,
-      "downlevelIteration": true,
-      "noUnusedLocals": false,
-      "noUnusedParameters": false,
-      "strictNullChecks": true,
-      "strictFunctionTypes": true,
-      "declaration": true,
-      "moduleResolution": "Node",
-      "baseUrl": "./src",
-      "lib": [
-        "dom",
-        "es2016",
-        "es2017.object"
-      ],
-      "outDir": "dist",
+    "target": "es2016",
+    "module": "ES2015",
+    "noImplicitAny": true,
+    "sourceMap": false,
+    "downlevelIteration": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "declaration": true,
+    "moduleResolution": "Node",
+    "baseUrl": "./src",
+    "lib": ["dom", "es2016", "es2017.object"],
+    "outDir": "dist"
   },
-  "include": [
-    "./index.test.ts",
-    "./typecheck-tests.ts"
-  ],
+  "include": ["./index.test.ts", "./typecheck-tests.ts"]
 }
