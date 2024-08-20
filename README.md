@@ -39,6 +39,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.combine` (static class method)](#resultcombine-static-class-method)
     - [`Result.combineWithAllErrors` (static class method)](#resultcombinewithallerrors-static-class-method)
     - [`Result.safeUnwrap()`](#resultsafeunwrap)
+    - [`Result.partition (static class method)`](#resultpartition-static-class-method)
   + [Asynchronous API (`ResultAsync`)](#asynchronous-api-resultasync)
     - [`okAsync`](#okasync)
     - [`errAsync`](#errasync)
@@ -54,6 +55,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.combine` (static class method)](#resultasynccombine-static-class-method)
     - [`ResultAsync.combineWithAllErrors` (static class method)](#resultasynccombinewithallerrors-static-class-method)
     - [`ResultAsync.safeUnwrap()`](#resultasyncsafeunwrap)
+    - [`ResultAsync.partition (static class method)`](#resultasyncpartition-static-class-method)
   + [Utilities](#utilities)
     - [`fromThrowable`](#fromthrowable)
     - [`fromAsyncThrowable`](#fromasyncthrowable)
@@ -676,6 +678,49 @@ Allows for unwrapping a `Result` or returning an `Err` implicitly, thereby reduc
 
 ---
 
+#### `Result.partition` (static class method)
+
+> Although Result is not an actual JS class, the way that `partition` has been implemented requires that you call `partition` as though it were a static method on `Result`. See examples below.
+
+Partition lists of `Result`s.
+
+**`partition` works on both heterogeneous and homogeneous lists**. This means that you can have lists that contain different kinds of `Result`s and still be able to partition them. Note that you cannot partition lists that contain both `Result`s **and** `ResultAsync`s.
+
+The `partition` function takes a list of results and returns a tuple of all `Ok` results and `Err` errors.
+
+Function signature:
+
+```typescript
+// homogeneous lists
+function partition<T, E>(resultList: Result<T, E>[]): [T[], E[]]
+
+// heterogeneous lists
+function partition<T1, T2, E1, E2>(resultList: [ Result<T1, E1>, Result<T2, E2> ]): [(T1 | T2)[], (E1 | E2)[]]
+function partition<T1, T2, T3, E1, E2, E3> => [(T1 | T2 | T3) [], (E1 | E2 | E3)[]]
+function partition<T1, T2, T3, T4, E1, E2, E3, E4> => [(T1 | T2 | T3 | T4)[], (E1 | E2 | E3 | E4)[]]
+// ... etc etc ad infinitum
+```
+
+Example usage:
+
+```typescript
+const resultList: Result<number, string>[] = [
+  ok(123),
+  err('boooom!'),
+  ok(456),
+  err('ahhhhh!'),
+]
+
+const [results, errors] = Result.partition(resultList)
+
+// results is [123, 456]
+// errors is ['boooom!', 'ahhhhh!']
+```
+
+[⬆️  Back to top](#toc)
+
+---
+
 ### Asynchronous API (`ResultAsync`)
 
 #### `okAsync`
@@ -1186,6 +1231,47 @@ const result = ResultAsync.combineWithAllErrors(resultList)
 **⚠️ You must use `.safeUnwrap` in a generator context with `safeTry`**. Please see [safeTry](#safeTry).
 
 Allows for unwrapping a `Result` or returning an `Err` implicitly, thereby reducing boilerplate.
+
+[⬆️  Back to top](#toc)
+
+---
+
+#### `ResultAsync.partition` (static class method)
+
+Partition lists of `ResultAsync`s.
+
+**`partition` works on both heterogeneous and homogeneous lists**. This means that you can have lists that contain different kinds of `ResultAsync`s and still be able to partition them. Note that you cannot partition lists that contain both `Result`s **and** `ResultAsync`s.
+
+The `partition` function takes a list of async results and returns a `Promise` of a tuple of all Ok results and Err errors.
+
+Function signature:
+
+```typescript
+// homogeneous lists
+function partition<T, E>(resultList: ResultAsync<T, E>[]): Promise<[T[], E[]]>
+
+// heterogeneous lists
+function partition<T1, T2, E1, E2>(resultList: [ ResultAsync<T1, E1>, ResultAsync<T2, E2> ]): Promise<[(T1 | T2)[], (E1 | E2)[]]>
+function partition<T1, T2, T3, E1, E2, E3> => Promise<[(T1 | T2 | T3)[], (E1 | E2 | E3)[]]>
+function partition<T1, T2, T3, T4, E1, E2, E3, E4> => Promise<[(T1 | T2 | T3 | T4)[], (E1 | E2 | E3 | E4)[]]>
+// ... etc etc ad infinitum
+```
+
+Example usage:
+
+```typescript
+const resultList: ResultAsync<number, string>[] = [
+  okAsync(123),
+  errAsync('boooom!'),
+  okAsync(456),
+  errAsync('ahhhhh!'),
+]
+
+const [results, errors] = await ResultAsync.partition(resultList)
+
+// results is [123, 456]
+// errors is ['boooom!', 'ahhhhh!']
+```
 
 [⬆️  Back to top](#toc)
 
