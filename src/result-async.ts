@@ -56,7 +56,8 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
             return new Err(errorFn ? errorFn(error) : error)
           }
         })(),
-      )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ) as any
     }
   }
 

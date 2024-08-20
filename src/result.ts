@@ -23,14 +23,16 @@ export namespace Result {
     fn: Fn,
     errorFn?: (e: unknown) => E,
   ): (...args: Parameters<Fn>) => Result<ReturnType<Fn>, E> {
-    return (...args) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return ((...args: any[]) => {
       try {
         const result = fn(...args)
         return ok(result)
       } catch (e) {
         return err(errorFn ? errorFn(e) : e)
       }
-    }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }) as any
   }
 
   export function combine<

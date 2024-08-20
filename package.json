@@ -10,10 +10,10 @@
   ],
   "scripts": {
     "test": "jest && npm run test-types",
-    "test-types": "tsc --noEmit -p ./tests/tsconfig.tests.json",
+    "test-types": "tsc -p ./tests/tsconfig.tests.json",
     "lint": "eslint ./src --ext .ts",
     "format": "prettier --write 'src/**/*.ts?(x)' && npm run lint -- --fix",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc",
     "clean": "rm -rf ./dist ./tmp",
     "build": "npm run clean && rollup --config && mv tmp/*.js dist",
     "prepack": "npm run build",
@@ -52,7 +52,7 @@
     "ts-jest": "27.1.5",
     "ts-toolbelt": "9.6.0",
     "tslib": "^2.4.0",
-    "typescript": "4.7.2"
+    "typescript": "5.0.2"
   },
   "keywords": [
     "typescript",
