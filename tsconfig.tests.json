@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "declaration": true,
+    "composite": true,
+    "outDir": "./tests/dist",
+    "noEmit": false
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./tests/**/*.ts",
+  ],
+  "exclude": [
+    "./tests/dist"
+  ]
+}
