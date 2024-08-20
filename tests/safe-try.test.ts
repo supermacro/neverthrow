@@ -1,44 +1,34 @@
-import {
-  safeTry,
-  ok,
-  okAsync,
-  err,
-  errAsync,
-  Ok,
-  Err,
-  Result,
-  ResultAsync,
-} from "../src"
+import { safeTry, ok, okAsync, err, errAsync, Ok, Err, Result, ResultAsync } from '../src'
 
 describe('Returns what is returned from the generator function', () => {
-  const val = "value"
+  const val = 'value'
 
-  test("With synchronous Ok", () => {
-    const res = safeTry(function*() {
+  test('With synchronous Ok', () => {
+    const res = safeTry(function* () {
       return ok(val)
     })
     expect(res).toBeInstanceOf(Ok)
     expect(res._unsafeUnwrap()).toBe(val)
   })
 
-  test("With synchronous Err", () => {
-    const res = safeTry(function*() {
+  test('With synchronous Err', () => {
+    const res = safeTry(function* () {
       return err(val)
     })
     expect(res).toBeInstanceOf(Err)
     expect(res._unsafeUnwrapErr()).toBe(val)
   })
 
-  test("With async Ok", async () => {
-    const res = await safeTry(async function*() {
+  test('With async Ok', async () => {
+    const res = await safeTry(async function* () {
       return await okAsync(val)
     })
     expect(res).toBeInstanceOf(Ok)
     expect(res._unsafeUnwrap()).toBe(val)
   })
 
-  test("With async Err", async () => {
-    const res = await safeTry(async function*() {
+  test('With async Err', async () => {
+    const res = await safeTry(async function* () {
       return await errAsync(val)
     })
     expect(res).toBeInstanceOf(Err)
@@ -47,67 +37,67 @@ describe('Returns what is returned from the generator function', () => {
 })
 
 describe("Returns the first occurence of Err instance as yiled*'s operand", () => {
-  test("With synchronous results", () => {
-    const errVal = "err"
+  test('With synchronous results', () => {
+    const errVal = 'err'
     const okValues = Array<string>()
 
-    const result = safeTry(function*() {
-      const okFoo = yield* ok("foo").safeUnwrap()
+    const result = safeTry(function* () {
+      const okFoo = yield* ok('foo').safeUnwrap()
       okValues.push(okFoo)
 
-      const okBar = yield* ok("bar").safeUnwrap()
+      const okBar = yield* ok('bar').safeUnwrap()
       okValues.push(okBar)
 
       yield* err(errVal).safeUnwrap()
 
-      throw new Error("This line should not be executed")
+      throw new Error('This line should not be executed')
     })
 
-    expect(okValues).toMatchObject(["foo", "bar"])
+    expect(okValues).toMatchObject(['foo', 'bar'])
 
     expect(result).toBeInstanceOf(Err)
     expect(result._unsafeUnwrapErr()).toBe(errVal)
   })
 
-  test("With async results", async () => {
-    const errVal = "err"
+  test('With async results', async () => {
+    const errVal = 'err'
     const okValues = Array<string>()
 
-    const result = await safeTry(async function*() {
-      const okFoo = yield* okAsync("foo").safeUnwrap()
+    const result = await safeTry(async function* () {
+      const okFoo = yield* okAsync('foo').safeUnwrap()
       okValues.push(okFoo)
 
-      const okBar = yield* okAsync("bar").safeUnwrap()
+      const okBar = yield* okAsync('bar').safeUnwrap()
       okValues.push(okBar)
 
       yield* errAsync(errVal).safeUnwrap()
 
-      throw new Error("This line should not be executed")
+      throw new Error('This line should not be executed')
     })
 
-    expect(okValues).toMatchObject(["foo", "bar"])
+    expect(okValues).toMatchObject(['foo', 'bar'])
 
     expect(result).toBeInstanceOf(Err)
     expect(result._unsafeUnwrapErr()).toBe(errVal)
   })
 
-  test("Mix results of synchronous and async in AsyncGenerator", async () => {
-    const errVal = "err"
+  test('Mix results of synchronous and async in AsyncGenerator', async () => {
+    const errVal = 'err'
     const okValues = Array<string>()
 
-    const result = await safeTry(async function*() {
-      const okFoo = yield* okAsync("foo").safeUnwrap()
+    const result = await safeTry(async function* () {
+      const okFoo = yield* okAsync('foo').safeUnwrap()
       okValues.push(okFoo)
 
-      const okBar = yield* ok("bar").safeUnwrap()
+      const okBar = yield* ok('bar').safeUnwrap()
       okValues.push(okBar)
 
       yield* err(errVal).safeUnwrap()
 
-      throw new Error("This line should not be executed")
+      throw new Error('This line should not be executed')
     })
 
-    expect(okValues).toMatchObject(["foo", "bar"])
+    expect(okValues).toMatchObject(['foo', 'bar'])
 
     expect(result).toBeInstanceOf(Err)
     expect(result._unsafeUnwrapErr()).toBe(errVal)
@@ -116,7 +106,7 @@ describe("Returns the first occurence of Err instance as yiled*'s operand", () =
 
 describe("Tests if README's examples work", () => {
   const okValue = 3
-  const errValue = "err!"
+  const errValue = 'err!'
   function good(): Result<number, string> {
     return ok(okValue)
   }
@@ -136,17 +126,16 @@ describe("Tests if README's examples work", () => {
     return errAsync(errValue)
   }
 
-  test("mayFail2 error", () => {
+  test('mayFail2 error', () => {
     function myFunc(): Result<number, string> {
-      return safeTry<number, string>(function*() {
+      return safeTry<number, string>(function* () {
         return ok(
           (yield* good()
-            .mapErr(e => `1st, ${e}`)
-            .safeUnwrap())
-          +
-          (yield* bad()
-            .mapErr(e => `2nd, ${e}`)
-            .safeUnwrap())
+            .mapErr((e) => `1st, ${e}`)
+            .safeUnwrap()) +
+            (yield* bad()
+              .mapErr((e) => `2nd, ${e}`)
+              .safeUnwrap()),
         )
       })
     }
@@ -156,17 +145,16 @@ describe("Tests if README's examples work", () => {
     expect(result._unsafeUnwrapErr()).toBe(`2nd, ${errValue}`)
   })
 
-  test("all ok", () => {
+  test('all ok', () => {
     function myFunc(): Result<number, string> {
-      return safeTry<number, string>(function*() {
+      return safeTry<number, string>(function* () {
         return ok(
           (yield* good()
-            .mapErr(e => `1st, ${e}`)
-            .safeUnwrap())
-          +
-          (yield* good()
-            .mapErr(e => `2nd, ${e}`)
-            .safeUnwrap())
+            .mapErr((e) => `1st, ${e}`)
+            .safeUnwrap()) +
+            (yield* good()
+              .mapErr((e) => `2nd, ${e}`)
+              .safeUnwrap()),
         )
       })
     }
@@ -176,17 +164,14 @@ describe("Tests if README's examples work", () => {
     expect(result._unsafeUnwrap()).toBe(okValue + okValue)
   })
 
-  test("async mayFail1 error", async () => {
+  test('async mayFail1 error', async () => {
     function myFunc(): Promise<Result<number, string>> {
-      return safeTry<number, string>(async function*() {
+      return safeTry<number, string>(async function* () {
         return ok(
-          (yield* (await promiseBad())
-            .mapErr(e => `1st, ${e}`)
-            .safeUnwrap())
-          +
-          (yield* asyncGood()
-            .mapErr(e => `2nd, ${e}`)
-            .safeUnwrap())
+          (yield* (await promiseBad()).mapErr((e) => `1st, ${e}`).safeUnwrap()) +
+            (yield* asyncGood()
+              .mapErr((e) => `2nd, ${e}`)
+              .safeUnwrap()),
         )
       })
     }
@@ -196,17 +181,14 @@ describe("Tests if README's examples work", () => {
     expect(result._unsafeUnwrapErr()).toBe(`1st, ${errValue}`)
   })
 
-  test("async mayFail2 error", async () => {
+  test('async mayFail2 error', async () => {
     function myFunc(): Promise<Result<number, string>> {
-      return safeTry<number, string>(async function*() {
+      return safeTry<number, string>(async function* () {
         return ok(
-          (yield* (await promiseGood())
-            .mapErr(e => `1st, ${e}`)
-            .safeUnwrap())
-          +
-          (yield* asyncBad()
-            .mapErr(e => `2nd, ${e}`)
-            .safeUnwrap())
+          (yield* (await promiseGood()).mapErr((e) => `1st, ${e}`).safeUnwrap()) +
+            (yield* asyncBad()
+              .mapErr((e) => `2nd, ${e}`)
+              .safeUnwrap()),
         )
       })
     }
@@ -216,17 +198,14 @@ describe("Tests if README's examples work", () => {
     expect(result._unsafeUnwrapErr()).toBe(`2nd, ${errValue}`)
   })
 
-  test("promise async all ok", async () => {
+  test('promise async all ok', async () => {
     function myFunc(): Promise<Result<number, string>> {
-      return safeTry<number, string>(async function*() {
+      return safeTry<number, string>(async function* () {
         return ok(
-          (yield* (await promiseGood())
-            .mapErr(e => `1st, ${e}`)
-            .safeUnwrap())
-          +
-          (yield* asyncGood()
-            .mapErr(e => `2nd, ${e}`)
-            .safeUnwrap())
+          (yield* (await promiseGood()).mapErr((e) => `1st, ${e}`).safeUnwrap()) +
+            (yield* asyncGood()
+              .mapErr((e) => `2nd, ${e}`)
+              .safeUnwrap()),
         )
       })
     }
