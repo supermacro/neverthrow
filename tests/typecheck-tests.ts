@@ -13,7 +13,7 @@ import {
   Result,
   ResultAsync,
 } from '../src'
-import { Transpose } from '../src/result'
+import { safeTry, Transpose } from '../src/result'
 import { type N, Test } from 'ts-toolbelt'
 
 type CreateTuple<L, V = string> =
@@ -229,6 +229,54 @@ type CreateTuple<L, V = string> =
     });
   });
 
+  (function describe(_ = 'match') {
+    (function it(_ = 'the type of the arguments match the types of the result') {
+      type OKExpectation = number
+      type ErrExpectation = string
+
+      ok<number, string>(123)
+        .match(
+          (val: OKExpectation): void => void val,
+          (val: ErrExpectation): void => void val,
+        );
+      err<number, string>("123")
+        .match(
+          (val: OKExpectation): void => void val,
+          (val: ErrExpectation): void => void val,
+        );
+    });
+
+    (function it(_ = 'infers the resulting value from match callbacks (same type)') {
+      type Expectation = boolean
+
+      const okResult: Expectation = ok<number, string>(123)
+        .match(
+          (val) => !!val,
+          (val) => !!val,
+        );
+      const errResult: Expectation = err<number, string>('123')
+        .match(
+          (val) => !!val,
+          (val) => !!val,
+        );
+    });
+
+    (function it(_ = 'infers the resulting value from match callbacks (different type)') {
+      type Expectation = boolean | bigint
+
+      const okResult: Expectation = ok<string, number>('123')
+        .match(
+          (val) => !!val,
+          (val) => BigInt(val),
+        );
+      const errResult: Expectation = err<string, number>(123)
+        .match(
+          (val) => !!val,
+          (val) => BigInt(val),
+        );
+    });
+  });
+
   (function describe(_ = 'asyncAndThen') {
     (function it(_ = 'Combines two equal error types (native scalar types)') {
       type Expectation = ResultAsync<unknown, string>
@@ -290,11 +338,11 @@ type CreateTuple<L, V = string> =
     });
 
     (function it(_ = 'combines only err results into one') {
-      type Expectation = Result<[ never, never ], number | string>;
+      type Expectation = Result<[ never, never ], number | 'abc'>;
 
       const result = Result.combine([
         err(1),
-        err('string'),
+        err('abc'),
       ]);
 
       const assignableToCheck: Expectation = result;
@@ -880,7 +928,7 @@ type CreateTuple<L, V = string> =
     });
 
     (function it(_ = 'combines only err results into one') {
-      type Expectation = Result<[ never, never ], (number | string)[]>;
+      type Expectation = Result<[ never, never ], (number | 'string')[]>;
 
       const result = Result.combineWithAllErrors([
         err(1),
@@ -961,6 +1009,24 @@ type CreateTuple<L, V = string> =
       });
     });
   });
+
+  (function describe(_ = 'err') {
+    (function it(_ = 'infers the error type narrowly when it is a string') {
+      type Expectation = Result<never, 'error'>
+
+      const result = err('error')
+
+      const assignableToCheck: Expectation = result;
+    });
+
+    (function it(_ = 'infers the error type widely when it is not a string') {
+      type Expectation = Result<never, { abc: number }>
+
+      const result = err({ abc: 123 })
+
+      const assignableToCheck: Expectation = result;
+    });
+  })
 });
 
 
@@ -1981,6 +2047,158 @@ type CreateTuple<L, V = string> =
 });
 
 (function describe(_ = 'Utility types') {
+  (function describe(_ = 'safeTry') {
+    (function describe(_ = 'sync generator') {
+      (function it(_ = 'should correctly infer the result type when generator returns Ok') {
+        interface ReturnMyError {
+          name: 'ReturnMyError'
+        }
+
+        type Expectation = Result<string, ReturnMyError>
+
+        const result = safeTry(function *() {
+          return ok<string, ReturnMyError>('string');
+        })
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'should correctly infer the result type when generator returns Err') {
+        interface ReturnMyError {
+          name: 'ReturnMyError';
+        }
+
+        type Expectation = Result<string, ReturnMyError>
+
+        const result = safeTry(function *() {
+          return err<string, ReturnMyError>({ name: 'ReturnMyError' });
+        })
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'infers the value type when calling "yield*"') {
+        interface YieldMyError {
+          name: 'YieldMyError';
+        }
+        interface ReturnMyError {
+          name: 'ReturnMyError';
+        }
+
+        safeTry(function *() {
+          type Expectation = number
+
+          const unwrapped = yield* ok<number, YieldMyError>(123).safeUnwrap();
+          Test.checks([
+            Test.check<typeof unwrapped, Expectation, Test.Pass>(),
+          ])
+
+          return ok<string, ReturnMyError>('string');
+        })
+      });
+
+      (function it(_ = 'should correctly infer the result type with multiple "yield*"') {
+        interface FirstYieldMyError {
+          name: 'FirstYieldMyError';
+        }
+        interface SecondYieldMyError {
+          name: 'SecondYieldMyError';
+        }
+        interface ReturnMyError {
+          name: 'ReturnMyError';
+        }
+
+        type Expectation = Result<string, FirstYieldMyError | SecondYieldMyError | ReturnMyError>
+
+        const result = safeTry(function *() {
+          yield* ok<number, FirstYieldMyError>(123).safeUnwrap();
+          yield* err<never, SecondYieldMyError>({ name: 'SecondYieldMyError' }).safeUnwrap();
+          return ok<string, ReturnMyError>('string');
+        })
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+    });
+
+    (function describe(_ = 'async generator') {
+      (function it(_ = 'should correctly infer the result type when generator returns OkAsync') {
+        interface ReturnMyError {
+          name: 'ReturnMyError'
+        }
+
+        type Expectation = Promise<Result<string, ReturnMyError>>
+
+        const result = safeTry(async function *() {
+          return okAsync<string, ReturnMyError>('string');
+        })
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'should correctly infer the result type when generator returns ErrAsync') {
+        interface ReturnMyError {
+          name: 'ReturnMyError';
+        }
+
+        type Expectation = Promise<Result<string, ReturnMyError>>
+
+        const result = safeTry(async function *() {
+          return errAsync<string, ReturnMyError>({ name: 'ReturnMyError' });
+        })
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+
+      (function it(_ = 'infers the value type when calling "yield*"') {
+        interface YieldMyError {
+          name: 'YieldMyError';
+        }
+        interface ReturnMyError {
+          name: 'ReturnMyError';
+        }
+
+        safeTry(async function *() {
+          type Expectation = number
+
+          const unwrapped = yield* okAsync<number, YieldMyError>(123).safeUnwrap();
+          Test.checks([
+            Test.check<typeof unwrapped, Expectation, Test.Pass>(),
+          ])
+
+          return ok<string, ReturnMyError>('string');
+        })
+      });
+
+      (function it(_ = 'should correctly infer the result type with multiple "yield*"') {
+        interface FirstYieldMyError {
+          name: 'FirstYieldMyError';
+        }
+        interface SecondYieldMyError {
+          name: 'SecondYieldMyError';
+        }
+        interface ReturnMyError {
+          name: 'ReturnMyError';
+        }
+
+        type Expectation = Promise<Result<string, FirstYieldMyError | SecondYieldMyError | ReturnMyError>>
+
+        const result = safeTry(async function *() {
+          yield* okAsync<number, FirstYieldMyError>(123).safeUnwrap();
+          yield* errAsync<never, SecondYieldMyError>({ name: 'SecondYieldMyError' }).safeUnwrap();
+          return okAsync<string, ReturnMyError>('string');
+        })
+        Test.checks([
+          Test.check<typeof result, Expectation, Test.Pass>(),
+        ])
+      });
+    });
+  });
+
   (function describe(_ = 'Transpose') {
     (function it(_ = 'should transpose an array') {
       const input: [

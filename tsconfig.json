@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
       "target": "es2015",
-      "module": "ES2015",
+      "module": "ESNext",
+      "moduleResolution": "Node",
+      "strict": false,
       "noImplicitAny": true,
       "sourceMap": false,
-      "downlevelIteration": true,
       "noUnusedLocals": true,
       "noUnusedParameters": true,
       "strictNullChecks": true,
       "strictFunctionTypes": true,
       "declaration": true,
-      "moduleResolution": "Node",
       "baseUrl": "./src",
       "lib": [
         "dom",
@@ -18,6 +18,8 @@
         "es2017.object"
       ],
       "outDir": "dist",
+      "skipLibCheck": true,
+      "esModuleInterop": true
   },
   "include": [
     "src/**/*.ts"

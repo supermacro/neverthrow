@@ -4,6 +4,7 @@ import {
   err,
   Err,
   errAsync,
+  fromAsyncThrowable,
   fromPromise,
   fromSafePromise,
   fromThrowable,
@@ -925,6 +926,60 @@ describe('ResultAsync', () => {
 
     it('has a top level export', () => {
       expect(fromPromise).toBe(ResultAsync.fromPromise)
+    })
+  })
+
+  describe('ResultAsync.fromThrowable', () => {
+    it('creates a new function that returns a ResultAsync', async () => {
+      const example = ResultAsync.fromThrowable(async (a: number, b: number) => a + b)
+      const res = example(4, 8)
+      expect(res).toBeInstanceOf(ResultAsync)
+
+      const val = await res
+      expect(val.isOk()).toBe(true)
+      expect(val._unsafeUnwrap()).toEqual(12)
+    })
+
+    it('handles synchronous errors', async () => {
+      const example = ResultAsync.fromThrowable(() => {
+        if (1 > 0) throw new Error('Oops: No!')
+
+        return Promise.resolve(12)
+      })
+
+      const val = await example()
+      expect(val.isErr()).toBe(true)
+
+      expect(val._unsafeUnwrapErr()).toEqual(Error('Oops: No!'))
+    })
+
+    it('handles asynchronous errors', async () => {
+      const example = ResultAsync.fromThrowable(async () => {
+        if (1 > 0) throw new Error('Oops: No!')
+
+        return 12
+      })
+      
+      const val = await example()
+      expect(val.isErr()).toBe(true)
+
+      expect(val._unsafeUnwrapErr()).toEqual(Error('Oops: No!'))
+    })
+
+    it('Accepts an error handler as a second argument', async () => {
+      const example = ResultAsync.fromThrowable(
+        () => Promise.reject('No!'),
+        (e) => new Error('Oops: ' + e)
+      )
+      
+      const val = await example()
+      expect(val.isErr()).toBe(true)
+
+      expect(val._unsafeUnwrapErr()).toEqual(TypeError('Oops: No!'))
+    })
+
+    it('has a top level export', () => {
+      expect(fromAsyncThrowable).toBe(ResultAsync.fromThrowable)
     })
   })
 
