@@ -6,7 +6,7 @@
 
 import { err, errAsync, fromSafePromise, ok, okAsync, Result, ResultAsync } from '../src'
 import { safeTry, Transpose } from '../src/result'
-import { type N, Test } from 'ts-toolbelt'
+import { N, Test } from 'ts-toolbelt'
 
 type CreateTuple<L, V = string> =
   // Length must always be a number
@@ -2157,7 +2157,7 @@ type CreateTuple<L, V = string> =
           name: 'ReturnMyError'
         }
 
-        type Expectation = Promise<Result<string, ReturnMyError>>
+        type Expectation = ResultAsync<string, ReturnMyError>
 
         const result = safeTry(async function* () {
           return okAsync<string, ReturnMyError>('string')
@@ -2170,7 +2170,7 @@ type CreateTuple<L, V = string> =
           name: 'ReturnMyError'
         }
 
-        type Expectation = Promise<Result<string, ReturnMyError>>
+        type Expectation = ResultAsync<string, ReturnMyError>
 
         const result = safeTry(async function* () {
           return errAsync<string, ReturnMyError>({ name: 'ReturnMyError' })
@@ -2207,8 +2207,9 @@ type CreateTuple<L, V = string> =
           name: 'ReturnMyError'
         }
 
-        type Expectation = Promise<
-          Result<string, FirstYieldMyError | SecondYieldMyError | ReturnMyError>
+        type Expectation = ResultAsync<
+          string,
+          FirstYieldMyError | SecondYieldMyError | ReturnMyError
         >
 
         const result = safeTry(async function* () {
