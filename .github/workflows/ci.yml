@@ -1,0 +1,108 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  RUNNER_NODE_VERSION: 22
+jobs:
+  install_deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.RUNNER_NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.RUNNER_NODE_VERSION }}
+      - name: cache dependencies
+        uses: actions/cache@v4
+        id: cache-dependencies
+        with:
+          path: "node_modules"
+          key: depends-node${{ env.RUNNER_NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
+      - name: install dependencies
+        if: steps.cache-dependencies.outputs.cache-hit != 'true'
+        run: npm i
+  
+  typecheck:
+    runs-on: ubuntu-latest
+    needs: install_deps
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.RUNNER_NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.RUNNER_NODE_VERSION }}
+      - name: restore dependencies cache
+        uses: actions/cache/restore@v4
+        with:
+          path: "node_modules"
+          key: depends-node${{ env.RUNNER_NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
+      - name: typecheck
+        run: npm run typecheck
+  
+  lint:
+    runs-on: ubuntu-latest
+    needs: install_deps
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.RUNNER_NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.RUNNER_NODE_VERSION }}
+      - name: restore dependencies cache
+        uses: actions/cache/restore@v4
+        with:
+          path: "node_modules"
+          key: depends-node${{ env.RUNNER_NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
+      - name: lint
+        run: npm run lint
+
+  build:
+    runs-on: ubuntu-latest
+    needs: install_deps
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.RUNNER_NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.RUNNER_NODE_VERSION }}
+      - name: restore dependencies cache
+        uses: actions/cache/restore@v4
+        with:
+          path: "node_modules"
+          key: depends-node${{ env.RUNNER_NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
+      - name: build
+        run: npm run build
+      
+  test:
+    runs-on: ubuntu-latest
+    needs: install_deps
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: restore dependencies cache
+        uses: actions/cache/restore@v4
+        with:
+          path: "node_modules"
+          key: depends-node${{ env.RUNNER_NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
+      - name: test
+        run: npm run test
+  test_result:
+    runs-on: ubuntu-latest
+    needs: test
+    if: ${{ always() }}
+    steps:
+      - run: exit 1
+        if: ${{ needs.test.result != 'success' }}

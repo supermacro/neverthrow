@@ -42,6 +42,24 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     return new ResultAsync(newPromise)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static fromThrowable<A extends readonly any[], R, E>(
+    fn: (...args: A) => Promise<R>,
+    errorFn?: (err: unknown) => E,
+  ): (...args: A) => ResultAsync<R, E> {
+    return (...args) => {
+      return new ResultAsync(
+        (async () => {
+          try {
+            return new Ok(await fn(...args))
+          } catch (error) {
+            return new Err(errorFn ? errorFn(error) : error)
+          }
+        })(),
+      )
+    }
+  }
+
   static combine<
     T extends readonly [ResultAsync<unknown, unknown>, ...ResultAsync<unknown, unknown>[]]
   >(asyncResultList: T): CombineResultAsyncs<T>
@@ -133,12 +151,19 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     )
   }
 
-  match<A>(ok: (t: T) => A, _err: (e: E) => A): Promise<A> {
+  match<A, B = A>(ok: (t: T) => A, _err: (e: E) => B): Promise<A | B> {
     return this._promise.then((res) => res.match(ok, _err))
   }
 
   unwrapOr<A>(t: A): Promise<T | A> {
     return this._promise.then((res) => res.unwrapOr(t))
+  }
+
+  /**
+   * Emulates Rust's `?` operator in `safeTry`'s body. See also `safeTry`.
+   */
+  async *safeUnwrap(): AsyncGenerator<Err<never, E>, T> {
+    return yield* await this._promise.then((res) => res.safeUnwrap())
   }
 
   // Makes ResultAsync implement PromiseLike<Result>
@@ -158,6 +183,8 @@ export const errAsync = <T = never, E = unknown>(err: E): ResultAsync<T, E> =>
 
 export const fromPromise = ResultAsync.fromPromise
 export const fromSafePromise = ResultAsync.fromSafePromise
+
+export const fromAsyncThrowable = ResultAsync.fromThrowable
 
 // Combines the array of async results into one result.
 export type CombineResultAsyncs<
