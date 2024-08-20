@@ -145,7 +145,9 @@ describe('Result.Ok', () => {
     })
     it('returns an original ok even when the passed function fails', () => {
       const okVal = ok(12)
-      const passedFn = jest.fn((_number) => { throw new Error('OMG!') })
+      const passedFn = jest.fn((_number) => {
+        throw new Error('OMG!')
+      })
 
       const teed = okVal.andTee(passedFn)
 
@@ -460,15 +462,15 @@ describe('Result.fromThrowable', () => {
 
   // Added for issue #300 -- the test here is not so much that expectations are met as that the test compiles.
   it('Accepts an inner function which takes arguments', () => {
-    const hello = (fname: string): string => `hello, ${fname}`;
-    const safeHello = Result.fromThrowable(hello);
+    const hello = (fname: string): string => `hello, ${fname}`
+    const safeHello = Result.fromThrowable(hello)
 
-    const result = hello('Dikembe');
-    const safeResult = safeHello('Dikembe');
+    const result = hello('Dikembe')
+    const safeResult = safeHello('Dikembe')
 
-    expect(safeResult).toBeInstanceOf(Ok);
-    expect(result).toEqual(safeResult._unsafeUnwrap());
-  });
+    expect(safeResult).toBeInstanceOf(Ok)
+    expect(result).toEqual(safeResult._unsafeUnwrap())
+  })
 
   it('Creates a function that returns an err when the inner function throws', () => {
     const thrower = (): string => {
@@ -503,7 +505,7 @@ describe('Result.fromThrowable', () => {
   })
 
   it('has a top level export', () => {
-      expect(fromThrowable).toBe(Result.fromThrowable)
+    expect(fromThrowable).toBe(Result.fromThrowable)
   })
 })
 
@@ -534,15 +536,15 @@ describe('Utils', () => {
       })
 
       it('Combines heterogeneous lists', () => {
-        type HeterogenousList = [ Result<string, string>, Result<number, number>, Result<boolean, boolean> ]
-
-        const heterogenousList: HeterogenousList = [
-          ok('Yooooo'),
-          ok(123),
-          ok(true),
+        type HeterogenousList = [
+          Result<string, string>,
+          Result<number, number>,
+          Result<boolean, boolean>,
         ]
 
-        type ExpecteResult = Result<[ string, number, boolean ], string | number | boolean>
+        const heterogenousList: HeterogenousList = [ok('Yooooo'), ok(123), ok(true)]
+
+        type ExpecteResult = Result<[string, number, boolean], string | number | boolean>
 
         const result: ExpecteResult = Result.combine(heterogenousList)
 
@@ -550,21 +552,18 @@ describe('Utils', () => {
       })
 
       it('Does not destructure / concatenate arrays', () => {
-        type HomogenousList = [
-          Result<string[], boolean>,
-          Result<number[], string>,
-        ]
+        type HomogenousList = [Result<string[], boolean>, Result<number[], string>]
 
-        const homogenousList: HomogenousList = [
-          ok(['hello', 'world']),
-          ok([1, 2, 3])
-        ]
+        const homogenousList: HomogenousList = [ok(['hello', 'world']), ok([1, 2, 3])]
 
-        type ExpectedResult = Result<[ string[], number[] ], boolean | string>
+        type ExpectedResult = Result<[string[], number[]], boolean | string>
 
         const result: ExpectedResult = Result.combine(homogenousList)
 
-        expect(result._unsafeUnwrap()).toEqual([ [ 'hello', 'world' ], [ 1, 2, 3 ]])
+        expect(result._unsafeUnwrap()).toEqual([
+          ['hello', 'world'],
+          [1, 2, 3],
+        ])
       })
     })
 
@@ -573,7 +572,7 @@ describe('Utils', () => {
         const asyncResultList = [okAsync(123), okAsync(456), okAsync(789)]
 
         const resultAsync: ResultAsync<number[], never[]> = ResultAsync.combine(asyncResultList)
-        
+
         expect(resultAsync).toBeInstanceOf(ResultAsync)
 
         const result = await ResultAsync.combine(asyncResultList)
@@ -608,14 +607,14 @@ describe('Utils', () => {
           okAsync('Yooooo'),
           okAsync(123),
           okAsync(true),
-          okAsync([ 1, 2, 3]),
+          okAsync([1, 2, 3]),
         ]
 
-        type ExpecteResult = Result<[ string, number, boolean, number[] ], string | number | boolean>
+        type ExpecteResult = Result<[string, number, boolean, number[]], string | number | boolean>
 
         const result: ExpecteResult = await ResultAsync.combine(heterogenousList)
 
-        expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true, [ 1, 2, 3 ]])
+        expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true, [1, 2, 3]])
       })
     })
   })
@@ -645,15 +644,15 @@ describe('Utils', () => {
       })
 
       it('Combines heterogeneous lists', () => {
-        type HeterogenousList = [ Result<string, string>, Result<number, number>, Result<boolean, boolean> ]
-
-        const heterogenousList: HeterogenousList = [
-          ok('Yooooo'),
-          ok(123),
-          ok(true),
+        type HeterogenousList = [
+          Result<string, string>,
+          Result<number, number>,
+          Result<boolean, boolean>,
         ]
 
-        type ExpecteResult = Result<[ string, number, boolean ], (string | number | boolean)[]>
+        const heterogenousList: HeterogenousList = [ok('Yooooo'), ok(123), ok(true)]
+
+        type ExpecteResult = Result<[string, number, boolean], (string | number | boolean)[]>
 
         const result: ExpecteResult = Result.combineWithAllErrors(heterogenousList)
 
@@ -661,21 +660,18 @@ describe('Utils', () => {
       })
 
       it('Does not destructure / concatenate arrays', () => {
-        type HomogenousList = [
-          Result<string[], boolean>,
-          Result<number[], string>,
-        ]
+        type HomogenousList = [Result<string[], boolean>, Result<number[], string>]
 
-        const homogenousList: HomogenousList = [
-          ok(['hello', 'world']),
-          ok([1, 2, 3])
-        ]
+        const homogenousList: HomogenousList = [ok(['hello', 'world']), ok([1, 2, 3])]
 
-        type ExpectedResult = Result<[ string[], number[] ], (boolean | string)[]>
+        type ExpectedResult = Result<[string[], number[]], (boolean | string)[]>
 
         const result: ExpectedResult = Result.combineWithAllErrors(homogenousList)
 
-        expect(result._unsafeUnwrap()).toEqual([ [ 'hello', 'world' ], [ 1, 2, 3 ]])
+        expect(result._unsafeUnwrap()).toEqual([
+          ['hello', 'world'],
+          [1, 2, 3],
+        ])
       })
     })
     describe('`ResultAsync.combineWithAllErrors`', () => {
@@ -703,15 +699,15 @@ describe('Utils', () => {
       })
 
       it('Combines heterogeneous lists', async () => {
-        type HeterogenousList = [ ResultAsync<string, string>, ResultAsync<number, number>, ResultAsync<boolean, boolean> ]
-
-        const heterogenousList: HeterogenousList = [
-          okAsync('Yooooo'),
-          okAsync(123),
-          okAsync(true),
+        type HeterogenousList = [
+          ResultAsync<string, string>,
+          ResultAsync<number, number>,
+          ResultAsync<boolean, boolean>,
         ]
 
-        type ExpecteResult = Result<[ string, number, boolean ], (string | number | boolean)[]>
+        const heterogenousList: HeterogenousList = [okAsync('Yooooo'), okAsync(123), okAsync(true)]
+
+        type ExpecteResult = Result<[string, number, boolean], [string, number, boolean]>
 
         const result: ExpecteResult = await ResultAsync.combineWithAllErrors(heterogenousList)
 
@@ -1054,7 +1050,9 @@ describe('ResultAsync', () => {
     })
     it('returns an original ok even when the passed function fails', async () => {
       const okVal = okAsync(12)
-      const passedFn = jest.fn((_number) => { throw new Error('OMG!') })
+      const passedFn = jest.fn((_number) => {
+        throw new Error('OMG!')
+      })
 
       const teed = await okVal.andTee(passedFn)
 
@@ -1068,7 +1066,6 @@ describe('ResultAsync', () => {
     it('Skips orElse on an Ok value', async () => {
       const okVal = okAsync(12)
       const errorCallback = jest.fn((_errVal) => errAsync<number, string>('It is now a string'))
-
 
       const result = await okVal.orElse(errorCallback)
 
@@ -1196,7 +1193,7 @@ describe('ResultAsync', () => {
 
         return 12
       })
-      
+
       const val = await example()
       expect(val.isErr()).toBe(true)
 
@@ -1206,9 +1203,9 @@ describe('ResultAsync', () => {
     it('Accepts an error handler as a second argument', async () => {
       const example = ResultAsync.fromThrowable(
         () => Promise.reject('No!'),
-        (e) => new Error('Oops: ' + e)
+        (e) => new Error('Oops: ' + e),
       )
-      
+
       const val = await example()
       expect(val.isErr()).toBe(true)
 
