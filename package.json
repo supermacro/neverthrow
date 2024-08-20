@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf ./dist ./tmp",
     "build": "npm run clean && rollup --config && mv tmp/*.js dist && attw --pack .",
-    "prepublish": "npm run build",
+    "prepublishOnly": "npm run build",
     "release": "changeset publish"
   },
   "repository": {
