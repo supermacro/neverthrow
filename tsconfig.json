@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es2022",
+    "target": "ES2015",
     "module": "ESNext",
     "moduleResolution": "Node",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "lib": [
-      "es2022"
+      "ES2016",
+      "ES2017.Object"
     ],
     "skipLibCheck": true,
     "esModuleInterop": true,
