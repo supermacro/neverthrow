@@ -539,7 +539,7 @@ Note that in the above example if `parseHeaders` returns an `Err` then `.map` an
 #### `Result.andTee` (method)
 
 Takes a `Result<T, E>` and lets the original `Result<T, E>` pass through regardless the result of the passed-in function.
-This is a handy way to handle side effects whose failure or success should not affect your main logics such as logging. 
+This is a handy way to handle side effects whose failure or success should not affect your main logics such as logging.
 
 **Signature:**
 
@@ -560,7 +560,7 @@ import { insertUser } from 'imaginary-database'
 
 // ^ assume parseUserInput, logUser and insertUser have the following signatures:
 // parseUserInput(input: RequestData): Result<User, ParseError>
-// logUser(user: User): Result<void, LogError> 
+// logUser(user: User): Result<void, LogError>
 // insertUser(user: User): ResultAsync<void, InsertError>
 // Note logUser returns void upon success but insertUser takes User type.
 
@@ -579,7 +579,7 @@ resAsync.then((res: Result<void, ParseError | InsertError>) => {e
 }))
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
 
@@ -610,7 +610,7 @@ import { insertUser } from 'imaginary-database'
 // parseUserInput(input: RequestData): Result<User, ParseError>
 // validateUser(user: User): Result<void, ValidateError>
 // insertUser(user: User): ResultAsync<void, InsertError>
-// Note validateUser returns void upon success but insertUser takes User type. 
+// Note validateUser returns void upon success but insertUser takes User type.
 
 const resAsync = parseUserInput(userInput)
                .andThrough(validateUser)
@@ -625,14 +625,14 @@ resAsync.then((res: Result<void, ParseErro | ValidateError | InsertError>) => {e
   }
 }))
 ```
-  
-[⬆️  Back to top](#toc)
+
+[⬆️ Back to top](#toc)
 
 ---
 
 #### `Result.asyncAndThrough` (method)
 
-Similar to `andThrough` except you must return a ResultAsync. 
+Similar to `andThrough` except you must return a ResultAsync.
 
 You can then chain the result of `asyncAndThrough` using the `ResultAsync` apis (like `map`, `mapErr`, `andThen`, etc.)
 
@@ -647,7 +647,7 @@ import { sendNotification } from 'imaginary-service'
 // parseUserInput(input: RequestData): Result<User, ParseError>
 // insertUser(user: User): ResultAsync<void, InsertError>
 // sendNotification(user: User): ResultAsync<void, NotificationError>
-// Note insertUser returns void upon success but sendNotification takes User type. 
+// Note insertUser returns void upon success but sendNotification takes User type.
 
 const resAsync = parseUserInput(userInput)
                .asyncAndThrough(insertUser)
@@ -662,10 +662,11 @@ resAsync.then((res: Result<void, ParseError | InsertError | NotificationError>) 
   }
 }))
 ```
-  
-[⬆️  Back to top](#toc)
+
+[⬆️ Back to top](#toc)
 
 ---
+
 #### `Result.fromThrowable` (static class method)
 
 > Although Result is not an actual JS class, the way that `fromThrowable` has been implemented requires that you call `fromThrowable` as though it were a static method on `Result`. See examples below.
@@ -1205,11 +1206,12 @@ const resultMessage = await validateUser(user)
 [⬆️ Back to top](#toc)
 
 ---
+
 #### `ResultAsync.andTee` (method)
 
-Takes a `ResultAsync<T, E>` and lets the original `ResultAsync<T, E>` pass through regardless 
+Takes a `ResultAsync<T, E>` and lets the original `ResultAsync<T, E>` pass through regardless
 the result of the passed-in function.
-This is a handy way to handle side effects whose failure or success should not affect your main logics such as logging. 
+This is a handy way to handle side effects whose failure or success should not affect your main logics such as logging.
 
 **Signature:**
 
@@ -1232,13 +1234,13 @@ import { sendNotification } from 'imaginary-service'
 // insertUser(user: User): ResultAsync<User, InsertError>
 // logUser(user: User): Result<void, LogError>
 // sendNotification(user: User): ResultAsync<void, NotificationError>
-// Note logUser returns void on success but sendNotification takes User type. 
+// Note logUser returns void on success but sendNotification takes User type.
 
 const resAsync = insertUser(user)
                 .andTee(logUser)
                 .andThen(sendNotification)
 
-// Note there is no LogError in the types below 
+// Note there is no LogError in the types below
 resAsync.then((res: Result<void, InsertError | NotificationError>) => {e
   if(res.isErr()){
     console.log("Oops, at least one step failed", res.error)
@@ -1246,14 +1248,14 @@ resAsync.then((res: Result<void, InsertError | NotificationError>) => {e
   else{
     console.log("User has been inserted and notified successfully.")
   }
-}))  
+}))
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
-#### `ResultAsync.andThrough` (method)
 
+#### `ResultAsync.andThrough` (method)
 
 Similar to `andTee` except for:
 
@@ -1281,7 +1283,7 @@ import { sendNotification } from 'imaginary-service'
 // buildUser(userRaw: UserRaw): ResultAsync<User, BuildError>
 // insertUser(user: User): ResultAsync<void, InsertError>
 // sendNotification(user: User): ResultAsync<void, NotificationError>
-// Note insertUser returns void upon success but sendNotification takes User type. 
+// Note insertUser returns void upon success but sendNotification takes User type.
 
 const resAsync = buildUser(userRaw)
                 .andThrough(insertUser)
@@ -1294,12 +1296,13 @@ resAsync.then((res: Result<void, BuildError | InsertError | NotificationError>) 
   else{
     console.log("User data has been built, inserted and notified successfully.")
   }
-}))  
+}))
 ```
 
-[⬆️  Back to top](#toc)
+[⬆️ Back to top](#toc)
 
 ---
+
 #### `ResultAsync.combine` (static class method)
 
 Combine lists of `ResultAsync`s.
