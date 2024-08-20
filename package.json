@@ -15,8 +15,8 @@
     "format": "prettier --write 'src/**/*.ts?(x)' && npm run lint -- --fix",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf ./dist ./tmp",
-    "build": "npm run clean && rollup --config && mv tmp/*.js dist",
-    "prepack": "npm run build",
+    "build": "npm run clean && rollup --config && mv tmp/*.js dist && attw --pack .",
+    "prepublish": "npm run build",
     "release": "changeset publish"
   },
   "repository": {
@@ -48,6 +48,7 @@
     "rollup": "^4.18.0",
     "rollup-plugin-dts": "^6.1.1",
     "rollup-plugin-typescript2": "^0.32.1",
+    "@arethetypeswrong/cli": "^0.15.4",
     "testdouble": "3.20.2",
     "ts-jest": "27.1.5",
     "ts-toolbelt": "9.6.0",
