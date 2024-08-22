@@ -338,11 +338,11 @@ type CreateTuple<L, V = string> =
     });
 
     (function it(_ = 'combines only err results into one') {
-      type Expectation = Result<[ never, never ], number | string>;
+      type Expectation = Result<[ never, never ], number | 'abc'>;
 
       const result = Result.combine([
         err(1),
-        err('string'),
+        err('abc'),
       ]);
 
       const assignableToCheck: Expectation = result;
@@ -928,7 +928,7 @@ type CreateTuple<L, V = string> =
     });
 
     (function it(_ = 'combines only err results into one') {
-      type Expectation = Result<[ never, never ], [number, string]>;
+      type Expectation = Result<[ never, never ], [number, 'string']>;
 
       const result = Result.combineWithAllErrors([
         err(1),
@@ -999,6 +999,24 @@ type CreateTuple<L, V = string> =
       });
     });
   });
+
+  (function describe(_ = 'err') {
+    (function it(_ = 'infers the error type narrowly when it is a string') {
+      type Expectation = Result<never, 'error'>
+
+      const result = err('error')
+
+      const assignableToCheck: Expectation = result;
+    });
+
+    (function it(_ = 'infers the error type widely when it is not a string') {
+      type Expectation = Result<never, { abc: number }>
+
+      const result = err({ abc: 123 })
+
+      const assignableToCheck: Expectation = result;
+    });
+  })
 });
 
 
