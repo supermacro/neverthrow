@@ -1029,7 +1029,7 @@ describe('ResultAsync', () => {
 
       const andThroughResultFn = jest.fn(() => ok<string, string>('good'))
 
-      const notMapped = asyncVal.andThen(andThroughResultFn)
+      const notMapped = asyncVal.andThrough(andThroughResultFn)
 
       expect(notMapped).toBeInstanceOf(ResultAsync)
 

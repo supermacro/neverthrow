@@ -468,21 +468,21 @@ type CreateTuple<L, V = string> =
         .asyncAndThrough((val) => errAsync<string, string[]>(['oh nooooo']))
     });
 
-    // (function it(_ = 'Infers error type when returning disjoint types (native scalar types)') {
-    //   type Expectation = ResultAsync<number, string | number | boolean>
+    (function it(_ = 'Infers error type when returning disjoint types (native scalar types)') {
+      type Expectation = ResultAsync<number, string | number | boolean>
 
-    //   const result: Expectation = ok<number, string>(123)
-    //     .asyncAndThrough((val) => {
-    //       switch (val) {
-    //         case 1:
-    //           return errAsync('yoooooo dude' + val)
-    //         case 2:
-    //           return errAsync(123)
-    //         default:
-    //           return errAsync(false)
-    //       }
-    //     })
-    // });
+      const result: Expectation = ok<number, string>(123)
+        .asyncAndThrough((val) => {
+          switch (val) {
+            case 1:
+              return errAsync('yoooooo dude' + val)
+            case 2:
+              return errAsync(123)
+            default:
+              return errAsync(false)
+          }
+        })
+    });
 
     (function it(_ = 'Infers error type when returning disjoint types (custom types)') {
       interface MyError { 

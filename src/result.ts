@@ -5,6 +5,7 @@ import {
   combineResultListWithAllErrors,
   ExtractErrTypes,
   ExtractOkTypes,
+  InferAsyncErrTypes,
   InferErrTypes,
   InferOkTypes,
 } from './_internals/utils'
@@ -343,8 +344,13 @@ export class Ok<T, E> implements IResult<T, E> {
     return f(this.value)
   }
 
-  asyncAndThrough<F>(f: (t: T) => ResultAsync<unknown, F>): ResultAsync<T, F> {
-    return f(this.value).map<T>((_value: unknown) => this.value)
+  asyncAndThrough<R extends ResultAsync<unknown, unknown>>(
+    f: (t: T) => R,
+  ): ResultAsync<T, InferAsyncErrTypes<R> | E>
+  asyncAndThrough<F>(f: (t: T) => ResultAsync<unknown, F>): ResultAsync<T, E | F>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  asyncAndThrough(f: (t: T) => ResultAsync<unknown, unknown>): any {
+    return f(this.value).map(() => this.value)
   }
 
   asyncMap<U>(f: (t: T) => Promise<U>): ResultAsync<U, E> {
@@ -427,7 +433,7 @@ export class Err<T, E> implements IResult<T, E> {
     return errAsync<U, E>(this.error)
   }
 
-  asyncAndThrough<F>(_f: (t: T) => ResultAsync<unknown, F>): ResultAsync<T, E> {
+  asyncAndThrough<F>(_f: (t: T) => ResultAsync<unknown, F>): ResultAsync<T, E | F> {
     return errAsync<T, E>(this.error)
   }
 
