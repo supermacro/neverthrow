@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
-      "target": "es2015",
-      "module": "ESNext",
-      "moduleResolution": "Node",
-      "strict": false,
+      "target": "es2016",
+      "module": "ES2015",
       "noImplicitAny": true,
       "sourceMap": false,
-      "noUnusedLocals": true,
-      "noUnusedParameters": true,
+      "downlevelIteration": true,
+      "noUnusedLocals": false,
+      "noUnusedParameters": false,
       "strictNullChecks": true,
       "strictFunctionTypes": true,
       "declaration": true,
+      "moduleResolution": "Node",
       "baseUrl": "./src",
       "lib": [
         "dom",
@@ -18,14 +18,9 @@
         "es2017.object"
       ],
       "outDir": "dist",
-      "skipLibCheck": true,
-      "esModuleInterop": true
   },
   "include": [
-    "src/**/*.ts"
+    "./index.test.ts",
+    "./typecheck-tests.ts"
   ],
-  "exclude": [
-      "node_modules",
-      "**/*.spec.ts"
-  ]
 }
