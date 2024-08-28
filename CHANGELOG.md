@@ -4,7 +4,8 @@
 
 ### Minor Changes
 
-- [#575](https://github.com/supermacro/neverthrow/pull/575) [`456352e`](https://github.com/supermacro/neverthrow/commit/456352e1099f8dbfd169abdae999785089b5d8f9) Thanks [@m-shaka](https://github.com/m-shaka)! - feat: add `andTee` and `andThrough` to handle side-effect
+- [#467](https://github.com/supermacro/neverthrow/pull/467) [`4b9d2fd`](https://github.com/supermacro/neverthrow/commit/4b9d2fdaf03223945068509f948b57194732aa03) Thanks [@untidy-hair
+](https://github.com/untidy-hair)! - feat: add `andTee` and `andThrough` to handle side-effect
 
 ### Patch Changes
 
