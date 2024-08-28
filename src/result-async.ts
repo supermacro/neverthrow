@@ -278,22 +278,13 @@ type TraverseAsync<T, Depth extends number = 5> = IsLiteralArray<T> extends 1
   : never
 
 // This type is similar to the `TraverseAsync` while the errors are also
-// collected in order. For the checks/conditions made here, see that type
+// collected in a list. For the checks/conditions made here, see that type
 // for the documentation.
-type TraverseWithAllErrorsAsync<T, Depth extends number = 5> = IsLiteralArray<T> extends 1
-  ? Combine<T, Depth> extends [infer Oks, infer Errs]
-    ? ResultAsync<EmptyArrayToNever<Oks>, EmptyArrayToNever<Errs>>
-    : never
-  : Writable<T> extends Array<infer I>
-  ? Combine<MemberListOf<I>, Depth> extends [infer Oks, infer Errs]
-    ? Oks extends unknown[]
-      ? Errs extends unknown[]
-        ? ResultAsync<EmptyArrayToNever<Oks[number][]>, EmptyArrayToNever<Errs[number][]>>
-        : ResultAsync<EmptyArrayToNever<Oks[number][]>, Errs>
-      : Errs extends unknown[]
-      ? ResultAsync<Oks, EmptyArrayToNever<Errs[number][]>>
-      : ResultAsync<Oks, Errs>
-    : never
+type TraverseWithAllErrorsAsync<T, Depth extends number = 5> = TraverseAsync<
+  T,
+  Depth
+> extends ResultAsync<infer Oks, infer Errs>
+  ? ResultAsync<Oks, Errs[]>
   : never
 
 // Converts a reaodnly array into a writable array
