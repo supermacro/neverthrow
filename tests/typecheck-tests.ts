@@ -160,6 +160,132 @@ type CreateTuple<L, V = string> =
     });
   });
 
+  (function describe(_ = 'andThrough') {
+    (function it(_ = 'Combines two equal error types (native scalar types)') {
+      type Expectation = Result<number, string>
+
+      const result: Expectation = ok<number, string>(123)
+        .andThrough((val) => err('yoooooo dude' + val))
+    });
+
+    (function it(_ = 'Combines two equal error types (custom types)') {
+      interface MyError { 
+        stack: string
+        code: number
+      }
+
+      type Expectation = Result<number, MyError>
+
+      const result: Expectation = ok<number, MyError>(123)
+        .andThrough((val) => err<string, MyError>({ stack: '/blah', code: 500 }))
+    });
+
+    (function it(_ = 'Creates a union of error types for disjoint types') {
+      interface MyError { 
+        stack: string
+        code: number
+      }
+
+      type Expectation = Result<number, MyError | string[]>
+
+      const result: Expectation = ok<number, MyError>(123)
+        .andThrough((val) => err<string, string[]>(['oh nooooo']))
+    });
+
+    (function it(_ = 'Infers error type when returning disjoint types (native scalar types)') {
+      type Expectation = Result<number, string | number | boolean>
+
+      const result: Expectation = ok<number, string>(123)
+        .andThrough((val) => {
+          switch (val) {
+            case 1:
+              return err('yoooooo dude' + val)
+            case 2:
+              return err(123)
+            default:
+              return err(false)
+          }
+        })
+    });
+
+    (function it(_ = 'Infers error type when returning disjoint types (custom types)') {
+      interface MyError { 
+        stack: string
+        code: number
+      }
+      type Expectation = Result<number, string | number | MyError>
+
+      const result: Expectation = ok<number, string>(123)
+        .andThrough((val) => {
+          switch (val) {
+            case 1:
+              return err('yoooooo dude' + val)
+            case 2:
+              return err(123)
+            default:
+              return err({ stack: '/blah', code: 500 })
+          }
+        })
+    });
+
+    (function it(_ = 'Returns the original ok type when returning both Ok and Err (same as initial)') {
+      type Expectation = Result<number, unknown>
+
+      const result: Expectation = ok<number, string>(123)
+        .andThrough((val) => {
+          switch (val) {
+            case 1:
+              return err('yoooooo dude' + val)
+            default:
+              return ok(val + 456)
+          }
+        })
+    });
+
+    (function it(_ = 'Returns the original ok type when returning both Ok and Err (different from initial)') {
+      const initial = ok<number, string>(123)
+      type Expectation = Result<number, unknown>
+
+      const result: Expectation = initial
+        .andThrough((val) => {
+          switch (val) {
+            case 1:
+              return err('yoooooo dude' + val)
+            default:
+              return ok("Hi" + val)
+          }
+        })
+    });
+
+    (function it(_ = 'Infers new err type when returning both Ok and Err') {
+      interface MyError { 
+        stack: string
+        code: number
+      }
+      type Expectation = Result<number, string | number | MyError>
+  
+      const result: Expectation = ok<number, string>(123)
+        .andThrough((val) => {
+          switch (val) {
+            case 1:
+              return err('yoooooo dude' + val)
+            case 2:
+              return ok(123)
+            default:
+              return err({ stack: '/blah', code: 500 })
+          }
+        })
+    });
+
+    (function it(_ = 'allows specifying the E type explicitly') {
+      type Expectation = Result<number, string>
+
+      const result: Expectation = ok(123).andThrough<string>(val => {
+        return ok('yo')
+      })
+    });
+  });
+
   (function describe(_ = 'orElse') {
     (function it(_ = 'the type of the argument is the error type of the result') {
       type Expectation = string
@@ -308,6 +434,155 @@ type CreateTuple<L, V = string> =
       const result: Expectation = ok<number, MyError>(123)
         .asyncAndThen((val) => errAsync<string, string[]>(['oh nooooo']))
     });
+  });
+
+  (function describe(_ = 'asyncAndThrough') {
+    (function it(_ = 'Combines two equal error types (native scalar types)') {
+      type Expectation = ResultAsync<unknown, string>
+
+      const result: Expectation = ok<number, string>(123)
+        .asyncAndThrough((val) => errAsync('yoooooo dude' + val))
+    });
+
+    (function it(_ = 'Combines two equal error types (custom types)') {
+      interface MyError { 
+        stack: string
+        code: number
+      }
+
+      type Expectation = ResultAsync<number, MyError>
+
+      const result: Expectation = ok<number, MyError>(123)
+        .asyncAndThrough((val) => errAsync<string, MyError>({ stack: '/blah', code: 500 }))
+    });
+
+    (function it(_ = 'Creates a union of error types for disjoint types') {
+      interface MyError { 
+        stack: string
+        code: number
+      }
+
+      type Expectation = ResultAsync<number, MyError | string[]>
+
+      const result: Expectation = ok<number, MyError>(123)
+        .asyncAndThrough((val) => errAsync<string, string[]>(['oh nooooo']))
+    });
+
+    (function it(_ = 'Infers error type when returning disjoint types (native scalar types)') {
+      type Expectation = ResultAsync<number, string | number | boolean>
+
+      const result: Expectation = ok<number, string>(123)
+        .asyncAndThrough((val) => {
+          switch (val) {
+            case 1:
+              return errAsync('yoooooo dude' + val)
+            case 2:
+              return errAsync(123)
+            default:
+              return errAsync(false)
+          }
+        })
+    });
+
+    (function it(_ = 'Infers error type when returning disjoint types (custom types)') {
+      interface MyError { 
+        stack: string
+        code: number
+      }
+      type Expectation = Result<number, string | number | MyError>
+
+      const result: Expectation = ok<number, string>(123)
+        .andThrough((val) => {
+          switch (val) {
+            case 1:
+              return err('yoooooo dude' + val)
+            case 2:
+              return err(123)
+            default:
+              return err({ stack: '/blah', code: 500 })
+          }
+        })
+    });
+
+    (function it(_ = 'Returns the original ok type when returning both Ok and Err (same as initial)') {
+      type Expectation = Result<number, unknown>
+
+      const result: Expectation = ok<number, string>(123)
+        .andThrough((val) => {
+          switch (val) {
+            case 1:
+              return err('yoooooo dude' + val)
+            default:
+              return ok(val + 456)
+          }
+        })
+    });
+
+    (function it(_ = 'Returns the original ok type when returning both Ok and Err (different from initial)') {
+      const initial = ok<number, string>(123)
+      type Expectation = Result<number, unknown>
+
+      const result: Expectation = initial
+        .andThrough((val) => {
+          switch (val) {
+            case 1:
+              return err('yoooooo dude' + val)
+            default:
+              return ok("Hi" + val)
+          }
+        })
+    });
+
+    (function it(_ = 'Infers new err type when returning both Ok and Err') {
+      interface MyError { 
+        stack: string
+        code: number
+      }
+      type Expectation = Result<number, string | number | MyError>
+  
+      const result: Expectation = ok<number, string>(123)
+        .andThrough((val) => {
+          switch (val) {
+            case 1:
+              return err('yoooooo dude' + val)
+            case 2:
+              return ok(123)
+            default:
+              return err({ stack: '/blah', code: 500 })
+          }
+        })
+    });
+
+    (function it(_ = 'allows specifying the E type explicitly') {
+      type Expectation = Result<number, string>
+
+      const result: Expectation = ok(123).andThrough<string>(val => {
+        return ok('yo')
+      })
+    });
+
+
+    (function it(_ = 'Infers new err type when returning both Ok and Err') {
+      interface MyError { 
+        stack: string
+        code: number
+      }
+      type Expectation = ResultAsync<number, string | number | MyError>
+  
+      const result: Expectation = ok<number, string>(123)
+        .asyncAndThrough((val) => {
+          switch (val) {
+            case 1:
+              return errAsync('yoooooo dude' + val)
+            case 2:
+              return okAsync(123)
+            default:
+              return errAsync({ stack: '/blah', code: 500 })
+          }
+        })
+    });
+
+
   });
 
   (function describe(_ = 'combine') {

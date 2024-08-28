@@ -98,6 +98,38 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     )
   }
 
+  andThrough<F>(f: (t: T) => Result<unknown, F> | ResultAsync<unknown, F>): ResultAsync<T, E | F> {
+    return new ResultAsync(
+      this._promise.then(async (res: Result<T, E>) => {
+        if (res.isErr()) {
+          return new Err<T, E>(res.error)
+        }
+
+        const newRes = await f(res.value)
+        if (newRes.isErr()) {
+          return new Err<T, F>(newRes.error)
+        }
+        return new Ok<T, F>(res.value)
+      }),
+    )
+  }
+
+  andTee(f: (t: T) => unknown): ResultAsync<T, E> {
+    return new ResultAsync(
+      this._promise.then(async (res: Result<T, E>) => {
+        if (res.isErr()) {
+          return new Err<T, E>(res.error)
+        }
+        try {
+          await f(res.value)
+        } catch (e) {
+          // Tee does not care about the error
+        }
+        return new Ok<T, E>(res.value)
+      }),
+    )
+  }
+
   mapErr<U>(f: (e: E) => U | Promise<U>): ResultAsync<T, U> {
     return new ResultAsync(
       this._promise.then(async (res: Result<T, E>) => {
