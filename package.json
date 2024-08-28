@@ -9,11 +9,10 @@
     "dist"
   ],
   "scripts": {
-    "test": "jest && npm run test-types",
-    "test-types": "tsc --noEmit -p ./tests/tsconfig.tests.json",
+    "test": "jest",
     "lint": "eslint ./src --ext .ts",
     "format": "prettier --write 'src/**/*.ts?(x)' && npm run lint -- --fix",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -b",
     "clean": "rm -rf ./dist ./tmp",
     "build": "npm run clean && rollup --config && mv tmp/*.js dist",
     "prepack": "npm run build",
