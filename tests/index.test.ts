@@ -100,6 +100,95 @@ describe('Result.Ok', () => {
     })
   })
 
+  describe('andThrough', () => {
+    it('Calls the passed function but returns an original ok', () => {
+      const okVal = ok(12)
+      const passedFn = jest.fn((_number) => ok(undefined))
+
+      const thrued = okVal.andThrough(passedFn)
+      expect(thrued.isOk()).toBe(true)
+      expect(passedFn).toHaveBeenCalledTimes(1)
+      expect(thrued._unsafeUnwrap()).toStrictEqual(12)
+    })
+
+    it('Maps to an Err', () => {
+      const okval = ok(12)
+
+      const thrued = okval.andThen((_number) => {
+        // ...
+        // complex logic
+        // ...
+        return err('Whoopsies!')
+      })
+
+      expect(thrued.isOk()).toBe(false)
+      expect(thrued._unsafeUnwrapErr()).toStrictEqual('Whoopsies!')
+
+      const nextFn = jest.fn((_val) => ok('noop'))
+
+      thrued.andThen(nextFn)
+
+      expect(nextFn).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('andTee', () => {
+    it('Calls the passed function but returns an original ok', () => {
+      const okVal = ok(12)
+      const passedFn = jest.fn((_number) => {})
+
+      const teed = okVal.andTee(passedFn)
+
+      expect(teed.isOk()).toBe(true)
+      expect(passedFn).toHaveBeenCalledTimes(1)
+      expect(teed._unsafeUnwrap()).toStrictEqual(12)
+    })
+    it('returns an original ok even when the passed function fails', () => {
+      const okVal = ok(12)
+      const passedFn = jest.fn((_number) => { throw new Error('OMG!') })
+
+      const teed = okVal.andTee(passedFn)
+
+      expect(teed.isOk()).toBe(true)
+      expect(passedFn).toHaveBeenCalledTimes(1)
+      expect(teed._unsafeUnwrap()).toStrictEqual(12)
+    })
+  })
+
+  describe('asyncAndThrough', () => {
+    it('Calls the passed function but returns an original ok as Async', async () => {
+      const okVal = ok(12)
+      const passedFn = jest.fn((_number) => okAsync(undefined))
+
+      const teedAsync = okVal.asyncAndThrough(passedFn)
+      expect(teedAsync).toBeInstanceOf(ResultAsync)
+      const teed = await teedAsync
+      expect(teed.isOk()).toBe(true)
+      expect(passedFn).toHaveBeenCalledTimes(1)
+      expect(teed._unsafeUnwrap()).toStrictEqual(12)
+    })
+
+    it('Maps to an Err', async () => {
+      const okval = ok(12)
+
+      const teedAsync = okval.asyncAndThen((_number) => {
+        // ...
+        // complex logic
+        // ...
+        return errAsync('Whoopsies!')
+      })
+      expect(teedAsync).toBeInstanceOf(ResultAsync)
+      const teed = await teedAsync
+      expect(teed.isOk()).toBe(false)
+      expect(teed._unsafeUnwrapErr()).toStrictEqual('Whoopsies!')
+
+      const nextFn = jest.fn((_val) => ok('noop'))
+
+      teed.andThen(nextFn)
+
+      expect(nextFn).not.toHaveBeenCalled()
+    })
+  })
   describe('orElse', () => {
     it('Skips orElse on an Ok value', () => {
       const okVal = ok(12)
@@ -241,6 +330,44 @@ describe('Result.Err', () => {
     expect(hopefullyNotFlattened.isErr()).toBe(true)
     expect(mapper).not.toHaveBeenCalled()
     expect(errVal._unsafeUnwrapErr()).toEqual('Yolo')
+  })
+
+  it('Skips over andThrough', () => {
+    const errVal = err('Yolo')
+
+    const mapper = jest.fn((_val) => ok<void, string>(undefined))
+
+    const hopefullyNotFlattened = errVal.andThrough(mapper)
+
+    expect(hopefullyNotFlattened.isErr()).toBe(true)
+    expect(mapper).not.toHaveBeenCalled()
+    expect(errVal._unsafeUnwrapErr()).toEqual('Yolo')
+  })
+
+  it('Skips over andTee', () => {
+    const errVal = err('Yolo')
+
+    const mapper = jest.fn((_val) => {})
+
+    const hopefullyNotFlattened = errVal.andTee(mapper)
+
+    expect(hopefullyNotFlattened.isErr()).toBe(true)
+    expect(mapper).not.toHaveBeenCalled()
+    expect(errVal._unsafeUnwrapErr()).toEqual('Yolo')
+  })
+
+  it('Skips over asyncAndThrough but returns ResultAsync instead', async () => {
+    const errVal = err('Yolo')
+
+    const mapper = jest.fn((_val) => okAsync<string, unknown>('Async'))
+
+    const hopefullyNotFlattened = errVal.asyncAndThrough(mapper)
+    expect(hopefullyNotFlattened).toBeInstanceOf(ResultAsync)
+
+    const result = await hopefullyNotFlattened
+    expect(result.isErr()).toBe(true)
+    expect(mapper).not.toHaveBeenCalled()
+    expect(result._unsafeUnwrapErr()).toEqual('Yolo')
   })
 
   it('Transforms error into ResultAsync within `asyncAndThen`', async () => {
@@ -824,6 +951,116 @@ describe('ResultAsync', () => {
       expect(newVal.isErr()).toBe(true)
       expect(newVal._unsafeUnwrapErr()).toBe('Wrong format')
       expect(andThenResultFn).toHaveBeenCalledTimes(0)
+    })
+  })
+
+  describe('andThrough', () => {
+    it('Returns the original value when map function returning ResultAsync succeeds', async () => {
+      const asyncVal = okAsync(12)
+      /*
+        A couple examples of this function
+
+        DB persistence (create or update)
+        API calls (create or update)
+      */
+      const andThroughResultAsyncFn = jest.fn(() => okAsync('good'))
+
+      const thrued = asyncVal.andThrough(andThroughResultAsyncFn)
+
+      expect(thrued).toBeInstanceOf(ResultAsync)
+
+      const result = await thrued
+
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toBe(12)
+      expect(andThroughResultAsyncFn).toHaveBeenCalledTimes(1)
+    })
+
+    it('Maps to an error when map function returning ResultAsync fails', async () => {
+      const asyncVal = okAsync(12)
+
+      const andThroughResultAsyncFn = jest.fn(() => errAsync('oh no!'))
+
+      const thrued = asyncVal.andThrough(andThroughResultAsyncFn)
+
+      expect(thrued).toBeInstanceOf(ResultAsync)
+
+      const result = await thrued
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBe('oh no!')
+      expect(andThroughResultAsyncFn).toHaveBeenCalledTimes(1)
+    })
+
+    it('Returns the original value when map function returning Result succeeds', async () => {
+      const asyncVal = okAsync(12)
+
+      const andThroughResultFn = jest.fn(() => ok('good'))
+
+      const thrued = asyncVal.andThrough(andThroughResultFn)
+
+      expect(thrued).toBeInstanceOf(ResultAsync)
+
+      const newVal = await thrued
+
+      expect(newVal.isOk()).toBe(true)
+      expect(newVal._unsafeUnwrap()).toBe(12)
+      expect(andThroughResultFn).toHaveBeenCalledTimes(1)
+    })
+
+    it('Maps to an error when map function returning Result fails', async () => {
+      const asyncVal = okAsync(12)
+
+      const andThroughResultFn = jest.fn(() => err('oh no!'))
+
+      const thrued = asyncVal.andThrough(andThroughResultFn)
+
+      expect(thrued).toBeInstanceOf(ResultAsync)
+
+      const newVal = await thrued
+
+      expect(newVal.isErr()).toBe(true)
+      expect(newVal._unsafeUnwrapErr()).toBe('oh no!')
+      expect(andThroughResultFn).toHaveBeenCalledTimes(1)
+    })
+
+    it('Skips an Error', async () => {
+      const asyncVal = errAsync<string, string>('Wrong format')
+
+      const andThroughResultFn = jest.fn(() => ok<string, string>('good'))
+
+      const notMapped = asyncVal.andThrough(andThroughResultFn)
+
+      expect(notMapped).toBeInstanceOf(ResultAsync)
+
+      const newVal = await notMapped
+
+      expect(newVal.isErr()).toBe(true)
+      expect(newVal._unsafeUnwrapErr()).toBe('Wrong format')
+      expect(andThroughResultFn).toHaveBeenCalledTimes(0)
+    })
+  })
+
+  describe('andTee', () => {
+    it('Calls the passed function but returns an original ok', async () => {
+      const okVal = okAsync(12)
+      const passedFn = jest.fn((_number) => {})
+
+      const teed = await okVal.andTee(passedFn)
+
+      expect(teed.isOk()).toBe(true)
+      expect(passedFn).toHaveBeenCalledTimes(1)
+      expect(teed._unsafeUnwrap()).toStrictEqual(12)
+    })
+    it('returns an original ok even when the passed function fails', async () => {
+      const okVal = okAsync(12)
+      const passedFn = jest.fn((_number) => { throw new Error('OMG!') })
+
+      const teed = await okVal.andTee(passedFn)
+
+      expect(teed.isOk()).toBe(true)
+      expect(passedFn).toHaveBeenCalledTimes(1)
+      expect(teed._unsafeUnwrap()).toStrictEqual(12)
     })
   })
 
