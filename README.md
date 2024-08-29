@@ -407,9 +407,9 @@ Takes an `Err` value and maps it to a `Result<T, SomeNewType>`. This is useful f
 
 ```typescript
 class Result<T, E> {
-  orElse<A>(
-    callback: (error: E) => Result<T, A>
-  ): Result<T, A> { ... }
+  orElse<U, A>(
+    callback: (e: E) => Result<U, A>
+  ): Result<U | T, A> { ... }
 }
 ```
 
@@ -1179,9 +1179,9 @@ Takes an `Err` value and maps it to a `ResultAsync<T, SomeNewType>`. This is use
 
 ```typescript
 class ResultAsync<T, E> {
-  orElse<A>(
-    callback: (error: E) => Result<T, A> | ResultAsync<T, A>
-  ): ResultAsync<T, A> { ... }
+  orElse<U, A>(
+    callback: (e: E) => Result<U, A> | ResultAsync<U, A>
+  ): ResultAsync<U | T, A> { ... }
 }
 ```
 
