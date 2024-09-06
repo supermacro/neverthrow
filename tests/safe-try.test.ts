@@ -177,7 +177,7 @@ describe("Tests if README's examples work", () => {
   })
 
   test("async mayFail1 error", async () => {
-    function myFunc(): Promise<Result<number, string>> {
+    function myFunc(): ResultAsync<number, string> {
       return safeTry<number, string>(async function*() {
         return ok(
           (yield* (await promiseBad())
@@ -197,7 +197,7 @@ describe("Tests if README's examples work", () => {
   })
 
   test("async mayFail2 error", async () => {
-    function myFunc(): Promise<Result<number, string>> {
+    function myFunc(): ResultAsync<number, string> {
       return safeTry<number, string>(async function*() {
         return ok(
           (yield* (await promiseGood())
@@ -217,7 +217,7 @@ describe("Tests if README's examples work", () => {
   })
 
   test("promise async all ok", async () => {
-    function myFunc(): Promise<Result<number, string>> {
+    function myFunc(): ResultAsync<number, string> {
       return safeTry<number, string>(async function*() {
         return ok(
           (yield* (await promiseGood())
