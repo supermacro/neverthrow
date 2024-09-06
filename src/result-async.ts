@@ -98,6 +98,38 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     )
   }
 
+  andThrough<F>(f: (t: T) => Result<unknown, F> | ResultAsync<unknown, F>): ResultAsync<T, E | F> {
+    return new ResultAsync(
+      this._promise.then(async (res: Result<T, E>) => {
+        if (res.isErr()) {
+          return new Err<T, E>(res.error)
+        }
+
+        const newRes = await f(res.value)
+        if (newRes.isErr()) {
+          return new Err<T, F>(newRes.error)
+        }
+        return new Ok<T, F>(res.value)
+      }),
+    )
+  }
+
+  andTee(f: (t: T) => unknown): ResultAsync<T, E> {
+    return new ResultAsync(
+      this._promise.then(async (res: Result<T, E>) => {
+        if (res.isErr()) {
+          return new Err<T, E>(res.error)
+        }
+        try {
+          await f(res.value)
+        } catch (e) {
+          // Tee does not care about the error
+        }
+        return new Ok<T, E>(res.value)
+      }),
+    )
+  }
+
   mapErr<U>(f: (e: E) => U | Promise<U>): ResultAsync<T, U> {
     return new ResultAsync(
       this._promise.then(async (res: Result<T, E>) => {
@@ -246,22 +278,13 @@ type TraverseAsync<T, Depth extends number = 5> = IsLiteralArray<T> extends 1
   : never
 
 // This type is similar to the `TraverseAsync` while the errors are also
-// collected in order. For the checks/conditions made here, see that type
+// collected in a list. For the checks/conditions made here, see that type
 // for the documentation.
-type TraverseWithAllErrorsAsync<T, Depth extends number = 5> = IsLiteralArray<T> extends 1
-  ? Combine<T, Depth> extends [infer Oks, infer Errs]
-    ? ResultAsync<EmptyArrayToNever<Oks>, EmptyArrayToNever<Errs>>
-    : never
-  : Writable<T> extends Array<infer I>
-  ? Combine<MemberListOf<I>, Depth> extends [infer Oks, infer Errs]
-    ? Oks extends unknown[]
-      ? Errs extends unknown[]
-        ? ResultAsync<EmptyArrayToNever<Oks[number][]>, EmptyArrayToNever<Errs[number][]>>
-        : ResultAsync<EmptyArrayToNever<Oks[number][]>, Errs>
-      : Errs extends unknown[]
-      ? ResultAsync<Oks, EmptyArrayToNever<Errs[number][]>>
-      : ResultAsync<Oks, Errs>
-    : never
+type TraverseWithAllErrorsAsync<T, Depth extends number = 5> = TraverseAsync<
+  T,
+  Depth
+> extends ResultAsync<infer Oks, infer Errs>
+  ? ResultAsync<Oks, Errs[]>
   : never
 
 // Converts a reaodnly array into a writable array
