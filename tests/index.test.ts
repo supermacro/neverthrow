@@ -4,8 +4,6 @@ import {
   err,
   Err,
   errAsync,
-  
-  
   fromAsyncThrowable,
   fromPromise,
   fromSafePromise,
@@ -107,7 +105,7 @@ describe('Result.Ok', () => {
   describe('andThrough', () => {
     it('Calls the passed function but returns an original ok', () => {
       const okVal = ok(12)
-      const passedFn = jest.fn((_number) => ok(undefined))
+      const passedFn = vitest.fn((_number) => ok(undefined))
 
       const thrued = okVal.andThrough(passedFn)
       expect(thrued.isOk()).toBe(true)
@@ -128,7 +126,7 @@ describe('Result.Ok', () => {
       expect(thrued.isOk()).toBe(false)
       expect(thrued._unsafeUnwrapErr()).toStrictEqual('Whoopsies!')
 
-      const nextFn = jest.fn((_val) => ok('noop'))
+      const nextFn = vitest.fn((_val) => ok('noop'))
 
       thrued.andThen(nextFn)
 
@@ -139,7 +137,7 @@ describe('Result.Ok', () => {
   describe('andTee', () => {
     it('Calls the passed function but returns an original ok', () => {
       const okVal = ok(12)
-      const passedFn = jest.fn((_number) => {})
+      const passedFn = vitest.fn((_number) => {})
 
       const teed = okVal.andTee(passedFn)
 
@@ -149,7 +147,9 @@ describe('Result.Ok', () => {
     })
     it('returns an original ok even when the passed function fails', () => {
       const okVal = ok(12)
-      const passedFn = jest.fn((_number) => { throw new Error('OMG!') })
+      const passedFn = vitest.fn((_number) => {
+        throw new Error('OMG!')
+      })
 
       const teed = okVal.andTee(passedFn)
 
@@ -162,7 +162,7 @@ describe('Result.Ok', () => {
   describe('asyncAndThrough', () => {
     it('Calls the passed function but returns an original ok as Async', async () => {
       const okVal = ok(12)
-      const passedFn = jest.fn((_number) => okAsync(undefined))
+      const passedFn = vitest.fn((_number) => okAsync(undefined))
 
       const teedAsync = okVal.asyncAndThrough(passedFn)
       expect(teedAsync).toBeInstanceOf(ResultAsync)
@@ -186,7 +186,7 @@ describe('Result.Ok', () => {
       expect(teed.isOk()).toBe(false)
       expect(teed._unsafeUnwrapErr()).toStrictEqual('Whoopsies!')
 
-      const nextFn = jest.fn((_val) => ok('noop'))
+      const nextFn = vitest.fn((_val) => ok('noop'))
 
       teed.andThen(nextFn)
 
@@ -339,7 +339,7 @@ describe('Result.Err', () => {
   it('Skips over andThrough', () => {
     const errVal = err('Yolo')
 
-    const mapper = jest.fn((_val) => ok<void, string>(undefined))
+    const mapper = vitest.fn((_val) => ok<void, string>(undefined))
 
     const hopefullyNotFlattened = errVal.andThrough(mapper)
 
@@ -351,7 +351,7 @@ describe('Result.Err', () => {
   it('Skips over andTee', () => {
     const errVal = err('Yolo')
 
-    const mapper = jest.fn((_val) => {})
+    const mapper = vitest.fn((_val) => {})
 
     const hopefullyNotFlattened = errVal.andTee(mapper)
 
@@ -363,7 +363,7 @@ describe('Result.Err', () => {
   it('Skips over asyncAndThrough but returns ResultAsync instead', async () => {
     const errVal = err('Yolo')
 
-    const mapper = jest.fn((_val) => okAsync<string, unknown>('Async'))
+    const mapper = vitest.fn((_val) => okAsync<string, unknown>('Async'))
 
     const hopefullyNotFlattened = errVal.asyncAndThrough(mapper)
     expect(hopefullyNotFlattened).toBeInstanceOf(ResultAsync)
@@ -707,7 +707,9 @@ describe('Utils', () => {
           ResultAsync<boolean, boolean>,
         ]
 
-        type ExpecteResult = Result<[ string, number, boolean ], (string | number | boolean)[]>
+        const heterogenousList: HeterogenousList = [okAsync('Yooooo'), okAsync(123), okAsync(true)]
+
+        type ExpecteResult = Result<[string, number, boolean], (string | number | boolean)[]>
 
         const result: ExpecteResult = await ResultAsync.combineWithAllErrors(heterogenousList)
 
@@ -959,7 +961,7 @@ describe('ResultAsync', () => {
         DB persistence (create or update)
         API calls (create or update)
       */
-      const andThroughResultAsyncFn = jest.fn(() => okAsync('good'))
+      const andThroughResultAsyncFn = vitest.fn(() => okAsync('good'))
 
       const thrued = asyncVal.andThrough(andThroughResultAsyncFn)
 
@@ -975,7 +977,7 @@ describe('ResultAsync', () => {
     it('Maps to an error when map function returning ResultAsync fails', async () => {
       const asyncVal = okAsync(12)
 
-      const andThroughResultAsyncFn = jest.fn(() => errAsync('oh no!'))
+      const andThroughResultAsyncFn = vitest.fn(() => errAsync('oh no!'))
 
       const thrued = asyncVal.andThrough(andThroughResultAsyncFn)
 
@@ -991,7 +993,7 @@ describe('ResultAsync', () => {
     it('Returns the original value when map function returning Result succeeds', async () => {
       const asyncVal = okAsync(12)
 
-      const andThroughResultFn = jest.fn(() => ok('good'))
+      const andThroughResultFn = vitest.fn(() => ok('good'))
 
       const thrued = asyncVal.andThrough(andThroughResultFn)
 
@@ -1007,7 +1009,7 @@ describe('ResultAsync', () => {
     it('Maps to an error when map function returning Result fails', async () => {
       const asyncVal = okAsync(12)
 
-      const andThroughResultFn = jest.fn(() => err('oh no!'))
+      const andThroughResultFn = vitest.fn(() => err('oh no!'))
 
       const thrued = asyncVal.andThrough(andThroughResultFn)
 
@@ -1023,7 +1025,7 @@ describe('ResultAsync', () => {
     it('Skips an Error', async () => {
       const asyncVal = errAsync<string, string>('Wrong format')
 
-      const andThroughResultFn = jest.fn(() => ok<string, string>('good'))
+      const andThroughResultFn = vitest.fn(() => ok<string, string>('good'))
 
       const notMapped = asyncVal.andThrough(andThroughResultFn)
 
@@ -1040,7 +1042,7 @@ describe('ResultAsync', () => {
   describe('andTee', () => {
     it('Calls the passed function but returns an original ok', async () => {
       const okVal = okAsync(12)
-      const passedFn = jest.fn((_number) => {})
+      const passedFn = vitest.fn((_number) => {})
 
       const teed = await okVal.andTee(passedFn)
 
@@ -1050,7 +1052,9 @@ describe('ResultAsync', () => {
     })
     it('returns an original ok even when the passed function fails', async () => {
       const okVal = okAsync(12)
-      const passedFn = jest.fn((_number) => { throw new Error('OMG!') })
+      const passedFn = vitest.fn((_number) => {
+        throw new Error('OMG!')
+      })
 
       const teed = await okVal.andTee(passedFn)
 
