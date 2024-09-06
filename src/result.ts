@@ -5,6 +5,7 @@ import {
   combineResultListWithAllErrors,
   ExtractErrTypes,
   ExtractOkTypes,
+  InferAsyncErrTypes,
   InferErrTypes,
   InferOkTypes,
 } from './_internals/utils'
@@ -179,6 +180,30 @@ interface IResult<T, E> {
   andThen<U, F>(f: (t: T) => Result<U, F>): Result<U, E | F>
 
   /**
+   * This "tee"s the current value to an passed-in computation such as side
+   * effect functions but still returns the same current value as the result.
+   *
+   * This is useful when you want to pass the current result to your side-track
+   * work such as logging but want to continue main-track work after that.
+   * This method does not care about the result of the passed in computation.
+   *
+   * @param f The function to apply to the current value
+   */
+  andTee(f: (t: T) => unknown): Result<T, E>
+
+  /**
+   * Similar to `andTee` except error result of the computation will be passed
+   * to the downstream in case of an error.
+   *
+   * This version is useful when you want to make side-effects but in case of an
+   * error, you want to pass the error to the downstream.
+   *
+   * @param f The function to apply to the current value
+   */
+  andThrough<R extends Result<unknown, unknown>>(f: (t: T) => R): Result<T, InferErrTypes<R> | E>
+  andThrough<F>(f: (t: T) => Result<unknown, F>): Result<T, E | F>
+
+  /**
    * Takes an `Err` value and maps it to a `Result<T, SomeNewType>`.
    *
    * This is useful for error recovery.
@@ -287,6 +312,22 @@ export class Ok<T, E> implements IResult<T, E> {
     return f(this.value)
   }
 
+  andThrough<R extends Result<unknown, unknown>>(f: (t: T) => R): Result<T, InferErrTypes<R> | E>
+  andThrough<F>(f: (t: T) => Result<unknown, F>): Result<T, E | F>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  andThrough(f: any): any {
+    return f(this.value).map((_value: unknown) => this.value)
+  }
+
+  andTee(f: (t: T) => unknown): Result<T, E> {
+    try {
+      f(this.value)
+    } catch (e) {
+      // Tee doesn't care about the error
+    }
+    return ok<T, E>(this.value)
+  }
+
   orElse<R extends Result<unknown, unknown>>(_f: (e: E) => R): Result<T, InferErrTypes<R>>
   orElse<A>(_f: (e: E) => Result<T, A>): Result<T, A>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
@@ -296,6 +337,15 @@ export class Ok<T, E> implements IResult<T, E> {
 
   asyncAndThen<U, F>(f: (t: T) => ResultAsync<U, F>): ResultAsync<U, E | F> {
     return f(this.value)
+  }
+
+  asyncAndThrough<R extends ResultAsync<unknown, unknown>>(
+    f: (t: T) => R,
+  ): ResultAsync<T, InferAsyncErrTypes<R> | E>
+  asyncAndThrough<F>(f: (t: T) => ResultAsync<unknown, F>): ResultAsync<T, E | F>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  asyncAndThrough(f: (t: T) => ResultAsync<unknown, unknown>): any {
+    return f(this.value).map(() => this.value)
   }
 
   asyncMap<U>(f: (t: T) => Promise<U>): ResultAsync<U, E> {
@@ -349,6 +399,14 @@ export class Err<T, E> implements IResult<T, E> {
     return err(f(this.error))
   }
 
+  andThrough<F>(_f: (t: T) => Result<unknown, F>): Result<T, E | F> {
+    return err(this.error)
+  }
+
+  andTee(_f: (t: T) => unknown): Result<T, E> {
+    return err(this.error)
+  }
+
   andThen<R extends Result<unknown, unknown>>(
     _f: (t: T) => R,
   ): Result<InferOkTypes<R>, InferErrTypes<R> | E>
@@ -368,6 +426,10 @@ export class Err<T, E> implements IResult<T, E> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   asyncAndThen<U, F>(_f: (t: T) => ResultAsync<U, F>): ResultAsync<U, E | F> {
     return errAsync<U, E>(this.error)
+  }
+
+  asyncAndThrough<F>(_f: (t: T) => ResultAsync<unknown, F>): ResultAsync<T, E | F> {
+    return errAsync<T, E>(this.error)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -582,11 +644,11 @@ type Traverse<T, Depth extends number = 5> = Combine<T, Depth> extends [infer Ok
 
 // Traverses an array of results and returns a single result containing
 // the oks combined and the array of errors combined.
-type TraverseWithAllErrors<T, Depth extends number = 5> = Combine<T, Depth> extends [
+type TraverseWithAllErrors<T, Depth extends number = 5> = Traverse<T, Depth> extends Result<
   infer Oks,
-  infer Errs,
-]
-  ? Result<EmptyArrayToNever<Oks>, EmptyArrayToNever<Errs>>
+  infer Errs
+>
+  ? Result<Oks, Errs[]>
   : never
 
 // Combines the array of results into one result.

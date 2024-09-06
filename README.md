@@ -35,6 +35,9 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.orElse` (method)](#resultorelse-method)
     - [`Result.match` (method)](#resultmatch-method)
     - [`Result.asyncMap` (method)](#resultasyncmap-method)
+    - [`Result.andTee` (method)](#resultandtee-method)
+    - [`Result.andThrough` (method)](#resultandthrough-method)
+    - [`Result.asyncAndThrough` (method)](#resultasyncandthrough-method)
     - [`Result.fromThrowable` (static class method)](#resultfromthrowable-static-class-method)
     - [`Result.combine` (static class method)](#resultcombine-static-class-method)
     - [`Result.combineWithAllErrors` (static class method)](#resultcombinewithallerrors-static-class-method)
@@ -51,6 +54,8 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.andThen` (method)](#resultasyncandthen-method)
     - [`ResultAsync.orElse` (method)](#resultasyncorelse-method)
     - [`ResultAsync.match` (method)](#resultasyncmatch-method)
+    - [`ResultAsync.andTee` (method)](#resultasyncandtee-method)
+    - [`ResultAsync.andThrough` (method)](#resultasyncandthrough-method)
     - [`ResultAsync.combine` (static class method)](#resultasynccombine-static-class-method)
     - [`ResultAsync.combineWithAllErrors` (static class method)](#resultasynccombinewithallerrors-static-class-method)
     - [`ResultAsync.safeUnwrap()`](#resultasyncsafeunwrap)
@@ -541,6 +546,136 @@ Note that in the above example if `parseHeaders` returns an `Err` then `.map` an
 
 ---
 
+#### `Result.andTee` (method)
+
+Takes a `Result<T, E>` and lets the original `Result<T, E>` pass through regardless the result of the passed-in function.
+This is a handy way to handle side effects whose failure or success should not affect your main logics such as logging. 
+
+**Signature:**
+
+```typescript
+class Result<T, E> {
+  andTee(
+    callback: (value: T) => unknown
+  ): Result<T, E> { ... }
+}
+```
+
+**Example:**
+
+```typescript
+import { parseUserInput } from 'imaginary-parser'
+import { logUser } from 'imaginary-logger'
+import { insertUser } from 'imaginary-database'
+
+// ^ assume parseUserInput, logUser and insertUser have the following signatures:
+// parseUserInput(input: RequestData): Result<User, ParseError>
+// logUser(user: User): Result<void, LogError> 
+// insertUser(user: User): ResultAsync<void, InsertError>
+// Note logUser returns void upon success but insertUser takes User type.
+
+const resAsync = parseUserInput(userInput)
+               .andTee(logUser)
+               .asyncAndThen(insertUser)
+
+// Note no LogError shows up in the Result type
+resAsync.then((res: Result<void, ParseError | InsertError>) => {e
+  if(res.isErr()){
+    console.log("Oops, at least one step failed", res.error)
+  }
+  else{
+    console.log("User input has been parsed and inserted successfully.")
+  }
+}))
+```
+
+[⬆️  Back to top](#toc)
+
+---
+
+#### `Result.andThrough` (method)
+
+Similar to `andTee` except for:
+
+- when there is an error from the passed-in function, that error will be passed along.
+
+**Signature:**
+
+```typescript
+class Result<T, E> {
+  andThrough<F>(
+    callback: (value: T) => Result<unknown, F>
+  ): Result<T, E | F> { ... }
+}
+```
+
+**Example:**
+
+```typescript
+import { parseUserInput } from 'imaginary-parser'
+import { validateUser } from 'imaginary-validator'
+import { insertUser } from 'imaginary-database'
+
+// ^ assume parseUseInput, validateUser and insertUser have the following signatures:
+// parseUserInput(input: RequestData): Result<User, ParseError>
+// validateUser(user: User): Result<void, ValidateError>
+// insertUser(user: User): ResultAsync<void, InsertError>
+// Note validateUser returns void upon success but insertUser takes User type. 
+
+const resAsync = parseUserInput(userInput)
+               .andThrough(validateUser)
+               .asyncAndThen(insertUser)
+
+resAsync.then((res: Result<void, ParseErro | ValidateError | InsertError>) => {e
+  if(res.isErr()){
+    console.log("Oops, at least one step failed", res.error)
+  }
+  else{
+    console.log("User input has been parsed, validated, inserted successfully.")
+  }
+}))
+```
+  
+[⬆️  Back to top](#toc)
+
+---
+
+#### `Result.asyncAndThrough` (method)
+
+Similar to `andThrough` except you must return a ResultAsync. 
+
+You can then chain the result of `asyncAndThrough` using the `ResultAsync` apis (like `map`, `mapErr`, `andThen`, etc.)
+
+**Signature:**
+
+```typescript
+import { parseUserInput } from 'imaginary-parser'
+import { insertUser } from 'imaginary-database'
+import { sendNotification } from 'imaginary-service'
+
+// ^ assume parseUserInput, insertUser and sendNotification have the following signatures:
+// parseUserInput(input: RequestData): Result<User, ParseError>
+// insertUser(user: User): ResultAsync<void, InsertError>
+// sendNotification(user: User): ResultAsync<void, NotificationError>
+// Note insertUser returns void upon success but sendNotification takes User type. 
+
+const resAsync = parseUserInput(userInput)
+               .asyncAndThrough(insertUser)
+               .andThen(sendNotification)
+
+resAsync.then((res: Result<void, ParseError | InsertError | NotificationError>) => {e
+  if(res.isErr()){
+    console.log("Oops, at least one step failed", res.error)
+  }
+  else{
+    console.log("User has been parsed, inserted and notified successfully.")
+  }
+}))
+```
+  
+[⬆️  Back to top](#toc)
+
+---
 #### `Result.fromThrowable` (static class method)
 
 > Although Result is not an actual JS class, the way that `fromThrowable` has been implemented requires that you call `fromThrowable` as though it were a static method on `Result`. See examples below.
@@ -1096,7 +1231,101 @@ const resultMessage = await validateUser(user)
 [⬆️  Back to top](#toc)
 
 ---
+#### `ResultAsync.andTee` (method)
 
+Takes a `ResultAsync<T, E>` and lets the original `ResultAsync<T, E>` pass through regardless 
+the result of the passed-in function.
+This is a handy way to handle side effects whose failure or success should not affect your main logics such as logging. 
+
+**Signature:**
+
+```typescript
+class ResultAsync<T, E> {
+  andTee(
+    callback: (value: T) => unknown
+  ): ResultAsync<T, E>  => { ... }
+}
+```
+
+**Example:**
+
+```typescript
+import { insertUser } from 'imaginary-database'
+import { logUser } from 'imaginary-logger'
+import { sendNotification } from 'imaginary-service'
+
+// ^ assume insertUser, logUser and sendNotification have the following signatures:
+// insertUser(user: User): ResultAsync<User, InsertError>
+// logUser(user: User): Result<void, LogError>
+// sendNotification(user: User): ResultAsync<void, NotificationError>
+// Note logUser returns void on success but sendNotification takes User type. 
+
+const resAsync = insertUser(user)
+                .andTee(logUser)
+                .andThen(sendNotification)
+
+// Note there is no LogError in the types below 
+resAsync.then((res: Result<void, InsertError | NotificationError>) => {e
+  if(res.isErr()){
+    console.log("Oops, at least one step failed", res.error)
+  }
+  else{
+    console.log("User has been inserted and notified successfully.")
+  }
+}))  
+```
+
+[⬆️  Back to top](#toc)
+
+---
+#### `ResultAsync.andThrough` (method)
+
+
+Similar to `andTee` except for:
+
+- when there is an error from the passed-in function, that error will be passed along.
+
+**Signature:**
+
+```typescript
+class ResultAsync<T, E> {
+  andThrough<F>(
+    callback: (value: T) => Result<unknown, F> | ResultAsync<unknown, F>,
+  ): ResultAsync<T, E | F> => { ... }
+}
+```
+
+**Example:**
+
+```typescript
+
+import { buildUser } from 'imaginary-builder'
+import { insertUser } from 'imaginary-database'
+import { sendNotification } from 'imaginary-service'
+
+// ^ assume buildUser, insertUser and sendNotification have the following signatures:
+// buildUser(userRaw: UserRaw): ResultAsync<User, BuildError>
+// insertUser(user: User): ResultAsync<void, InsertError>
+// sendNotification(user: User): ResultAsync<void, NotificationError>
+// Note insertUser returns void upon success but sendNotification takes User type. 
+
+const resAsync = buildUser(userRaw)
+                .andThrough(insertUser)
+                .andThen(sendNotification)
+
+resAsync.then((res: Result<void, BuildError | InsertError | NotificationError>) => {e
+  if(res.isErr()){
+    console.log("Oops, at least one step failed", res.error)
+  }
+  else{
+    console.log("User data has been built, inserted and notified successfully.")
+  }
+}))  
+```
+
+[⬆️  Back to top](#toc)
+
+---
 #### `ResultAsync.combine` (static class method)
 
 Combine lists of `ResultAsync`s.

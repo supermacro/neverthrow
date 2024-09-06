@@ -1,6 +1,6 @@
 {
   "name": "neverthrow",
-  "version": "7.0.1",
+  "version": "7.1.0",
   "description": "Stop throwing errors, and instead return Results!",
   "main": "dist/index.cjs.js",
   "module": "dist/index.es.js",
@@ -9,6 +9,7 @@
     "dist"
   ],
   "scripts": {
+    "local-ci": "npm run typecheck && npm run lint && npm run test && npm run format && npm run build",
     "test": "jest && npm run test-types",
     "test-types": "tsc --noEmit -p ./tests/tsconfig.tests.json",
     "lint": "eslint ./src --ext .ts",
@@ -51,7 +52,6 @@
     "testdouble": "3.20.2",
     "ts-jest": "27.1.5",
     "ts-toolbelt": "9.6.0",
-    "tslib": "^2.4.0",
     "typescript": "4.7.2"
   },
   "keywords": [
