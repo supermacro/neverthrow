@@ -23,6 +23,7 @@ type CreateTuple<L, V = string> =
       ? [V, ...CreateTuple<N.Sub<L, 1>, V>]
       : never
     : never
+
 ;(function describe(_ = 'Result') {
   ;(function describe(_ = 'andThen') {
     ;(function it(_ = 'Combines two equal error types (native scalar types)') {
@@ -32,6 +33,7 @@ type CreateTuple<L, V = string> =
         err('yoooooo dude' + val),
       )
     })
+
     ;(function it(_ = 'Combines two equal error types (custom types)') {
       interface MyError {
         stack: string
@@ -44,6 +46,7 @@ type CreateTuple<L, V = string> =
         err<string, MyError>({ stack: '/blah', code: 500 }),
       )
     })
+
     ;(function it(_ = 'Creates a union of error types for disjoint types') {
       interface MyError {
         stack: string
@@ -56,6 +59,7 @@ type CreateTuple<L, V = string> =
         err<string, string[]>(['oh nooooo']),
       )
     })
+
     ;(function it(_ = 'Infers error type when returning disjoint types (native scalar types)') {
       type Expectation = Result<unknown, string | number | boolean>
 
@@ -70,6 +74,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'Infers error type when returning disjoint types (custom types)') {
       interface MyError {
         stack: string
@@ -88,6 +93,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'Infers new ok type when returning both Ok and Err (same as initial)') {
       type Expectation = Result<number, unknown>
 
@@ -100,6 +106,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(
       _ = 'Infers new ok type when returning both Ok and Err (different from initial)',
     ) {
@@ -115,6 +122,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'Infers new err type when returning both Ok and Err') {
       interface MyError {
         stack: string
@@ -133,6 +141,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'allows specifying the E and T types explicitly') {
       type Expectation = Result<'yo', number>
 
@@ -141,6 +150,7 @@ type CreateTuple<L, V = string> =
       })
     })
   })
+
   ;(function describe(_ = 'andThrough') {
     ;(function it(_ = 'Combines two equal error types (native scalar types)') {
       type Expectation = Result<number, string>
@@ -149,6 +159,7 @@ type CreateTuple<L, V = string> =
         err('yoooooo dude' + val),
       )
     })
+
     ;(function it(_ = 'Combines two equal error types (custom types)') {
       interface MyError {
         stack: string
@@ -161,6 +172,7 @@ type CreateTuple<L, V = string> =
         err<string, MyError>({ stack: '/blah', code: 500 }),
       )
     })
+
     ;(function it(_ = 'Creates a union of error types for disjoint types') {
       interface MyError {
         stack: string
@@ -173,6 +185,7 @@ type CreateTuple<L, V = string> =
         err<string, string[]>(['oh nooooo']),
       )
     })
+
     ;(function it(_ = 'Infers error type when returning disjoint types (native scalar types)') {
       type Expectation = Result<number, string | number | boolean>
 
@@ -187,6 +200,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'Infers error type when returning disjoint types (custom types)') {
       interface MyError {
         stack: string
@@ -205,6 +219,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(
       _ = 'Returns the original ok type when returning both Ok and Err (same as initial)',
     ) {
@@ -219,6 +234,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(
       _ = 'Returns the original ok type when returning both Ok and Err (different from initial)',
     ) {
@@ -234,6 +250,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'Infers new err type when returning both Ok and Err') {
       interface MyError {
         stack: string
@@ -252,6 +269,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'allows specifying the E type explicitly') {
       type Expectation = Result<number, string>
 
@@ -260,6 +278,7 @@ type CreateTuple<L, V = string> =
       })
     })
   })
+
   ;(function describe(_ = 'orElse') {
     ;(function it(_ = 'the type of the argument is the error type of the result') {
       type Expectation = string
@@ -273,6 +292,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'infers the err return type with multiple returns (same type) ') {
       type Expectation = Result<number, number>
 
@@ -285,6 +305,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'infers the err return type with multiple returns (different type) ') {
       type Expectation = Result<number, number | string>
 
@@ -297,6 +318,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'infers ok and err return types with multiple returns ') {
       type Expectation = Result<number, number | string>
 
@@ -311,6 +333,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'allows specifying the E and T types explicitly') {
       type Expectation = Result<'yo', string>
 
@@ -319,6 +342,7 @@ type CreateTuple<L, V = string> =
       })
     })
   })
+
   ;(function describe(_ = 'match') {
     ;(function it(_ = 'the type of the arguments match the types of the result') {
       type OKExpectation = number
@@ -333,6 +357,7 @@ type CreateTuple<L, V = string> =
         (val: ErrExpectation): void => void val,
       )
     })
+
     ;(function it(_ = 'infers the resulting value from match callbacks (same type)') {
       type Expectation = boolean
 
@@ -345,6 +370,7 @@ type CreateTuple<L, V = string> =
         (val) => !!val,
       )
     })
+
     ;(function it(_ = 'infers the resulting value from match callbacks (different type)') {
       type Expectation = boolean | bigint
 
@@ -358,6 +384,7 @@ type CreateTuple<L, V = string> =
       )
     })
   })
+
   ;(function describe(_ = 'asyncAndThen') {
     ;(function it(_ = 'Combines two equal error types (native scalar types)') {
       type Expectation = ResultAsync<unknown, string>
@@ -366,6 +393,7 @@ type CreateTuple<L, V = string> =
         errAsync('yoooooo dude' + val),
       )
     })
+
     ;(function it(_ = 'Combines two equal error types (custom types)') {
       interface MyError {
         stack: string
@@ -378,6 +406,7 @@ type CreateTuple<L, V = string> =
         errAsync<string, MyError>({ stack: '/blah', code: 500 }),
       )
     })
+
     ;(function it(_ = 'Creates a union of error types for disjoint types') {
       interface MyError {
         stack: string
@@ -391,6 +420,7 @@ type CreateTuple<L, V = string> =
       )
     })
   })
+
   ;(function describe(_ = 'asyncAndThrough') {
     ;(function it(_ = 'Combines two equal error types (native scalar types)') {
       type Expectation = ResultAsync<unknown, string>
@@ -399,6 +429,7 @@ type CreateTuple<L, V = string> =
         errAsync('yoooooo dude' + val),
       )
     })
+
     ;(function it(_ = 'Combines two equal error types (custom types)') {
       interface MyError {
         stack: string
@@ -411,6 +442,7 @@ type CreateTuple<L, V = string> =
         errAsync<string, MyError>({ stack: '/blah', code: 500 }),
       )
     })
+
     ;(function it(_ = 'Creates a union of error types for disjoint types') {
       interface MyError {
         stack: string
@@ -423,6 +455,7 @@ type CreateTuple<L, V = string> =
         errAsync<string, string[]>(['oh nooooo']),
       )
     })
+
     ;(function it(_ = 'Infers error type when returning disjoint types (native scalar types)') {
       type Expectation = ResultAsync<number, string | number | boolean>
 
@@ -437,6 +470,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'Infers error type when returning disjoint types (custom types)') {
       interface MyError {
         stack: string
@@ -455,6 +489,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(
       _ = 'Returns the original ok type when returning both Ok and Err (same as initial)',
     ) {
@@ -469,6 +504,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(
       _ = 'Returns the original ok type when returning both Ok and Err (different from initial)',
     ) {
@@ -484,6 +520,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'Infers new err type when returning both Ok and Err') {
       interface MyError {
         stack: string
@@ -502,6 +539,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'allows specifying the E type explicitly') {
       type Expectation = Result<number, string>
 
@@ -509,6 +547,7 @@ type CreateTuple<L, V = string> =
         return ok('yo')
       })
     })
+
     ;(function it(_ = 'Infers new err type when returning both Ok and Err') {
       interface MyError {
         stack: string
@@ -528,6 +567,7 @@ type CreateTuple<L, V = string> =
       })
     })
   })
+
   ;(function describe(_ = 'combine') {
     ;(function it(_ = 'combines different results into one') {
       type Expectation = Result<[number, string, boolean, boolean], Error | string | string[]>
@@ -542,6 +582,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function it(_ = 'combines only ok results into one') {
       type Expectation = Result<[number, string], never>
 
@@ -550,6 +591,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function it(_ = 'combines only err results into one') {
       type Expectation = Result<[never, never], number | 'abc'>
 
@@ -558,6 +600,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function it(_ = 'combines empty list results into one') {
       type Expectation = Result<never, never>
       const results: [] = []
@@ -567,6 +610,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function it(_ = 'combines arrays of results to a result of an array') {
       type Expectation = Result<string[], string>
       const results: Result<string, string>[] = []
@@ -576,6 +620,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function describe(_ = 'inference on large tuples') {
       ;(function it(_ = 'Should correctly infer the type on tuples with 6 elements') {
         type Input = CreateTuple<6, Result<string, never>>
@@ -586,6 +631,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 7 elements') {
         type Input = CreateTuple<7, Result<string, never>>
         type Expectation = Result<CreateTuple<7, string>, never>
@@ -595,6 +641,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 8 elements') {
         type Input = CreateTuple<8, Result<string, never>>
         type Expectation = Result<CreateTuple<8, string>, never>
@@ -604,6 +651,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 9 elements') {
         type Input = CreateTuple<9, Result<string, never>>
         type Expectation = Result<CreateTuple<9, string>, never>
@@ -613,6 +661,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 10 elements') {
         type Input = CreateTuple<10, Result<string, never>>
         type Expectation = Result<CreateTuple<10, string>, never>
@@ -622,6 +671,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 11 elements') {
         type Input = CreateTuple<11, Result<string, never>>
         type Expectation = Result<CreateTuple<11, string>, never>
@@ -631,6 +681,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 12 elements') {
         type Input = CreateTuple<12, Result<string, never>>
         type Expectation = Result<CreateTuple<12, string>, never>
@@ -640,6 +691,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 13 elements') {
         type Input = CreateTuple<13, Result<string, never>>
         type Expectation = Result<CreateTuple<13, string>, never>
@@ -649,6 +701,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 14 elements') {
         type Input = CreateTuple<14, Result<string, never>>
         type Expectation = Result<CreateTuple<14, string>, never>
@@ -658,6 +711,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 15 elements') {
         type Input = CreateTuple<15, Result<string, never>>
         type Expectation = Result<CreateTuple<15, string>, never>
@@ -667,6 +721,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 16 elements') {
         type Input = CreateTuple<16, Result<string, never>>
         type Expectation = Result<CreateTuple<16, string>, never>
@@ -676,6 +731,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 17 elements') {
         type Input = CreateTuple<17, Result<string, never>>
         type Expectation = Result<CreateTuple<17, string>, never>
@@ -685,6 +741,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 18 elements') {
         type Input = CreateTuple<18, Result<string, never>>
         type Expectation = Result<CreateTuple<18, string>, never>
@@ -694,6 +751,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 19 elements') {
         type Input = CreateTuple<19, Result<string, never>>
         type Expectation = Result<CreateTuple<19, string>, never>
@@ -703,6 +761,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 20 elements') {
         type Input = CreateTuple<20, Result<string, never>>
         type Expectation = Result<CreateTuple<20, string>, never>
@@ -712,6 +771,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 21 elements') {
         type Input = CreateTuple<21, Result<string, never>>
         type Expectation = Result<CreateTuple<21, string>, never>
@@ -721,6 +781,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 22 elements') {
         type Input = CreateTuple<22, Result<string, never>>
         type Expectation = Result<CreateTuple<22, string>, never>
@@ -730,6 +791,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 23 elements') {
         type Input = CreateTuple<23, Result<string, never>>
         type Expectation = Result<CreateTuple<23, string>, never>
@@ -739,6 +801,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 24 elements') {
         type Input = CreateTuple<24, Result<string, never>>
         type Expectation = Result<CreateTuple<24, string>, never>
@@ -748,6 +811,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 25 elements') {
         type Input = CreateTuple<25, Result<string, never>>
         type Expectation = Result<CreateTuple<25, string>, never>
@@ -757,6 +821,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 26 elements') {
         type Input = CreateTuple<26, Result<string, never>>
         type Expectation = Result<CreateTuple<26, string>, never>
@@ -766,6 +831,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 27 elements') {
         type Input = CreateTuple<27, Result<string, never>>
         type Expectation = Result<CreateTuple<27, string>, never>
@@ -775,6 +841,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 28 elements') {
         type Input = CreateTuple<28, Result<string, never>>
         type Expectation = Result<CreateTuple<28, string>, never>
@@ -784,6 +851,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 29 elements') {
         type Input = CreateTuple<29, Result<string, never>>
         type Expectation = Result<CreateTuple<29, string>, never>
@@ -793,6 +861,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 30 elements') {
         type Input = CreateTuple<30, Result<string, never>>
         type Expectation = Result<CreateTuple<30, string>, never>
@@ -802,6 +871,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 31 elements') {
         type Input = CreateTuple<31, Result<string, never>>
         type Expectation = Result<CreateTuple<31, string>, never>
@@ -811,6 +881,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 32 elements') {
         type Input = CreateTuple<32, Result<string, never>>
         type Expectation = Result<CreateTuple<32, string>, never>
@@ -820,6 +891,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 33 elements') {
         type Input = CreateTuple<33, Result<string, never>>
         type Expectation = Result<CreateTuple<33, string>, never>
@@ -829,6 +901,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 34 elements') {
         type Input = CreateTuple<34, Result<string, never>>
         type Expectation = Result<CreateTuple<34, string>, never>
@@ -838,6 +911,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 35 elements') {
         type Input = CreateTuple<35, Result<string, never>>
         type Expectation = Result<CreateTuple<35, string>, never>
@@ -847,6 +921,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 36 elements') {
         type Input = CreateTuple<36, Result<string, never>>
         type Expectation = Result<CreateTuple<36, string>, never>
@@ -856,6 +931,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 37 elements') {
         type Input = CreateTuple<37, Result<string, never>>
         type Expectation = Result<CreateTuple<37, string>, never>
@@ -865,6 +941,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 38 elements') {
         type Input = CreateTuple<38, Result<string, never>>
         type Expectation = Result<CreateTuple<38, string>, never>
@@ -874,6 +951,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 39 elements') {
         type Input = CreateTuple<39, Result<string, never>>
         type Expectation = Result<CreateTuple<39, string>, never>
@@ -883,6 +961,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 40 elements') {
         type Input = CreateTuple<40, Result<string, never>>
         type Expectation = Result<CreateTuple<40, string>, never>
@@ -892,6 +971,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 41 elements') {
         type Input = CreateTuple<41, Result<string, never>>
         type Expectation = Result<CreateTuple<41, string>, never>
@@ -901,6 +981,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 42 elements') {
         type Input = CreateTuple<42, Result<string, never>>
         type Expectation = Result<CreateTuple<42, string>, never>
@@ -910,6 +991,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 43 elements') {
         type Input = CreateTuple<43, Result<string, never>>
         type Expectation = Result<CreateTuple<43, string>, never>
@@ -919,6 +1001,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 44 elements') {
         type Input = CreateTuple<44, Result<string, never>>
         type Expectation = Result<CreateTuple<44, string>, never>
@@ -928,6 +1011,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 45 elements') {
         type Input = CreateTuple<45, Result<string, never>>
         type Expectation = Result<CreateTuple<45, string>, never>
@@ -937,6 +1021,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 46 elements') {
         type Input = CreateTuple<46, Result<string, never>>
         type Expectation = Result<CreateTuple<46, string>, never>
@@ -946,6 +1031,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 47 elements') {
         type Input = CreateTuple<47, Result<string, never>>
         type Expectation = Result<CreateTuple<47, string>, never>
@@ -955,6 +1041,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 48 elements') {
         type Input = CreateTuple<48, Result<string, never>>
         type Expectation = Result<CreateTuple<48, string>, never>
@@ -964,6 +1051,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 49 elements') {
         type Input = CreateTuple<49, Result<string, never>>
         type Expectation = Result<CreateTuple<49, string>, never>
@@ -975,6 +1063,7 @@ type CreateTuple<L, V = string> =
       })
     })
   })
+
   ;(function describe(_ = 'combineWithAllErrors') {
     ;(function it(_ = 'combines different results into one') {
       type Expectation = Result<[number, string, never, never], (string[] | Error)[]>
@@ -989,6 +1078,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function it(_ = 'combines only ok results into one') {
       type Expectation = Result<[number, string], never[]>
 
@@ -997,6 +1087,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function it(_ = 'combines only err results into one') {
       type Expectation = Result<[never, never], (number | 'string')[]>
 
@@ -1005,6 +1096,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function it(_ = 'combines arrays of results to a result of an array') {
       type Expectation = Result<string[], (number | string)[]>
       const results: Result<string, number | string>[] = []
@@ -1014,6 +1106,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function it(_ = 'combines arrays of different results to a result of an array') {
       type Expectation = Result<(string | boolean)[], (number | string)[]>
       const results: (Result<string, number> | Result<boolean, string>)[] = []
@@ -1023,6 +1116,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function describe(_ = 'inference on large tuples') {
       ;(function it(_ = 'Should correctly infer the type on tuples with 6 elements') {
         type Input = CreateTuple<6, Result<string, number>>
@@ -1033,6 +1127,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 15 elements') {
         type Input = CreateTuple<15, Result<string, number>>
         type Expectation = Result<CreateTuple<15, string>, number[]>
@@ -1042,6 +1137,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 30 elements') {
         type Input = CreateTuple<30, Result<string, number>>
         type Expectation = Result<CreateTuple<30, string>, number[]>
@@ -1051,6 +1147,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 49 elements') {
         type Input = CreateTuple<49, Result<string, number>>
         type Expectation = Result<CreateTuple<49, string>, number[]>
@@ -1062,6 +1159,7 @@ type CreateTuple<L, V = string> =
       })
     })
   })
+
   ;(function describe(_ = 'err') {
     ;(function it(_ = 'infers the error type narrowly when it is a string') {
       type Expectation = Result<never, 'error'>
@@ -1070,6 +1168,7 @@ type CreateTuple<L, V = string> =
 
       const assignableToCheck: Expectation = result
     })
+
     ;(function it(_ = 'infers the error type widely when it is not a string') {
       type Expectation = Result<never, { abc: number }>
 
@@ -1079,6 +1178,7 @@ type CreateTuple<L, V = string> =
     })
   })
 })
+
 ;(function describe(_ = 'ResultAsync') {
   ;(function describe(_ = 'andThen') {
     ;(function it(_ = 'Combines two equal error types (native scalar types)') {
@@ -1088,6 +1188,7 @@ type CreateTuple<L, V = string> =
         err('yoooooo dude' + val),
       )
     })
+
     ;(function it(_ = 'Combines two equal error types (custom types)') {
       interface MyError {
         stack: string
@@ -1100,6 +1201,7 @@ type CreateTuple<L, V = string> =
         err<string, MyError>({ stack: '/blah', code: 500 }),
       )
     })
+
     ;(function it(_ = 'Creates a union of error types for disjoint types') {
       interface MyError {
         stack: string
@@ -1112,6 +1214,7 @@ type CreateTuple<L, V = string> =
         err<string, string[]>(['oh nooooo']),
       )
     })
+
     ;(function describe(_ = 'when returning Result types') {
       ;(function it(_ = 'Infers error type when returning disjoint types (native scalar types)') {
         type Expectation = ResultAsync<unknown, string | number | boolean>
@@ -1127,6 +1230,7 @@ type CreateTuple<L, V = string> =
           }
         })
       })
+
       ;(function it(_ = 'Infers error type when returning disjoint types (custom types)') {
         interface MyError {
           stack: string
@@ -1145,6 +1249,7 @@ type CreateTuple<L, V = string> =
           }
         })
       })
+
       ;(function it(_ = 'Infers new ok type when returning both Ok and Err (same as initial)') {
         type Expectation = ResultAsync<number, unknown>
 
@@ -1157,6 +1262,7 @@ type CreateTuple<L, V = string> =
           }
         })
       })
+
       ;(function it(
         _ = 'Infers new ok type when returning both Ok and Err (different from initial)',
       ) {
@@ -1172,6 +1278,7 @@ type CreateTuple<L, V = string> =
           }
         })
       })
+
       ;(function it(_ = 'Infers new err type when returning both Ok and Err') {
         interface MyError {
           stack: string
@@ -1191,6 +1298,7 @@ type CreateTuple<L, V = string> =
         })
       })
     })
+
     ;(function describe(_ = 'when returning ResultAsync types') {
       ;(function it(_ = 'Infers error type when returning disjoint types (native scalar types)') {
         type Expectation = ResultAsync<unknown, string | number | boolean>
@@ -1206,6 +1314,7 @@ type CreateTuple<L, V = string> =
           }
         })
       })
+
       ;(function it(_ = 'Infers error type when returning disjoint types (custom types)') {
         interface MyError {
           stack: string
@@ -1224,6 +1333,7 @@ type CreateTuple<L, V = string> =
           }
         })
       })
+
       ;(function it(_ = 'Infers new ok type when returning both Ok and Err (same as initial)') {
         type Expectation = ResultAsync<number, unknown>
 
@@ -1236,6 +1346,7 @@ type CreateTuple<L, V = string> =
           }
         })
       })
+
       ;(function it(
         _ = 'Infers new ok type when returning both Ok and Err (different from initial)',
       ) {
@@ -1251,6 +1362,7 @@ type CreateTuple<L, V = string> =
           }
         })
       })
+
       ;(function it(_ = 'Infers new err type when returning both Ok and Err') {
         interface MyError {
           stack: string
@@ -1270,6 +1382,7 @@ type CreateTuple<L, V = string> =
         })
       })
     })
+
     ;(function describe(_ = 'when returning a mix of Result and ResultAsync types') {
       ;(function it(
         _ = 'allows for explicitly specifying the Ok and Err types when inference fails',
@@ -1291,6 +1404,7 @@ type CreateTuple<L, V = string> =
         })
       })
     })
+
     ;(function describe(_ = 'fromSafePromise') {
       ;(function it(_ = 'infers err type from usage') {
         type Expectation = ResultAsync<number, 'impossible error'>
@@ -1301,6 +1415,7 @@ type CreateTuple<L, V = string> =
       })
     })
   })
+
   ;(function describe(_ = 'orElse') {
     ;(function it(_ = 'the type of the argument is the error type of the result') {
       type Expectation = string
@@ -1314,6 +1429,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'infers the err return type with multiple returns (same type) ') {
       type Expectation = ResultAsync<number, number>
 
@@ -1326,6 +1442,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'infers the err return type with multiple returns (different type) ') {
       type Expectation = ResultAsync<number, number | string>
 
@@ -1338,6 +1455,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(_ = 'infers ok and err return types with multiple returns ') {
       type Expectation = ResultAsync<number, number | string>
 
@@ -1352,6 +1470,7 @@ type CreateTuple<L, V = string> =
         }
       })
     })
+
     ;(function it(
       _ = 'allows specifying ok and err return types when mixing Result and ResultAsync in returns ',
     ) {
@@ -1369,6 +1488,7 @@ type CreateTuple<L, V = string> =
       })
     })
   })
+
   ;(function describe(_ = 'combine') {
     ;(function it(_ = 'combines different result asyncs into one') {
       type Expectation = ResultAsync<[number, string, boolean, boolean], Error | string | string[]>
@@ -1383,6 +1503,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function it(_ = 'combines only ok result asyncs into one') {
       type Expectation = ResultAsync<[number, string], never>
 
@@ -1391,6 +1512,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function it(_ = 'combines only err results into one') {
       type Expectation = ResultAsync<[never, never], number | string>
 
@@ -1399,6 +1521,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function it(_ = 'combines empty list result asyncs into one') {
       type Expectation = ResultAsync<never, never>
       const results: [] = []
@@ -1408,6 +1531,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function it(_ = 'combines arrays of result asyncs to a result async of an array') {
       type Expectation = ResultAsync<string[], string>
       const results: ResultAsync<string, string>[] = []
@@ -1417,6 +1541,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function describe(_ = 'inference on large tuples') {
       ;(function it(_ = 'Should correctly infer the type on tuples with 6 elements') {
         type Input = CreateTuple<6, ResultAsync<string, never>>
@@ -1427,6 +1552,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 7 elements') {
         type Input = CreateTuple<7, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<7, string>, never>
@@ -1436,6 +1562,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 8 elements') {
         type Input = CreateTuple<8, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<8, string>, never>
@@ -1445,6 +1572,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 9 elements') {
         type Input = CreateTuple<9, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<9, string>, never>
@@ -1454,6 +1582,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 10 elements') {
         type Input = CreateTuple<10, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<10, string>, never>
@@ -1463,6 +1592,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 11 elements') {
         type Input = CreateTuple<11, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<11, string>, never>
@@ -1472,6 +1602,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 12 elements') {
         type Input = CreateTuple<12, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<12, string>, never>
@@ -1481,6 +1612,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 13 elements') {
         type Input = CreateTuple<13, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<13, string>, never>
@@ -1490,6 +1622,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 14 elements') {
         type Input = CreateTuple<14, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<14, string>, never>
@@ -1499,6 +1632,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 15 elements') {
         type Input = CreateTuple<15, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<15, string>, never>
@@ -1508,6 +1642,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 16 elements') {
         type Input = CreateTuple<16, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<16, string>, never>
@@ -1517,6 +1652,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 17 elements') {
         type Input = CreateTuple<17, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<17, string>, never>
@@ -1526,6 +1662,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 18 elements') {
         type Input = CreateTuple<18, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<18, string>, never>
@@ -1535,6 +1672,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 19 elements') {
         type Input = CreateTuple<19, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<19, string>, never>
@@ -1544,6 +1682,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 20 elements') {
         type Input = CreateTuple<20, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<20, string>, never>
@@ -1553,6 +1692,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 21 elements') {
         type Input = CreateTuple<21, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<21, string>, never>
@@ -1562,6 +1702,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 22 elements') {
         type Input = CreateTuple<22, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<22, string>, never>
@@ -1571,6 +1712,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 23 elements') {
         type Input = CreateTuple<23, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<23, string>, never>
@@ -1580,6 +1722,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 24 elements') {
         type Input = CreateTuple<24, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<24, string>, never>
@@ -1589,6 +1732,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 25 elements') {
         type Input = CreateTuple<25, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<25, string>, never>
@@ -1598,6 +1742,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 26 elements') {
         type Input = CreateTuple<26, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<26, string>, never>
@@ -1607,6 +1752,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 27 elements') {
         type Input = CreateTuple<27, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<27, string>, never>
@@ -1616,6 +1762,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 28 elements') {
         type Input = CreateTuple<28, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<28, string>, never>
@@ -1625,6 +1772,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 29 elements') {
         type Input = CreateTuple<29, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<29, string>, never>
@@ -1634,6 +1782,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 30 elements') {
         type Input = CreateTuple<30, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<30, string>, never>
@@ -1643,6 +1792,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 31 elements') {
         type Input = CreateTuple<31, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<31, string>, never>
@@ -1652,6 +1802,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 32 elements') {
         type Input = CreateTuple<32, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<32, string>, never>
@@ -1661,6 +1812,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 33 elements') {
         type Input = CreateTuple<33, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<33, string>, never>
@@ -1670,6 +1822,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 34 elements') {
         type Input = CreateTuple<34, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<34, string>, never>
@@ -1679,6 +1832,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 35 elements') {
         type Input = CreateTuple<35, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<35, string>, never>
@@ -1688,6 +1842,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 36 elements') {
         type Input = CreateTuple<36, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<36, string>, never>
@@ -1697,6 +1852,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 37 elements') {
         type Input = CreateTuple<37, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<37, string>, never>
@@ -1706,6 +1862,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 38 elements') {
         type Input = CreateTuple<38, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<38, string>, never>
@@ -1715,6 +1872,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 39 elements') {
         type Input = CreateTuple<39, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<39, string>, never>
@@ -1724,6 +1882,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 40 elements') {
         type Input = CreateTuple<40, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<40, string>, never>
@@ -1733,6 +1892,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 41 elements') {
         type Input = CreateTuple<41, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<41, string>, never>
@@ -1742,6 +1902,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 42 elements') {
         type Input = CreateTuple<42, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<42, string>, never>
@@ -1751,6 +1912,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 43 elements') {
         type Input = CreateTuple<43, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<43, string>, never>
@@ -1760,6 +1922,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 44 elements') {
         type Input = CreateTuple<44, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<44, string>, never>
@@ -1769,6 +1932,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 45 elements') {
         type Input = CreateTuple<45, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<45, string>, never>
@@ -1778,6 +1942,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 46 elements') {
         type Input = CreateTuple<46, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<46, string>, never>
@@ -1787,6 +1952,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 47 elements') {
         type Input = CreateTuple<47, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<47, string>, never>
@@ -1796,6 +1962,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 48 elements') {
         type Input = CreateTuple<48, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<48, string>, never>
@@ -1805,6 +1972,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 49 elements') {
         type Input = CreateTuple<49, ResultAsync<string, never>>
         type Expectation = ResultAsync<CreateTuple<49, string>, never>
@@ -1816,6 +1984,7 @@ type CreateTuple<L, V = string> =
       })
     })
   })
+
   ;(function describe(_ = 'combineWithAllErrors') {
     ;(function it(_ = 'combines different result asyncs into one') {
       type Expectation = ResultAsync<[number, string, never, never], (string[] | Error)[]>
@@ -1830,6 +1999,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function it(_ = 'combines only ok result asyncs into one') {
       type Expectation = ResultAsync<[number, string], never[]>
 
@@ -1838,6 +2008,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function it(_ = 'combines only err result asyncs into one') {
       type Expectation = ResultAsync<[never, never], (number | string)[]>
 
@@ -1846,6 +2017,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function it(_ = 'combines arrays of result asyncs to a result of an array') {
       type Expectation = ResultAsync<string[], (number | string)[]>
       const results: ResultAsync<string, number | string>[] = []
@@ -1855,6 +2027,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function it(_ = 'combines arrays of different result asyncs to a result of an array') {
       type Expectation = ResultAsync<(string | boolean)[], (number | string)[]>
       const results: (ResultAsync<string, number> | ResultAsync<boolean, string>)[] = []
@@ -1864,6 +2037,7 @@ type CreateTuple<L, V = string> =
       const assignableToCheck: Expectation = result
       const assignablefromCheck: typeof result = assignableToCheck
     })
+
     ;(function describe(_ = 'inference on large tuples') {
       ;(function it(_ = 'Should correctly infer the type on tuples with 6 elements') {
         type Input = CreateTuple<6, ResultAsync<string, number>>
@@ -1874,6 +2048,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 15 elements') {
         type Input = CreateTuple<15, ResultAsync<string, number>>
         type Expectation = ResultAsync<CreateTuple<15, string>, number[]>
@@ -1883,6 +2058,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 30 elements') {
         type Input = CreateTuple<30, ResultAsync<string, number>>
         type Expectation = ResultAsync<CreateTuple<30, string>, number[]>
@@ -1892,6 +2068,7 @@ type CreateTuple<L, V = string> =
 
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'Should correctly infer the type on tuples with 49 elements') {
         type Input = CreateTuple<49, ResultAsync<string, number>>
         type Expectation = ResultAsync<CreateTuple<49, string>, number[]>
@@ -1904,6 +2081,7 @@ type CreateTuple<L, V = string> =
     })
   })
 })
+
 ;(function describe(_ = 'Utility types') {
   ;(function describe(_ = 'safeTry') {
     ;(function describe(_ = 'sync generator') {
@@ -1919,6 +2097,7 @@ type CreateTuple<L, V = string> =
         })
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'should correctly infer the result type when generator returns Err') {
         interface ReturnMyError {
           name: 'ReturnMyError'
@@ -1931,6 +2110,7 @@ type CreateTuple<L, V = string> =
         })
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'infers the value type when calling "yield*"') {
         interface YieldMyError {
           name: 'YieldMyError'
@@ -1948,6 +2128,7 @@ type CreateTuple<L, V = string> =
           return ok<string, ReturnMyError>('string')
         })
       })
+
       ;(function it(_ = 'should correctly infer the result type with multiple "yield*"') {
         interface FirstYieldMyError {
           name: 'FirstYieldMyError'
@@ -1969,6 +2150,7 @@ type CreateTuple<L, V = string> =
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
     })
+
     ;(function describe(_ = 'async generator') {
       ;(function it(_ = 'should correctly infer the result type when generator returns OkAsync') {
         interface ReturnMyError {
@@ -1982,6 +2164,7 @@ type CreateTuple<L, V = string> =
         })
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'should correctly infer the result type when generator returns ErrAsync') {
         interface ReturnMyError {
           name: 'ReturnMyError'
@@ -1994,6 +2177,7 @@ type CreateTuple<L, V = string> =
         })
         Test.checks([Test.check<typeof result, Expectation, Test.Pass>()])
       })
+
       ;(function it(_ = 'infers the value type when calling "yield*"') {
         interface YieldMyError {
           name: 'YieldMyError'
@@ -2011,6 +2195,7 @@ type CreateTuple<L, V = string> =
           return ok<string, ReturnMyError>('string')
         })
       })
+
       ;(function it(_ = 'should correctly infer the result type with multiple "yield*"') {
         interface FirstYieldMyError {
           name: 'FirstYieldMyError'
@@ -2036,6 +2221,7 @@ type CreateTuple<L, V = string> =
       })
     })
   })
+
   ;(function describe(_ = 'Transpose') {
     ;(function it(_ = 'should transpose an array') {
       const input: [[1, 2], [3, 4], [5, 6]] = [
@@ -2048,6 +2234,7 @@ type CreateTuple<L, V = string> =
 
       const transposed: Expectation = transpose(input)
     })
+
     ;(function it(_ = 'should transpose an empty array') {
       const input: [] = []
 
@@ -2055,6 +2242,7 @@ type CreateTuple<L, V = string> =
 
       const transposed: Expectation = transpose(input)
     })
+
     ;(function it(_ = 'should transpose incomplete array') {
       const input: [[1, 3], [2]] = [[1, 3], [2]]
 
