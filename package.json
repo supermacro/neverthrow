@@ -11,7 +11,7 @@
   "scripts": {
     "test": "jest && npm run test-types",
     "test-types": "tsc --noEmit -p ./tests/tsconfig.tests.json",
-    "lint": "eslint ./src --ext .ts",
+    "lint": "eslint ./src --ext .ts --cache --cache-location 'node_modules/.cache/eslintcache'",
     "format": "prettier --write . && npm run lint -- --fix",
     "format-check": "prettier --check .",
     "typecheck": "tsc --noEmit",
