@@ -707,7 +707,7 @@ describe('Utils', () => {
 
         const heterogenousList: HeterogenousList = [okAsync('Yooooo'), okAsync(123), okAsync(true)]
 
-        type ExpecteResult = Result<[string, number, boolean], [string, number, boolean]>
+        type ExpecteResult = Result<[string, number, boolean], (string | number | boolean)[]>
 
         const result: ExpecteResult = await ResultAsync.combineWithAllErrors(heterogenousList)
 
