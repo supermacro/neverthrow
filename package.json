@@ -9,6 +9,7 @@
     "dist"
   ],
   "scripts": {
+    "local-ci": "npm run typecheck && npm run lint && npm run test && npm run format && npm run build",
     "test": "jest && npm run test-types",
     "test-types": "tsc --noEmit -p ./tests/tsconfig.tests.json",
     "lint": "eslint ./src --ext .ts --cache --cache-location 'node_modules/.cache/eslintcache'",
