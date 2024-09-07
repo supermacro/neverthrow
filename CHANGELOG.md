@@ -1,11 +1,17 @@
 # neverthrow
 
+## 7.2.0
+
+### Minor Changes
+
+- [#562](https://github.com/supermacro/neverthrow/pull/562) [`547352f`](https://github.com/supermacro/neverthrow/commit/547352f326206b2c5b403bde4ddc88825172f25c) Thanks [@sharno](https://github.com/sharno)! - change the return type of `safeTry` to be `ResultAsync<T, E>` instead of `Promise<Result<T, E>>` for better composability
+
 ## 7.1.0
 
 ### Minor Changes
 
 - [#467](https://github.com/supermacro/neverthrow/pull/467) [`4b9d2fd`](https://github.com/supermacro/neverthrow/commit/4b9d2fdaf03223945068509f948b57194732aa03) Thanks [@untidy-hair
-](https://github.com/untidy-hair)! - feat: add `andTee` and `andThrough` to handle side-effect
+  ](https://github.com/untidy-hair)! - feat: add `andTee` and `andThrough` to handle side-effect
 
 ### Patch Changes
 
