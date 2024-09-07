@@ -2480,7 +2480,7 @@ type CreateTuple<L, V = string> =
           name: 'ReturnMyError'
         }
 
-        type Expectation = Promise<Result<string, ReturnMyError>>
+        type Expectation = ResultAsync<string, ReturnMyError>
 
         const result = safeTry(async function *() {
           return okAsync<string, ReturnMyError>('string');
@@ -2495,7 +2495,7 @@ type CreateTuple<L, V = string> =
           name: 'ReturnMyError';
         }
 
-        type Expectation = Promise<Result<string, ReturnMyError>>
+        type Expectation = ResultAsync<string, ReturnMyError>
 
         const result = safeTry(async function *() {
           return errAsync<string, ReturnMyError>({ name: 'ReturnMyError' });
@@ -2536,7 +2536,7 @@ type CreateTuple<L, V = string> =
           name: 'ReturnMyError';
         }
 
-        type Expectation = Promise<Result<string, FirstYieldMyError | SecondYieldMyError | ReturnMyError>>
+        type Expectation = ResultAsync<string, FirstYieldMyError | SecondYieldMyError | ReturnMyError>
 
         const result = safeTry(async function *() {
           yield* okAsync<number, FirstYieldMyError>(123).safeUnwrap();

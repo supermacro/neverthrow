@@ -104,31 +104,26 @@ export function safeTry<
  * `yield* resultAsync.safeUnwrap()` work as Rust's `result?` expression.
  * @returns The first occurence of either an yielded Err or a returned Result.
  */
-// NOTE:
-// Since body is potentially throwable because `await` can be used in it,
-// Promise<Result<T, E>>, not ResultAsync<T, E>, is used as the return type.
 export function safeTry<T, E>(
   body: () => AsyncGenerator<Err<never, E>, Result<T, E>>,
-): Promise<Result<T, E>>
+): ResultAsync<T, E>
 export function safeTry<
   YieldErr extends Err<never, unknown>,
   GeneratorReturnResult extends Result<unknown, unknown>
 >(
   body: () => AsyncGenerator<YieldErr, GeneratorReturnResult>,
-): Promise<
-  Result<
-    InferOkTypes<GeneratorReturnResult>,
-    InferErrTypes<YieldErr> | InferErrTypes<GeneratorReturnResult>
-  >
+): ResultAsync<
+  InferOkTypes<GeneratorReturnResult>,
+  InferErrTypes<YieldErr> | InferErrTypes<GeneratorReturnResult>
 >
 export function safeTry<T, E>(
   body:
     | (() => Generator<Err<never, E>, Result<T, E>>)
     | (() => AsyncGenerator<Err<never, E>, Result<T, E>>),
-): Result<T, E> | Promise<Result<T, E>> {
+): Result<T, E> | ResultAsync<T, E> {
   const n = body().next()
   if (n instanceof Promise) {
-    return n.then((r) => r.value)
+    return new ResultAsync(n.then((r) => r.value))
   }
   return n.value
 }
