@@ -370,6 +370,14 @@ export class Ok<T, E> implements IResult<T, E> {
     })()
   }
 
+  [Symbol.iterator]() {
+    const value = this.value
+    /* eslint-disable-next-line require-yield */
+    return (function* () {
+      return value
+    })()
+  }
+
   _unsafeUnwrap(_?: ErrorConfig): T {
     return this.value
   }
@@ -446,6 +454,15 @@ export class Err<T, E> implements IResult<T, E> {
   }
 
   safeUnwrap(): Generator<Err<never, E>, T> {
+    const error = this.error
+    return (function* () {
+      yield err(error)
+
+      throw new Error('Do not use this generator out of `safeTry`')
+    })()
+  }
+
+  [Symbol.iterator]() {
     const error = this.error
     return (function* () {
       yield err(error)
