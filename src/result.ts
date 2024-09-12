@@ -17,18 +17,33 @@ export namespace Result {
    * arguments but returning `Ok` if successful, `Err` if the function throws
    *
    * @param fn function to wrap with ok on success or err on failure
-   * @param errorFn when an error is thrown, this will wrap the error result if provided
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export function fromThrowable<Fn extends (...args: readonly any[]) => any>(
+    fn: Fn,
+  ): (...args: Parameters<Fn>) => Result<ReturnType<Fn>, unknown>
+  /**
+   * Wraps a function with a try catch, creating a new function with the same
+   * arguments but returning `Ok` if successful, `Err` if the function throws
+   *
+   * @param fn function to wrap with ok on success or err on failure
+   * @param errorFn when an error is thrown, this will wrap the error result
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export function fromThrowable<Fn extends (...args: readonly any[]) => any, E>(
     fn: Fn,
+    errorFn: (e: unknown) => E,
+  ): (...args: Parameters<Fn>) => Result<ReturnType<Fn>, E>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export function fromThrowable<Fn extends (...args: readonly any[]) => any, E>(
+    fn: Fn,
     errorFn?: (e: unknown) => E,
-  ): (...args: Parameters<Fn>) => Result<ReturnType<Fn>, E> {
+  ): (...args: Parameters<Fn>) => Result<ReturnType<Fn>, E | unknown> {
     return (...args) => {
       try {
         const result = fn(...args)
         return ok(result)
-      } catch (e) {
+      } catch (e: unknown) {
         return err(errorFn ? errorFn(e) : e)
       }
     }
