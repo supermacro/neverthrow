@@ -370,12 +370,12 @@ export class Ok<T, E> implements IResult<T, E> {
     return ok<T, E>(this.value)
   }
 
-  andFinally<F>(cleanup: () => Result<unknown, F>): Result<T, E | F> {
+  andFinally<F>(cleanup: () => Result<unknown, F>): Ok<T, never> | Err<never, F> {
     const cleanupResult = cleanup()
     if (cleanupResult.isErr()) {
       return err(cleanupResult.error)
     } else {
-      return this
+      return ok(this.value)
     }
   }
 
@@ -483,12 +483,12 @@ export class Err<T, E> implements IResult<T, E> {
     return err(this.error)
   }
 
-  andFinally<F>(cleanup: () => Result<unknown, F>): Result<T, E | F> {
+  andFinally<F>(cleanup: () => Result<unknown, F>): Err<never, E | F> {
     const cleanupResult = cleanup()
     if (cleanupResult.isErr()) {
       return err(cleanupResult.error)
     } else {
-      return this
+      return err(this.error)
     }
   }
 
