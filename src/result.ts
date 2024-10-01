@@ -219,6 +219,18 @@ interface IResult<T, E> {
   andThrough<F>(f: (t: T) => Result<unknown, F>): Result<T, E | F>
 
   /**
+   * Similar to a `finally` block in throw-based code. Runs the given callback
+   * regardless of whether the result is an `Ok` or an `Err`.
+   *
+   * This is useful for cleanup operations that should always be run regardless of an error.
+   *
+   * An `Ok` returned from the callback will always be ignored, while any `Err`
+   * returned from the callback will be returned and replace the original `Err`
+   * if there was one. .
+   */
+  andFinally<F>(f: () => Result<unknown, F>): Result<T, E | F>
+
+  /**
    * Takes an `Err` value and maps it to a `Result<T, SomeNewType>`.
    *
    * This is useful for error recovery.
@@ -358,6 +370,15 @@ export class Ok<T, E> implements IResult<T, E> {
     return ok<T, E>(this.value)
   }
 
+  andFinally<F>(cleanup: () => Result<unknown, F>): Result<T, E | F> {
+    const cleanupResult = cleanup()
+    if (cleanupResult.isErr()) {
+      return err(cleanupResult.error)
+    } else {
+      return this
+    }
+  }
+
   orElse<R extends Result<unknown, unknown>>(
     _f: (e: E) => R,
   ): Result<InferOkTypes<R> | T, InferErrTypes<R>>
@@ -460,6 +481,15 @@ export class Err<T, E> implements IResult<T, E> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
   andThen(_f: any): any {
     return err(this.error)
+  }
+
+  andFinally<F>(cleanup: () => Result<unknown, F>): Result<T, E | F> {
+    const cleanupResult = cleanup()
+    if (cleanupResult.isErr()) {
+      return err(cleanupResult.error)
+    } else {
+      return this
+    }
   }
 
   orElse<R extends Result<unknown, unknown>>(

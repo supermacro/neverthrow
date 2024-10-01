@@ -179,6 +179,23 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     )
   }
 
+  andFinally<F>(f: () => ResultAsync<unknown, F> | Result<unknown, F>): ResultAsync<T, E | F> {
+    return new ResultAsync(
+      this._promise.then(
+        async (res) => {
+          const cleanupResult = await f()
+          return res.andFinally(() => cleanupResult)
+        },
+        async (err) => {
+          // this should be unreachable for well-behaved ResultAsync instances, but let's run the
+          // cleanup and propagate the erroneous rejection anyway
+          await f()
+          throw err
+        },
+      ),
+    )
+  }
+
   orElse<R extends Result<unknown, unknown>>(
     f: (e: E) => R,
   ): ResultAsync<InferOkTypes<R> | T, InferErrTypes<R>>
