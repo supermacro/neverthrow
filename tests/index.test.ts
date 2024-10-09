@@ -1,1248 +1,1322 @@
-import * as td from 'testdouble'
+import * as td from "testdouble";
 
 import {
-  err,
-  Err,
-  errAsync,
-  fromAsyncThrowable,
-  fromPromise,
-  fromSafePromise,
-  fromThrowable,
-  ok,
-  Ok,
-  okAsync,
-  Result,
-  ResultAsync,
-} from '../src'
-
-describe('Result.Ok', () => {
-  it('Creates an Ok value', () => {
-    const okVal = ok(12)
-
-    expect(okVal.isOk()).toBe(true)
-    expect(okVal.isErr()).toBe(false)
-    expect(okVal).toBeInstanceOf(Ok)
-  })
-
-  it('Creates an Ok value with null', () => {
-    const okVal = ok(null)
-
-    expect(okVal.isOk()).toBe(true)
-    expect(okVal.isErr()).toBe(false)
-    expect(okVal._unsafeUnwrap()).toBe(null)
-  })
-
-  it('Creates an Ok value with undefined', () => {
-    const okVal = ok(undefined)
-
-    expect(okVal.isOk()).toBe(true)
-    expect(okVal.isErr()).toBe(false)
-    expect(okVal._unsafeUnwrap()).toBeUndefined()
-  })
-
-  it('Is comparable', () => {
-    expect(ok(42)).toEqual(ok(42))
-    expect(ok(42)).not.toEqual(ok(43))
-  })
-
-  it('Maps over an Ok value', () => {
-    const okVal = ok(12)
-    const mapFn = jest.fn((number) => number.toString())
-
-    const mapped = okVal.map(mapFn)
-
-    expect(mapped.isOk()).toBe(true)
-    expect(mapped._unsafeUnwrap()).toBe('12')
-    expect(mapFn).toHaveBeenCalledTimes(1)
-  })
-
-  it('Skips `mapErr`', () => {
-    const mapErrorFunc = jest.fn((_error) => 'mapped error value')
-
-    const notMapped = ok(12).mapErr(mapErrorFunc)
-
-    expect(notMapped.isOk()).toBe(true)
-    expect(mapErrorFunc).not.toHaveBeenCalledTimes(1)
-  })
-
-  describe('andThen', () => {
-    it('Maps to an Ok', () => {
-      const okVal = ok(12)
-
-      const flattened = okVal.andThen((_number) => {
-        // ...
-        // complex logic
-        // ...
-        return ok({ data: 'why not' })
-      })
-
-      expect(flattened.isOk()).toBe(true)
-      expect(flattened._unsafeUnwrap()).toStrictEqual({ data: 'why not' })
-    })
-
-    it('Maps to an Err', () => {
-      const okval = ok(12)
-
-      const flattened = okval.andThen((_number) => {
-        // ...
-        // complex logic
-        // ...
-        return err('Whoopsies!')
-      })
-
-      expect(flattened.isOk()).toBe(false)
-
-      const nextFn = jest.fn((_val) => ok('noop'))
-
-      flattened.andThen(nextFn)
-
-      expect(nextFn).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('andThrough', () => {
-    it('Calls the passed function but returns an original ok', () => {
-      const okVal = ok(12)
-      const passedFn = jest.fn((_number) => ok(undefined))
-
-      const thrued = okVal.andThrough(passedFn)
-      expect(thrued.isOk()).toBe(true)
-      expect(passedFn).toHaveBeenCalledTimes(1)
-      expect(thrued._unsafeUnwrap()).toStrictEqual(12)
-    })
-
-    it('Maps to an Err', () => {
-      const okval = ok(12)
-
-      const thrued = okval.andThen((_number) => {
-        // ...
-        // complex logic
-        // ...
-        return err('Whoopsies!')
-      })
-
-      expect(thrued.isOk()).toBe(false)
-      expect(thrued._unsafeUnwrapErr()).toStrictEqual('Whoopsies!')
-
-      const nextFn = jest.fn((_val) => ok('noop'))
-
-      thrued.andThen(nextFn)
-
-      expect(nextFn).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('andTee', () => {
-    it('Calls the passed function but returns an original ok', () => {
-      const okVal = ok(12)
-      const passedFn = jest.fn((_number) => {})
-
-      const teed = okVal.andTee(passedFn)
-
-      expect(teed.isOk()).toBe(true)
-      expect(passedFn).toHaveBeenCalledTimes(1)
-      expect(teed._unsafeUnwrap()).toStrictEqual(12)
-    })
-    it('returns an original ok even when the passed function fails', () => {
-      const okVal = ok(12)
-      const passedFn = jest.fn((_number) => { throw new Error('OMG!') })
-
-      const teed = okVal.andTee(passedFn)
-
-      expect(teed.isOk()).toBe(true)
-      expect(passedFn).toHaveBeenCalledTimes(1)
-      expect(teed._unsafeUnwrap()).toStrictEqual(12)
-    })
-  })
-
-  describe('asyncAndThrough', () => {
-    it('Calls the passed function but returns an original ok as Async', async () => {
-      const okVal = ok(12)
-      const passedFn = jest.fn((_number) => okAsync(undefined))
-
-      const teedAsync = okVal.asyncAndThrough(passedFn)
-      expect(teedAsync).toBeInstanceOf(ResultAsync)
-      const teed = await teedAsync
-      expect(teed.isOk()).toBe(true)
-      expect(passedFn).toHaveBeenCalledTimes(1)
-      expect(teed._unsafeUnwrap()).toStrictEqual(12)
-    })
-
-    it('Maps to an Err', async () => {
-      const okval = ok(12)
-
-      const teedAsync = okval.asyncAndThen((_number) => {
-        // ...
-        // complex logic
-        // ...
-        return errAsync('Whoopsies!')
-      })
-      expect(teedAsync).toBeInstanceOf(ResultAsync)
-      const teed = await teedAsync
-      expect(teed.isOk()).toBe(false)
-      expect(teed._unsafeUnwrapErr()).toStrictEqual('Whoopsies!')
-
-      const nextFn = jest.fn((_val) => ok('noop'))
-
-      teed.andThen(nextFn)
-
-      expect(nextFn).not.toHaveBeenCalled()
-    })
-  })
-  describe('orElse', () => {
-    it('Skips orElse on an Ok value', () => {
-      const okVal = ok(12)
-      const errorCallback = jest.fn((_errVal) => err<number, string>('It is now a string'))
-
-      expect(okVal.orElse(errorCallback)).toEqual(ok(12))
-      expect(errorCallback).not.toHaveBeenCalled()
-    })
-  })
-
-  it('unwrapOr and return the Ok value', () => {
-    const okVal = ok(12)
-    expect(okVal.unwrapOr(1)).toEqual(12)
-  })
-
-  it('Maps to a ResultAsync', async () => {
-    const okVal = ok(12)
-
-    const flattened = okVal.asyncAndThen((_number) => {
-      // ...
-      // complex async logic
-      // ...
-      return okAsync({ data: 'why not' })
-    })
-
-    expect(flattened).toBeInstanceOf(ResultAsync)
-
-    const newResult = await flattened
-
-    expect(newResult.isOk()).toBe(true)
-    expect(newResult._unsafeUnwrap()).toStrictEqual({ data: 'why not' })
-  })
-
-  it('Maps to a promise', async () => {
-    const asyncMapper = jest.fn((_val) => {
-      // ...
-      // complex logic
-      // ..
+	err,
+	Err,
+	errAsync,
+	fromAsyncThrowable,
+	fromPromise,
+	fromSafePromise,
+	fromThrowable,
+	ok,
+	Ok,
+	okAsync,
+	Result,
+	ResultAsync,
+} from "../src";
+
+describe("Result.Ok", () => {
+	it("Creates an Ok value", () => {
+		const okVal = ok(12);
+
+		expect(okVal.isOk()).toBe(true);
+		expect(okVal.isErr()).toBe(false);
+		expect(okVal).toBeInstanceOf(Ok);
+	});
+
+	it("Creates an Ok value with null", () => {
+		const okVal = ok(null);
+
+		expect(okVal.isOk()).toBe(true);
+		expect(okVal.isErr()).toBe(false);
+		expect(okVal._unsafeUnwrap()).toBe(null);
+	});
+
+	it("Creates an Ok value with undefined", () => {
+		const okVal = ok(undefined);
+
+		expect(okVal.isOk()).toBe(true);
+		expect(okVal.isErr()).toBe(false);
+		expect(okVal._unsafeUnwrap()).toBeUndefined();
+	});
+
+	it("Is comparable", () => {
+		expect(ok(42)).toEqual(ok(42));
+		expect(ok(42)).not.toEqual(ok(43));
+	});
+
+	it("Maps over an Ok value", () => {
+		const okVal = ok(12);
+		const mapFn = jest.fn((number) => number.toString());
+
+		const mapped = okVal.map(mapFn);
+
+		expect(mapped.isOk()).toBe(true);
+		expect(mapped._unsafeUnwrap()).toBe("12");
+		expect(mapFn).toHaveBeenCalledTimes(1);
+	});
+
+	it("Skips `mapErr`", () => {
+		const mapErrorFunc = jest.fn((_error) => "mapped error value");
+
+		const notMapped = ok(12).mapErr(mapErrorFunc);
+
+		expect(notMapped.isOk()).toBe(true);
+		expect(mapErrorFunc).not.toHaveBeenCalledTimes(1);
+	});
+
+	describe("andThen", () => {
+		it("Maps to an Ok", () => {
+			const okVal = ok(12);
+
+			const flattened = okVal.andThen((_number) => {
+				// ...
+				// complex logic
+				// ...
+				return ok({ data: "why not" });
+			});
+
+			expect(flattened.isOk()).toBe(true);
+			expect(flattened._unsafeUnwrap()).toStrictEqual({ data: "why not" });
+		});
+
+		it("Maps to an Err", () => {
+			const okval = ok(12);
+
+			const flattened = okval.andThen((_number) => {
+				// ...
+				// complex logic
+				// ...
+				return err("Whoopsies!");
+			});
+
+			expect(flattened.isOk()).toBe(false);
+
+			const nextFn = jest.fn((_val) => ok("noop"));
+
+			flattened.andThen(nextFn);
+
+			expect(nextFn).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("andThrough", () => {
+		it("Calls the passed function but returns an original ok", () => {
+			const okVal = ok(12);
+			const passedFn = jest.fn((_number) => ok(undefined));
+
+			const thrued = okVal.andThrough(passedFn);
+			expect(thrued.isOk()).toBe(true);
+			expect(passedFn).toHaveBeenCalledTimes(1);
+			expect(thrued._unsafeUnwrap()).toStrictEqual(12);
+		});
+
+		it("Maps to an Err", () => {
+			const okval = ok(12);
+
+			const thrued = okval.andThen((_number) => {
+				// ...
+				// complex logic
+				// ...
+				return err("Whoopsies!");
+			});
+
+			expect(thrued.isOk()).toBe(false);
+			expect(thrued._unsafeUnwrapErr()).toStrictEqual("Whoopsies!");
+
+			const nextFn = jest.fn((_val) => ok("noop"));
+
+			thrued.andThen(nextFn);
+
+			expect(nextFn).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("andTee", () => {
+		it("Calls the passed function but returns an original ok", () => {
+			const okVal = ok(12);
+			const passedFn = jest.fn((_number) => {});
+
+			const teed = okVal.andTee(passedFn);
+
+			expect(teed.isOk()).toBe(true);
+			expect(passedFn).toHaveBeenCalledTimes(1);
+			expect(teed._unsafeUnwrap()).toStrictEqual(12);
+		});
+		it("returns an original ok even when the passed function fails", () => {
+			const okVal = ok(12);
+			const passedFn = jest.fn((_number) => {
+				throw new Error("OMG!");
+			});
+
+			const teed = okVal.andTee(passedFn);
+
+			expect(teed.isOk()).toBe(true);
+			expect(passedFn).toHaveBeenCalledTimes(1);
+			expect(teed._unsafeUnwrap()).toStrictEqual(12);
+		});
+	});
+
+	describe("asyncAndThrough", () => {
+		it("Calls the passed function but returns an original ok as Async", async () => {
+			const okVal = ok(12);
+			const passedFn = jest.fn((_number) => okAsync(undefined));
+
+			const teedAsync = okVal.asyncAndThrough(passedFn);
+			expect(teedAsync).toBeInstanceOf(ResultAsync);
+			const teed = await teedAsync;
+			expect(teed.isOk()).toBe(true);
+			expect(passedFn).toHaveBeenCalledTimes(1);
+			expect(teed._unsafeUnwrap()).toStrictEqual(12);
+		});
+
+		it("Maps to an Err", async () => {
+			const okval = ok(12);
+
+			const teedAsync = okval.asyncAndThen((_number) => {
+				// ...
+				// complex logic
+				// ...
+				return errAsync("Whoopsies!");
+			});
+			expect(teedAsync).toBeInstanceOf(ResultAsync);
+			const teed = await teedAsync;
+			expect(teed.isOk()).toBe(false);
+			expect(teed._unsafeUnwrapErr()).toStrictEqual("Whoopsies!");
+
+			const nextFn = jest.fn((_val) => ok("noop"));
+
+			teed.andThen(nextFn);
+
+			expect(nextFn).not.toHaveBeenCalled();
+		});
+	});
+	describe("orElse", () => {
+		it("Skips orElse on an Ok value", () => {
+			const okVal = ok(12);
+			const errorCallback = jest.fn((_errVal) =>
+				err<number, string>("It is now a string"),
+			);
+
+			expect(okVal.orElse(errorCallback)).toEqual(ok(12));
+			expect(errorCallback).not.toHaveBeenCalled();
+		});
+	});
+
+	it("unwrapOr and return the Ok value", () => {
+		const okVal = ok(12);
+		expect(okVal.unwrapOr(1)).toEqual(12);
+	});
+
+	it("Maps to a ResultAsync", async () => {
+		const okVal = ok(12);
+
+		const flattened = okVal.asyncAndThen((_number) => {
+			// ...
+			// complex async logic
+			// ...
+			return okAsync({ data: "why not" });
+		});
+
+		expect(flattened).toBeInstanceOf(ResultAsync);
+
+		const newResult = await flattened;
+
+		expect(newResult.isOk()).toBe(true);
+		expect(newResult._unsafeUnwrap()).toStrictEqual({ data: "why not" });
+	});
+
+	it("Maps to a promise", async () => {
+		const asyncMapper = jest.fn((_val) => {
+			// ...
+			// complex logic
+			// ..
+
+			// db queries
+			// network calls
+			// disk io
+			// etc ...
+			return Promise.resolve("Very Nice!");
+		});
+
+		const okVal = ok(12);
+
+		const promise = okVal.asyncMap(asyncMapper);
+
+		expect(promise).toBeInstanceOf(ResultAsync);
+
+		const newResult = await promise;
+
+		expect(newResult.isOk()).toBe(true);
+		expect(asyncMapper).toHaveBeenCalledTimes(1);
+		expect(newResult._unsafeUnwrap()).toStrictEqual("Very Nice!");
+	});
+
+	it("Matches on an Ok", () => {
+		const okMapper = jest.fn((_val) => "weeeeee");
+		const errMapper = jest.fn((_val) => "wooooo");
+
+		const matched = ok(12).match(okMapper, errMapper);
+
+		expect(matched).toBe("weeeeee");
+		expect(okMapper).toHaveBeenCalledTimes(1);
+		expect(errMapper).not.toHaveBeenCalled();
+	});
+
+	it("Unwraps without issue", () => {
+		const okVal = ok(12);
 
-      // db queries
-      // network calls
-      // disk io
-      // etc ...
-      return Promise.resolve('Very Nice!')
-    })
-
-    const okVal = ok(12)
+		expect(okVal._unsafeUnwrap()).toBe(12);
+	});
 
-    const promise = okVal.asyncMap(asyncMapper)
+	it("Can read the value after narrowing", () => {
+		const fallible: () => Result<string, number> = () => ok("safe to read");
+		const val = fallible();
 
-    expect(promise).toBeInstanceOf(ResultAsync)
+		// After this check we val is narrowed to Ok<string, number>. Without this
+		// line TypeScript will not allow accessing val.value.
+		if (val.isErr()) return;
 
-    const newResult = await promise
+		expect(val.value).toBe("safe to read");
+	});
 
-    expect(newResult.isOk()).toBe(true)
-    expect(asyncMapper).toHaveBeenCalledTimes(1)
-    expect(newResult._unsafeUnwrap()).toStrictEqual('Very Nice!')
-  })
+	it("Includes a custom `message` when supplied to `_unsafeUnwrapErr` is called", () => {
+		const okVal = ok("all good here");
 
-  it('Matches on an Ok', () => {
-    const okMapper = jest.fn((_val) => 'weeeeee')
-    const errMapper = jest.fn((_val) => 'wooooo')
+		expect(() => okVal._unsafeUnwrapErr({ message: "oh no" })).toThrow(
+			expect.objectContaining({ message: "oh no" }),
+		);
+	});
+});
 
-    const matched = ok(12).match(okMapper, errMapper)
+describe("Result.Err", () => {
+	it("Creates an Err value", () => {
+		const errVal = err("I have you now.");
 
-    expect(matched).toBe('weeeeee')
-    expect(okMapper).toHaveBeenCalledTimes(1)
-    expect(errMapper).not.toHaveBeenCalled()
-  })
+		expect(errVal.isOk()).toBe(false);
+		expect(errVal.isErr()).toBe(true);
+		expect(errVal).toBeInstanceOf(Err);
+	});
 
-  it('Unwraps without issue', () => {
-    const okVal = ok(12)
+	it("Is comparable", () => {
+		expect(err(42)).toEqual(err(42));
+		expect(err(42)).not.toEqual(err(43));
+	});
 
-    expect(okVal._unsafeUnwrap()).toBe(12)
-  })
+	it("Skips `map`", () => {
+		const errVal = err("I am your father");
 
-  it('Can read the value after narrowing', () => {
-    const fallible: () => Result<string, number> = () => ok('safe to read')
-    const val = fallible()
+		const mapper = jest.fn((_value) => "noooo");
 
-    // After this check we val is narrowed to Ok<string, number>. Without this
-    // line TypeScript will not allow accessing val.value.
-    if (val.isErr()) return
+		const hopefullyNotMapped = errVal.map(mapper);
 
-    expect(val.value).toBe('safe to read')
-  })
-})
+		expect(hopefullyNotMapped.isErr()).toBe(true);
+		expect(mapper).not.toHaveBeenCalled();
+		expect(hopefullyNotMapped._unsafeUnwrapErr()).toEqual(
+			errVal._unsafeUnwrapErr(),
+		);
+	});
 
-describe('Result.Err', () => {
-  it('Creates an Err value', () => {
-    const errVal = err('I have you now.')
+	it("Maps over an Err", () => {
+		const errVal = err("Round 1, Fight!");
 
-    expect(errVal.isOk()).toBe(false)
-    expect(errVal.isErr()).toBe(true)
-    expect(errVal).toBeInstanceOf(Err)
-  })
+		const mapper = jest.fn((error: string) => error.replace("1", "2"));
 
-  it('Is comparable', () => {
-    expect(err(42)).toEqual(err(42))
-    expect(err(42)).not.toEqual(err(43))
-  })
+		const mapped = errVal.mapErr(mapper);
 
-  it('Skips `map`', () => {
-    const errVal = err('I am your father')
+		expect(mapped.isErr()).toBe(true);
+		expect(mapper).toHaveBeenCalledTimes(1);
+		expect(mapped._unsafeUnwrapErr()).not.toEqual(errVal._unsafeUnwrapErr());
+	});
 
-    const mapper = jest.fn((_value) => 'noooo')
+	it("unwrapOr and return the default value", () => {
+		const okVal = err<number, string>("Oh nooo");
+		expect(okVal.unwrapOr(1)).toEqual(1);
+	});
 
-    const hopefullyNotMapped = errVal.map(mapper)
+	it("Skips over andThen", () => {
+		const errVal = err("Yolo");
 
-    expect(hopefullyNotMapped.isErr()).toBe(true)
-    expect(mapper).not.toHaveBeenCalled()
-    expect(hopefullyNotMapped._unsafeUnwrapErr()).toEqual(errVal._unsafeUnwrapErr())
-  })
+		const mapper = jest.fn((_val) => ok<string, string>("yooyo"));
 
-  it('Maps over an Err', () => {
-    const errVal = err('Round 1, Fight!')
+		const hopefullyNotFlattened = errVal.andThen(mapper);
 
-    const mapper = jest.fn((error: string) => error.replace('1', '2'))
+		expect(hopefullyNotFlattened.isErr()).toBe(true);
+		expect(mapper).not.toHaveBeenCalled();
+		expect(errVal._unsafeUnwrapErr()).toEqual("Yolo");
+	});
 
-    const mapped = errVal.mapErr(mapper)
+	it("Skips over andThrough", () => {
+		const errVal = err("Yolo");
 
-    expect(mapped.isErr()).toBe(true)
-    expect(mapper).toHaveBeenCalledTimes(1)
-    expect(mapped._unsafeUnwrapErr()).not.toEqual(errVal._unsafeUnwrapErr())
-  })
+		const mapper = jest.fn((_val) => ok<void, string>(undefined));
 
-  it('unwrapOr and return the default value', () => {
-    const okVal = err<number, string>('Oh nooo')
-    expect(okVal.unwrapOr(1)).toEqual(1)
-  })
+		const hopefullyNotFlattened = errVal.andThrough(mapper);
 
-  it('Skips over andThen', () => {
-    const errVal = err('Yolo')
+		expect(hopefullyNotFlattened.isErr()).toBe(true);
+		expect(mapper).not.toHaveBeenCalled();
+		expect(errVal._unsafeUnwrapErr()).toEqual("Yolo");
+	});
 
-    const mapper = jest.fn((_val) => ok<string, string>('yooyo'))
+	it("Skips over andTee", () => {
+		const errVal = err("Yolo");
 
-    const hopefullyNotFlattened = errVal.andThen(mapper)
+		const mapper = jest.fn((_val) => {});
 
-    expect(hopefullyNotFlattened.isErr()).toBe(true)
-    expect(mapper).not.toHaveBeenCalled()
-    expect(errVal._unsafeUnwrapErr()).toEqual('Yolo')
-  })
+		const hopefullyNotFlattened = errVal.andTee(mapper);
 
-  it('Skips over andThrough', () => {
-    const errVal = err('Yolo')
+		expect(hopefullyNotFlattened.isErr()).toBe(true);
+		expect(mapper).not.toHaveBeenCalled();
+		expect(errVal._unsafeUnwrapErr()).toEqual("Yolo");
+	});
 
-    const mapper = jest.fn((_val) => ok<void, string>(undefined))
+	it("Skips over asyncAndThrough but returns ResultAsync instead", async () => {
+		const errVal = err("Yolo");
 
-    const hopefullyNotFlattened = errVal.andThrough(mapper)
+		const mapper = jest.fn((_val) => okAsync<string, unknown>("Async"));
 
-    expect(hopefullyNotFlattened.isErr()).toBe(true)
-    expect(mapper).not.toHaveBeenCalled()
-    expect(errVal._unsafeUnwrapErr()).toEqual('Yolo')
-  })
+		const hopefullyNotFlattened = errVal.asyncAndThrough(mapper);
+		expect(hopefullyNotFlattened).toBeInstanceOf(ResultAsync);
 
-  it('Skips over andTee', () => {
-    const errVal = err('Yolo')
+		const result = await hopefullyNotFlattened;
+		expect(result.isErr()).toBe(true);
+		expect(mapper).not.toHaveBeenCalled();
+		expect(result._unsafeUnwrapErr()).toEqual("Yolo");
+	});
 
-    const mapper = jest.fn((_val) => {})
+	it("Transforms error into ResultAsync within `asyncAndThen`", async () => {
+		const errVal = err("Yolo");
 
-    const hopefullyNotFlattened = errVal.andTee(mapper)
+		const asyncMapper = jest.fn((_val) => okAsync<string, string>("yooyo"));
 
-    expect(hopefullyNotFlattened.isErr()).toBe(true)
-    expect(mapper).not.toHaveBeenCalled()
-    expect(errVal._unsafeUnwrapErr()).toEqual('Yolo')
-  })
+		const hopefullyNotFlattened = errVal.asyncAndThen(asyncMapper);
 
-  it('Skips over asyncAndThrough but returns ResultAsync instead', async () => {
-    const errVal = err('Yolo')
+		expect(hopefullyNotFlattened).toBeInstanceOf(ResultAsync);
+		expect(asyncMapper).not.toHaveBeenCalled();
 
-    const mapper = jest.fn((_val) => okAsync<string, unknown>('Async'))
+		const syncResult = await hopefullyNotFlattened;
+		expect(syncResult._unsafeUnwrapErr()).toEqual("Yolo");
+	});
 
-    const hopefullyNotFlattened = errVal.asyncAndThrough(mapper)
-    expect(hopefullyNotFlattened).toBeInstanceOf(ResultAsync)
+	it("Does not invoke callback within `asyncMap`", async () => {
+		const asyncMapper = jest.fn((_val) => {
+			// ...
+			// complex logic
+			// ..
 
-    const result = await hopefullyNotFlattened
-    expect(result.isErr()).toBe(true)
-    expect(mapper).not.toHaveBeenCalled()
-    expect(result._unsafeUnwrapErr()).toEqual('Yolo')
-  })
+			// db queries
+			// network calls
+			// disk io
+			// etc ...
+			return Promise.resolve("Very Nice!");
+		});
 
-  it('Transforms error into ResultAsync within `asyncAndThen`', async () => {
-    const errVal = err('Yolo')
+		const errVal = err("nooooooo");
 
-    const asyncMapper = jest.fn((_val) => okAsync<string, string>('yooyo'))
+		const promise = errVal.asyncMap(asyncMapper);
 
-    const hopefullyNotFlattened = errVal.asyncAndThen(asyncMapper)
+		expect(promise).toBeInstanceOf(ResultAsync);
 
-    expect(hopefullyNotFlattened).toBeInstanceOf(ResultAsync)
-    expect(asyncMapper).not.toHaveBeenCalled()
+		const sameResult = await promise;
 
-    const syncResult = await hopefullyNotFlattened
-    expect(syncResult._unsafeUnwrapErr()).toEqual('Yolo')
-  })
+		expect(sameResult.isErr()).toBe(true);
+		expect(asyncMapper).not.toHaveBeenCalled();
+		expect(sameResult._unsafeUnwrapErr()).toEqual(errVal._unsafeUnwrapErr());
+	});
 
-  it('Does not invoke callback within `asyncMap`', async () => {
-    const asyncMapper = jest.fn((_val) => {
-      // ...
-      // complex logic
-      // ..
+	it("Matches on an Err", () => {
+		const okMapper = jest.fn((_val) => "weeeeee");
+		const errMapper = jest.fn((_val) => "wooooo");
 
-      // db queries
-      // network calls
-      // disk io
-      // etc ...
-      return Promise.resolve('Very Nice!')
-    })
+		const matched = err(12).match(okMapper, errMapper);
 
-    const errVal = err('nooooooo')
+		expect(matched).toBe("wooooo");
+		expect(okMapper).not.toHaveBeenCalled();
+		expect(errMapper).toHaveBeenCalledTimes(1);
+	});
+
+	it("Throws when you unwrap an Err", () => {
+		const errVal = err("woopsies");
 
-    const promise = errVal.asyncMap(asyncMapper)
+		expect(() => {
+			errVal._unsafeUnwrap();
+		}).toThrowError();
+	});
 
-    expect(promise).toBeInstanceOf(ResultAsync)
+	it("Unwraps without issue", () => {
+		const okVal = err(12);
 
-    const sameResult = await promise
+		expect(okVal._unsafeUnwrapErr()).toBe(12);
+	});
+
+	describe("orElse", () => {
+		it("invokes the orElse callback on an Err value", () => {
+			const okVal = err("BOOOM!");
+			const errorCallback = jest.fn((_errVal) => err(true));
 
-    expect(sameResult.isErr()).toBe(true)
-    expect(asyncMapper).not.toHaveBeenCalled()
-    expect(sameResult._unsafeUnwrapErr()).toEqual(errVal._unsafeUnwrapErr())
-  })
+			expect(okVal.orElse(errorCallback)).toEqual(err(true));
+			expect(errorCallback).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	it("Includes a custom `message` when supplied to `_unsafeUnwrap` is called", () => {
+		const errVal = err("oh no");
+
+		expect(() => errVal._unsafeUnwrap({ message: "boom" })).toThrow(
+			expect.objectContaining({ message: "boom" }),
+		);
+	});
+});
+
+describe("Result.fromThrowable", () => {
+	it("Creates a function that returns an OK result when the inner function does not throw", () => {
+		const hello = (): string => "hello";
+		const safeHello = Result.fromThrowable(hello);
+
+		const result = hello();
+		const safeResult = safeHello();
+
+		expect(safeResult).toBeInstanceOf(Ok);
+		expect(result).toEqual(safeResult._unsafeUnwrap());
+	});
+
+	// Added for issue #300 -- the test here is not so much that expectations are met as that the test compiles.
+	it("Accepts an inner function which takes arguments", () => {
+		const hello = (fname: string): string => `hello, ${fname}`;
+		const safeHello = Result.fromThrowable(hello);
+
+		const result = hello("Dikembe");
+		const safeResult = safeHello("Dikembe");
+
+		expect(safeResult).toBeInstanceOf(Ok);
+		expect(result).toEqual(safeResult._unsafeUnwrap());
+	});
+
+	it("Creates a function that returns an err when the inner function throws", () => {
+		const thrower = (): string => {
+			throw new Error();
+		};
+
+		// type: () => Result<string, unknown>
+		// received types from thrower fn, no errorFn is provides therefore Err type is unknown
+		const safeThrower = Result.fromThrowable(thrower);
+		const result = safeThrower();
+
+		expect(result).toBeInstanceOf(Err);
+		expect(result._unsafeUnwrapErr()).toBeInstanceOf(Error);
+	});
+
+	it("Accepts an error handler as a second argument", () => {
+		const thrower = (): string => {
+			throw new Error();
+		};
+		type MessageObject = { message: string };
+		const toMessageObject = (): MessageObject => ({ message: "error" });
 
-  it('Matches on an Err', () => {
-    const okMapper = jest.fn((_val) => 'weeeeee')
-    const errMapper = jest.fn((_val) => 'wooooo')
+		// type: () => Result<string, MessageObject>
+		// received types from thrower fn and errorFn return type
+		const safeThrower = Result.fromThrowable(thrower, toMessageObject);
+		const result = safeThrower();
 
-    const matched = err(12).match(okMapper, errMapper)
+		expect(result.isOk()).toBe(false);
+		expect(result.isErr()).toBe(true);
+		expect(result).toBeInstanceOf(Err);
+		expect(result._unsafeUnwrapErr()).toEqual({ message: "error" });
+	});
+
+	it("has a top level export", () => {
+		expect(fromThrowable).toBe(Result.fromThrowable);
+	});
+});
+
+describe("Utils", () => {
+	describe("`Result.combine`", () => {
+		describe("Synchronous `combine`", () => {
+			it("Combines a list of results into an Ok value", () => {
+				const resultList = [ok(123), ok(456), ok(789)];
+
+				const result = Result.combine(resultList);
+
+				expect(result.isOk()).toBe(true);
+				expect(result._unsafeUnwrap()).toEqual([123, 456, 789]);
+			});
+
+			it("Combines a list of results into an Err value", () => {
+				const resultList: Result<number, string>[] = [
+					ok(123),
+					err("boooom!"),
+					ok(456),
+					err("ahhhhh!"),
+				];
+
+				const result = Result.combine(resultList);
+
+				expect(result.isErr()).toBe(true);
+				expect(result._unsafeUnwrapErr()).toBe("boooom!");
+			});
+
+			it("Combines heterogeneous lists", () => {
+				type HeterogenousList = [
+					Result<string, string>,
+					Result<number, number>,
+					Result<boolean, boolean>,
+				];
+
+				const heterogenousList: HeterogenousList = [
+					ok("Yooooo"),
+					ok(123),
+					ok(true),
+				];
+
+				type ExpecteResult = Result<
+					[string, number, boolean],
+					string | number | boolean
+				>;
+
+				const result: ExpecteResult = Result.combine(heterogenousList);
+
+				expect(result._unsafeUnwrap()).toEqual(["Yooooo", 123, true]);
+			});
+
+			it("Does not destructure / concatenate arrays", () => {
+				type HomogenousList = [
+					Result<string[], boolean>,
+					Result<number[], string>,
+				];
+
+				const homogenousList: HomogenousList = [
+					ok(["hello", "world"]),
+					ok([1, 2, 3]),
+				];
+
+				type ExpectedResult = Result<[string[], number[]], boolean | string>;
+
+				const result: ExpectedResult = Result.combine(homogenousList);
+
+				expect(result._unsafeUnwrap()).toEqual([
+					["hello", "world"],
+					[1, 2, 3],
+				]);
+			});
+		});
+
+		describe("`ResultAsync.combine`", () => {
+			it("Combines a list of async results into an Ok value", async () => {
+				const asyncResultList = [okAsync(123), okAsync(456), okAsync(789)];
+
+				const resultAsync: ResultAsync<number[], never[]> =
+					ResultAsync.combine(asyncResultList);
+
+				expect(resultAsync).toBeInstanceOf(ResultAsync);
+
+				const result = await ResultAsync.combine(asyncResultList);
+
+				expect(result.isOk()).toBe(true);
+				expect(result._unsafeUnwrap()).toEqual([123, 456, 789]);
+			});
+
+			it("Combines a list of results into an Err value", async () => {
+				const resultList: ResultAsync<number, string>[] = [
+					okAsync(123),
+					errAsync("boooom!"),
+					okAsync(456),
+					errAsync("ahhhhh!"),
+				];
+
+				const result = await ResultAsync.combine(resultList);
+
+				expect(result.isErr()).toBe(true);
+				expect(result._unsafeUnwrapErr()).toBe("boooom!");
+			});
+
+			it("Combines heterogeneous lists", async () => {
+				type HeterogenousList = [
+					ResultAsync<string, string>,
+					ResultAsync<number, number>,
+					ResultAsync<boolean, boolean>,
+					ResultAsync<number[], string>,
+				];
+
+				const heterogenousList: HeterogenousList = [
+					okAsync("Yooooo"),
+					okAsync(123),
+					okAsync(true),
+					okAsync([1, 2, 3]),
+				];
+
+				type ExpecteResult = Result<
+					[string, number, boolean, number[]],
+					string | number | boolean
+				>;
+
+				const result: ExpecteResult =
+					await ResultAsync.combine(heterogenousList);
+
+				expect(result._unsafeUnwrap()).toEqual([
+					"Yooooo",
+					123,
+					true,
+					[1, 2, 3],
+				]);
+			});
+		});
+	});
+	describe("`Result.combineWithAllErrors`", () => {
+		describe("Synchronous `combineWithAllErrors`", () => {
+			it("Combines a list of results into an Ok value", () => {
+				const resultList = [ok(123), ok(456), ok(789)];
+
+				const result = Result.combineWithAllErrors(resultList);
+
+				expect(result.isOk()).toBe(true);
+				expect(result._unsafeUnwrap()).toEqual([123, 456, 789]);
+			});
+
+			it("Combines a list of results into an Err value", () => {
+				const resultList: Result<number, string>[] = [
+					ok(123),
+					err("boooom!"),
+					ok(456),
+					err("ahhhhh!"),
+				];
+
+				const result = Result.combineWithAllErrors(resultList);
+
+				expect(result.isErr()).toBe(true);
+				expect(result._unsafeUnwrapErr()).toEqual(["boooom!", "ahhhhh!"]);
+			});
+
+			it("Combines heterogeneous lists", () => {
+				type HeterogenousList = [
+					Result<string, string>,
+					Result<number, number>,
+					Result<boolean, boolean>,
+				];
+
+				const heterogenousList: HeterogenousList = [
+					ok("Yooooo"),
+					ok(123),
+					ok(true),
+				];
+
+				type ExpecteResult = Result<
+					[string, number, boolean],
+					(string | number | boolean)[]
+				>;
+
+				const result: ExpecteResult =
+					Result.combineWithAllErrors(heterogenousList);
+
+				expect(result._unsafeUnwrap()).toEqual(["Yooooo", 123, true]);
+			});
+
+			it("Does not destructure / concatenate arrays", () => {
+				type HomogenousList = [
+					Result<string[], boolean>,
+					Result<number[], string>,
+				];
+
+				const homogenousList: HomogenousList = [
+					ok(["hello", "world"]),
+					ok([1, 2, 3]),
+				];
+
+				type ExpectedResult = Result<
+					[string[], number[]],
+					(boolean | string)[]
+				>;
+
+				const result: ExpectedResult =
+					Result.combineWithAllErrors(homogenousList);
+
+				expect(result._unsafeUnwrap()).toEqual([
+					["hello", "world"],
+					[1, 2, 3],
+				]);
+			});
+		});
+		describe("`ResultAsync.combineWithAllErrors`", () => {
+			it("Combines a list of async results into an Ok value", async () => {
+				const asyncResultList = [okAsync(123), okAsync(456), okAsync(789)];
+
+				const result = await ResultAsync.combineWithAllErrors(asyncResultList);
+
+				expect(result.isOk()).toBe(true);
+				expect(result._unsafeUnwrap()).toEqual([123, 456, 789]);
+			});
+
+			it("Combines a list of results into an Err value", async () => {
+				const asyncResultList: ResultAsync<number, string>[] = [
+					okAsync(123),
+					errAsync("boooom!"),
+					okAsync(456),
+					errAsync("ahhhhh!"),
+				];
+
+				const result = await ResultAsync.combineWithAllErrors(asyncResultList);
+
+				expect(result.isErr()).toBe(true);
+				expect(result._unsafeUnwrapErr()).toEqual(["boooom!", "ahhhhh!"]);
+			});
+
+			it("Combines heterogeneous lists", async () => {
+				type HeterogenousList = [
+					ResultAsync<string, string>,
+					ResultAsync<number, number>,
+					ResultAsync<boolean, boolean>,
+				];
+
+				type ExpecteResult = Result<
+					[string, number, boolean],
+					(string | number | boolean)[]
+				>;
+				const heterogenousList: HeterogenousList = [
+					okAsync("Yooooo"),
+					okAsync(123),
+					okAsync(true),
+				];
+
+				const result: ExpecteResult =
+					await ResultAsync.combineWithAllErrors(heterogenousList);
+
+				expect(result._unsafeUnwrap()).toEqual(["Yooooo", 123, true]);
+			});
+		});
+
+		describe("testdouble `ResultAsync.combine`", () => {
+			interface ITestInterface {
+				getName(): string;
+				setName(name: string): void;
+				getAsyncResult(): ResultAsync<ITestInterface, Error>;
+			}
+
+			it("Combines `testdouble` proxies from mocks generated via interfaces", async () => {
+				const mock = td.object<ITestInterface>();
+
+				const result = await ResultAsync.combine([okAsync(mock)] as const);
+
+				expect(result).toBeDefined();
+				expect(result.isErr()).toBeFalsy();
+				const unwrappedResult = result._unsafeUnwrap();
+
+				expect(unwrappedResult.length).toBe(1);
+				expect(unwrappedResult[0]).toBe(mock);
+			});
+		});
+	});
+});
+
+describe("ResultAsync", () => {
+	it("Is awaitable to a Result", async () => {
+		// For a success value
+		const asyncVal = okAsync(12);
+		expect(asyncVal).toBeInstanceOf(ResultAsync);
+
+		const val = await asyncVal;
+
+		expect(val).toBeInstanceOf(Ok);
+		expect(val._unsafeUnwrap()).toEqual(12);
+
+		// For an error
+		const asyncErr = errAsync("Wrong format");
+		expect(asyncErr).toBeInstanceOf(ResultAsync);
+
+		const err = await asyncErr;
+
+		expect(err).toBeInstanceOf(Err);
+		expect(err._unsafeUnwrapErr()).toEqual("Wrong format");
+	});
+
+	describe("acting as a Promise<Result>", () => {
+		it("Is chainable like any Promise", async () => {
+			// For a success value
+			const asyncValChained = okAsync(12).then((res) => {
+				if (res.isOk()) {
+					return res.value + 2;
+				}
+			});
+
+			expect(asyncValChained).toBeInstanceOf(Promise);
+			const val = await asyncValChained;
+			expect(val).toEqual(14);
+
+			// For an error
+			const asyncErrChained = errAsync("Oops").then((res) => {
+				if (res.isErr()) {
+					return res.error + "!";
+				}
+			});
+
+			expect(asyncErrChained).toBeInstanceOf(Promise);
+			const err = await asyncErrChained;
+			expect(err).toEqual("Oops!");
+		});
+
+		it("Can be used with Promise.all", async () => {
+			const allResult = await Promise.all([okAsync<string, Error>("1")]);
+
+			expect(allResult).toHaveLength(1);
+			expect(allResult[0]).toBeInstanceOf(Ok);
+			if (!(allResult[0] instanceof Ok)) return;
+			expect(allResult[0].isOk()).toBe(true);
+			expect(allResult[0]._unsafeUnwrap()).toEqual("1");
+		});
+
+		it("rejects if the underlying promise is rejected", () => {
+			const asyncResult = new ResultAsync(Promise.reject("oops"));
+			expect(asyncResult).rejects.toBe("oops");
+		});
+	});
+
+	describe("map", () => {
+		it("Maps a value using a synchronous function", async () => {
+			const asyncVal = okAsync(12);
+
+			const mapSyncFn = jest.fn((number) => number.toString());
+
+			const mapped = asyncVal.map(mapSyncFn);
+
+			expect(mapped).toBeInstanceOf(ResultAsync);
+
+			const newVal = await mapped;
+
+			expect(newVal.isOk()).toBe(true);
+			expect(newVal._unsafeUnwrap()).toBe("12");
+			expect(mapSyncFn).toHaveBeenCalledTimes(1);
+		});
+
+		it("Maps a value using an asynchronous function", async () => {
+			const asyncVal = okAsync(12);
+
+			const mapAsyncFn = jest.fn((number) =>
+				Promise.resolve(number.toString()),
+			);
+
+			const mapped = asyncVal.map(mapAsyncFn);
 
-    expect(matched).toBe('wooooo')
-    expect(okMapper).not.toHaveBeenCalled()
-    expect(errMapper).toHaveBeenCalledTimes(1)
-  })
+			expect(mapped).toBeInstanceOf(ResultAsync);
 
-  it('Throws when you unwrap an Err', () => {
-    const errVal = err('woopsies')
+			const newVal = await mapped;
 
-    expect(() => {
-      errVal._unsafeUnwrap()
-    }).toThrowError()
-  })
+			expect(newVal.isOk()).toBe(true);
+			expect(newVal._unsafeUnwrap()).toBe("12");
+			expect(mapAsyncFn).toHaveBeenCalledTimes(1);
+		});
 
-  it('Unwraps without issue', () => {
-    const okVal = err(12)
+		it("Skips an error", async () => {
+			const asyncErr = errAsync<number, string>("Wrong format");
 
-    expect(okVal._unsafeUnwrapErr()).toBe(12)
-  })
+			const mapSyncFn = jest.fn((number) => number.toString());
 
-  describe('orElse', () => {
-    it('invokes the orElse callback on an Err value', () => {
-      const okVal = err('BOOOM!')
-      const errorCallback = jest.fn((_errVal) => err(true))
+			const notMapped = asyncErr.map(mapSyncFn);
 
-      expect(okVal.orElse(errorCallback)).toEqual(err(true))
-      expect(errorCallback).toHaveBeenCalledTimes(1)
-    })
-  })
-})
+			expect(notMapped).toBeInstanceOf(ResultAsync);
 
-describe('Result.fromThrowable', () => {
-  it('Creates a function that returns an OK result when the inner function does not throw', () => {
-    const hello = (): string => 'hello'
-    const safeHello = Result.fromThrowable(hello)
+			const newVal = await notMapped;
 
-    const result = hello()
-    const safeResult = safeHello()
+			expect(newVal.isErr()).toBe(true);
+			expect(newVal._unsafeUnwrapErr()).toBe("Wrong format");
+			expect(mapSyncFn).toHaveBeenCalledTimes(0);
+		});
+	});
 
-    expect(safeResult).toBeInstanceOf(Ok)
-    expect(result).toEqual(safeResult._unsafeUnwrap())
-  })
+	describe("mapErr", () => {
+		it("Maps an error using a synchronous function", async () => {
+			const asyncErr = errAsync("Wrong format");
 
-  // Added for issue #300 -- the test here is not so much that expectations are met as that the test compiles.
-  it('Accepts an inner function which takes arguments', () => {
-    const hello = (fname: string): string => `hello, ${fname}`;
-    const safeHello = Result.fromThrowable(hello);
+			const mapErrSyncFn = jest.fn((str) => "Error: " + str);
 
-    const result = hello('Dikembe');
-    const safeResult = safeHello('Dikembe');
+			const mappedErr = asyncErr.mapErr(mapErrSyncFn);
 
-    expect(safeResult).toBeInstanceOf(Ok);
-    expect(result).toEqual(safeResult._unsafeUnwrap());
-  });
+			expect(mappedErr).toBeInstanceOf(ResultAsync);
 
-  it('Creates a function that returns an err when the inner function throws', () => {
-    const thrower = (): string => {
-      throw new Error()
-    }
+			const newVal = await mappedErr;
 
-    // type: () => Result<string, unknown>
-    // received types from thrower fn, no errorFn is provides therefore Err type is unknown
-    const safeThrower = Result.fromThrowable(thrower)
-    const result = safeThrower()
+			expect(newVal.isErr()).toBe(true);
+			expect(newVal._unsafeUnwrapErr()).toBe("Error: Wrong format");
+			expect(mapErrSyncFn).toHaveBeenCalledTimes(1);
+		});
 
-    expect(result).toBeInstanceOf(Err)
-    expect(result._unsafeUnwrapErr()).toBeInstanceOf(Error)
-  })
+		it("Maps an error using an asynchronous function", async () => {
+			const asyncErr = errAsync("Wrong format");
 
-  it('Accepts an error handler as a second argument', () => {
-    const thrower = (): string => {
-      throw new Error()
-    }
-    type MessageObject = { message: string }
-    const toMessageObject = (): MessageObject => ({ message: 'error' })
+			const mapErrAsyncFn = jest.fn((str) => Promise.resolve("Error: " + str));
 
-    // type: () => Result<string, MessageObject>
-    // received types from thrower fn and errorFn return type
-    const safeThrower = Result.fromThrowable(thrower, toMessageObject)
-    const result = safeThrower()
+			const mappedErr = asyncErr.mapErr(mapErrAsyncFn);
 
-    expect(result.isOk()).toBe(false)
-    expect(result.isErr()).toBe(true)
-    expect(result).toBeInstanceOf(Err)
-    expect(result._unsafeUnwrapErr()).toEqual({ message: 'error' })
-  })
+			expect(mappedErr).toBeInstanceOf(ResultAsync);
 
-  it('has a top level export', () => {
-      expect(fromThrowable).toBe(Result.fromThrowable)
-  })
-})
+			const newVal = await mappedErr;
 
-describe('Utils', () => {
-  describe('`Result.combine`', () => {
-    describe('Synchronous `combine`', () => {
-      it('Combines a list of results into an Ok value', () => {
-        const resultList = [ok(123), ok(456), ok(789)]
+			expect(newVal.isErr()).toBe(true);
+			expect(newVal._unsafeUnwrapErr()).toBe("Error: Wrong format");
+			expect(mapErrAsyncFn).toHaveBeenCalledTimes(1);
+		});
 
-        const result = Result.combine(resultList)
+		it("Skips a value", async () => {
+			const asyncVal = okAsync(12);
 
-        expect(result.isOk()).toBe(true)
-        expect(result._unsafeUnwrap()).toEqual([123, 456, 789])
-      })
+			const mapErrSyncFn = jest.fn((str) => "Error: " + str);
 
-      it('Combines a list of results into an Err value', () => {
-        const resultList: Result<number, string>[] = [
-          ok(123),
-          err('boooom!'),
-          ok(456),
-          err('ahhhhh!'),
-        ]
+			const notMapped = asyncVal.mapErr(mapErrSyncFn);
 
-        const result = Result.combine(resultList)
+			expect(notMapped).toBeInstanceOf(ResultAsync);
 
-        expect(result.isErr()).toBe(true)
-        expect(result._unsafeUnwrapErr()).toBe('boooom!')
-      })
+			const newVal = await notMapped;
 
-      it('Combines heterogeneous lists', () => {
-        type HeterogenousList = [ Result<string, string>, Result<number, number>, Result<boolean, boolean> ]
+			expect(newVal.isOk()).toBe(true);
+			expect(newVal._unsafeUnwrap()).toBe(12);
+			expect(mapErrSyncFn).toHaveBeenCalledTimes(0);
+		});
+	});
 
-        const heterogenousList: HeterogenousList = [
-          ok('Yooooo'),
-          ok(123),
-          ok(true),
-        ]
+	describe("andThen", () => {
+		it("Maps a value using a function returning a ResultAsync", async () => {
+			const asyncVal = okAsync(12);
 
-        type ExpecteResult = Result<[ string, number, boolean ], string | number | boolean>
+			const andThenResultAsyncFn = jest.fn(() => okAsync("good"));
 
-        const result: ExpecteResult = Result.combine(heterogenousList)
+			const mapped = asyncVal.andThen(andThenResultAsyncFn);
 
-        expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true])
-      })
+			expect(mapped).toBeInstanceOf(ResultAsync);
 
-      it('Does not destructure / concatenate arrays', () => {
-        type HomogenousList = [
-          Result<string[], boolean>,
-          Result<number[], string>,
-        ]
+			const newVal = await mapped;
 
-        const homogenousList: HomogenousList = [
-          ok(['hello', 'world']),
-          ok([1, 2, 3])
-        ]
+			expect(newVal.isOk()).toBe(true);
+			expect(newVal._unsafeUnwrap()).toBe("good");
+			expect(andThenResultAsyncFn).toHaveBeenCalledTimes(1);
+		});
 
-        type ExpectedResult = Result<[ string[], number[] ], boolean | string>
+		it("Maps a value using a function returning a Result", async () => {
+			const asyncVal = okAsync(12);
 
-        const result: ExpectedResult = Result.combine(homogenousList)
+			const andThenResultFn = jest.fn(() => ok("good"));
 
-        expect(result._unsafeUnwrap()).toEqual([ [ 'hello', 'world' ], [ 1, 2, 3 ]])
-      })
-    })
+			const mapped = asyncVal.andThen(andThenResultFn);
 
-    describe('`ResultAsync.combine`', () => {
-      it('Combines a list of async results into an Ok value', async () => {
-        const asyncResultList = [okAsync(123), okAsync(456), okAsync(789)]
+			expect(mapped).toBeInstanceOf(ResultAsync);
 
-        const resultAsync: ResultAsync<number[], never[]> = ResultAsync.combine(asyncResultList)
-        
-        expect(resultAsync).toBeInstanceOf(ResultAsync)
+			const newVal = await mapped;
 
-        const result = await ResultAsync.combine(asyncResultList)
+			expect(newVal.isOk()).toBe(true);
+			expect(newVal._unsafeUnwrap()).toBe("good");
+			expect(andThenResultFn).toHaveBeenCalledTimes(1);
+		});
 
-        expect(result.isOk()).toBe(true)
-        expect(result._unsafeUnwrap()).toEqual([123, 456, 789])
-      })
+		it("Skips an Error", async () => {
+			const asyncVal = errAsync<string, string>("Wrong format");
 
-      it('Combines a list of results into an Err value', async () => {
-        const resultList: ResultAsync<number, string>[] = [
-          okAsync(123),
-          errAsync('boooom!'),
-          okAsync(456),
-          errAsync('ahhhhh!'),
-        ]
+			const andThenResultFn = jest.fn(() => ok<string, string>("good"));
 
-        const result = await ResultAsync.combine(resultList)
+			const notMapped = asyncVal.andThen(andThenResultFn);
 
-        expect(result.isErr()).toBe(true)
-        expect(result._unsafeUnwrapErr()).toBe('boooom!')
-      })
+			expect(notMapped).toBeInstanceOf(ResultAsync);
 
-      it('Combines heterogeneous lists', async () => {
-        type HeterogenousList = [
-          ResultAsync<string, string>,
-          ResultAsync<number, number>,
-          ResultAsync<boolean, boolean>,
-          ResultAsync<number[], string>,
-        ]
+			const newVal = await notMapped;
 
-        const heterogenousList: HeterogenousList = [
-          okAsync('Yooooo'),
-          okAsync(123),
-          okAsync(true),
-          okAsync([ 1, 2, 3]),
-        ]
+			expect(newVal.isErr()).toBe(true);
+			expect(newVal._unsafeUnwrapErr()).toBe("Wrong format");
+			expect(andThenResultFn).toHaveBeenCalledTimes(0);
+		});
+	});
 
-        type ExpecteResult = Result<[ string, number, boolean, number[] ], string | number | boolean>
-
-        const result: ExpecteResult = await ResultAsync.combine(heterogenousList)
-
-        expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true, [ 1, 2, 3 ]])
-      })
-    })
-  })
-  describe('`Result.combineWithAllErrors`', () => {
-    describe('Synchronous `combineWithAllErrors`', () => {
-      it('Combines a list of results into an Ok value', () => {
-        const resultList = [ok(123), ok(456), ok(789)]
-
-        const result = Result.combineWithAllErrors(resultList)
-
-        expect(result.isOk()).toBe(true)
-        expect(result._unsafeUnwrap()).toEqual([123, 456, 789])
-      })
-
-      it('Combines a list of results into an Err value', () => {
-        const resultList: Result<number, string>[] = [
-          ok(123),
-          err('boooom!'),
-          ok(456),
-          err('ahhhhh!'),
-        ]
-
-        const result = Result.combineWithAllErrors(resultList)
-
-        expect(result.isErr()).toBe(true)
-        expect(result._unsafeUnwrapErr()).toEqual(['boooom!', 'ahhhhh!'])
-      })
-
-      it('Combines heterogeneous lists', () => {
-        type HeterogenousList = [ Result<string, string>, Result<number, number>, Result<boolean, boolean> ]
-
-        const heterogenousList: HeterogenousList = [
-          ok('Yooooo'),
-          ok(123),
-          ok(true),
-        ]
-
-        type ExpecteResult = Result<[ string, number, boolean ], (string | number | boolean)[]>
-
-        const result: ExpecteResult = Result.combineWithAllErrors(heterogenousList)
-
-        expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true])
-      })
-
-      it('Does not destructure / concatenate arrays', () => {
-        type HomogenousList = [
-          Result<string[], boolean>,
-          Result<number[], string>,
-        ]
-
-        const homogenousList: HomogenousList = [
-          ok(['hello', 'world']),
-          ok([1, 2, 3])
-        ]
-
-        type ExpectedResult = Result<[ string[], number[] ], (boolean | string)[]>
-
-        const result: ExpectedResult = Result.combineWithAllErrors(homogenousList)
-
-        expect(result._unsafeUnwrap()).toEqual([ [ 'hello', 'world' ], [ 1, 2, 3 ]])
-      })
-    })
-    describe('`ResultAsync.combineWithAllErrors`', () => {
-      it('Combines a list of async results into an Ok value', async () => {
-        const asyncResultList = [okAsync(123), okAsync(456), okAsync(789)]
-
-        const result = await ResultAsync.combineWithAllErrors(asyncResultList)
-
-        expect(result.isOk()).toBe(true)
-        expect(result._unsafeUnwrap()).toEqual([123, 456, 789])
-      })
-
-      it('Combines a list of results into an Err value', async () => {
-        const asyncResultList: ResultAsync<number, string>[] = [
-          okAsync(123),
-          errAsync('boooom!'),
-          okAsync(456),
-          errAsync('ahhhhh!'),
-        ]
-
-        const result = await ResultAsync.combineWithAllErrors(asyncResultList)
-
-        expect(result.isErr()).toBe(true)
-        expect(result._unsafeUnwrapErr()).toEqual(['boooom!', 'ahhhhh!'])
-      })
-
-      it('Combines heterogeneous lists', async () => {
-        type HeterogenousList = [ ResultAsync<string, string>, ResultAsync<number, number>, ResultAsync<boolean, boolean> ]
-
-        const heterogenousList: HeterogenousList = [
-          okAsync('Yooooo'),
-          okAsync(123),
-          okAsync(true),
-        ]
-
-        type ExpecteResult = Result<[ string, number, boolean ], (string | number | boolean)[]>
-
-        const result: ExpecteResult = await ResultAsync.combineWithAllErrors(heterogenousList)
-
-        expect(result._unsafeUnwrap()).toEqual(['Yooooo', 123, true])
-      })
-    })
-
-    describe('testdouble `ResultAsync.combine`', () => {
-      interface ITestInterface {
-        getName(): string
-        setName(name: string): void
-        getAsyncResult(): ResultAsync<ITestInterface, Error>
-      }
-
-      it('Combines `testdouble` proxies from mocks generated via interfaces', async () => {
-        const mock = td.object<ITestInterface>()
-
-        const result = await ResultAsync.combine([okAsync(mock)] as const)
-
-        expect(result).toBeDefined()
-        expect(result.isErr()).toBeFalsy()
-        const unwrappedResult = result._unsafeUnwrap()
-
-        expect(unwrappedResult.length).toBe(1)
-        expect(unwrappedResult[0]).toBe(mock)
-      })
-    })
-  })
-})
-
-describe('ResultAsync', () => {
-  it('Is awaitable to a Result', async () => {
-    // For a success value
-    const asyncVal = okAsync(12)
-    expect(asyncVal).toBeInstanceOf(ResultAsync)
-
-    const val = await asyncVal
-
-    expect(val).toBeInstanceOf(Ok)
-    expect(val._unsafeUnwrap()).toEqual(12)
-
-    // For an error
-    const asyncErr = errAsync('Wrong format')
-    expect(asyncErr).toBeInstanceOf(ResultAsync)
-
-    const err = await asyncErr
-
-    expect(err).toBeInstanceOf(Err)
-    expect(err._unsafeUnwrapErr()).toEqual('Wrong format')
-  })
-
-  describe('acting as a Promise<Result>', () => {
-    it('Is chainable like any Promise', async () => {
-      // For a success value
-      const asyncValChained = okAsync(12).then((res) => {
-        if (res.isOk()) {
-          return res.value + 2
-        }
-      })
-
-      expect(asyncValChained).toBeInstanceOf(Promise)
-      const val = await asyncValChained
-      expect(val).toEqual(14)
-
-      // For an error
-      const asyncErrChained = errAsync('Oops').then((res) => {
-        if (res.isErr()) {
-          return res.error + '!'
-        }
-      })
-
-      expect(asyncErrChained).toBeInstanceOf(Promise)
-      const err = await asyncErrChained
-      expect(err).toEqual('Oops!')
-    })
-
-    it('Can be used with Promise.all', async () => {
-      const allResult = await Promise.all([okAsync<string, Error>('1')])
-
-      expect(allResult).toHaveLength(1)
-      expect(allResult[0]).toBeInstanceOf(Ok)
-      if (!(allResult[0] instanceof Ok)) return
-      expect(allResult[0].isOk()).toBe(true)
-      expect(allResult[0]._unsafeUnwrap()).toEqual('1')
-    })
-
-    it('rejects if the underlying promise is rejected', () => {
-      const asyncResult = new ResultAsync(Promise.reject('oops'))
-      expect(asyncResult).rejects.toBe('oops')
-    })
-  })
-
-  describe('map', () => {
-    it('Maps a value using a synchronous function', async () => {
-      const asyncVal = okAsync(12)
-
-      const mapSyncFn = jest.fn((number) => number.toString())
-
-      const mapped = asyncVal.map(mapSyncFn)
-
-      expect(mapped).toBeInstanceOf(ResultAsync)
-
-      const newVal = await mapped
-
-      expect(newVal.isOk()).toBe(true)
-      expect(newVal._unsafeUnwrap()).toBe('12')
-      expect(mapSyncFn).toHaveBeenCalledTimes(1)
-    })
-
-    it('Maps a value using an asynchronous function', async () => {
-      const asyncVal = okAsync(12)
-
-      const mapAsyncFn = jest.fn((number) => Promise.resolve(number.toString()))
-
-      const mapped = asyncVal.map(mapAsyncFn)
-
-      expect(mapped).toBeInstanceOf(ResultAsync)
-
-      const newVal = await mapped
-
-      expect(newVal.isOk()).toBe(true)
-      expect(newVal._unsafeUnwrap()).toBe('12')
-      expect(mapAsyncFn).toHaveBeenCalledTimes(1)
-    })
-
-    it('Skips an error', async () => {
-      const asyncErr = errAsync<number, string>('Wrong format')
-
-      const mapSyncFn = jest.fn((number) => number.toString())
-
-      const notMapped = asyncErr.map(mapSyncFn)
-
-      expect(notMapped).toBeInstanceOf(ResultAsync)
-
-      const newVal = await notMapped
-
-      expect(newVal.isErr()).toBe(true)
-      expect(newVal._unsafeUnwrapErr()).toBe('Wrong format')
-      expect(mapSyncFn).toHaveBeenCalledTimes(0)
-    })
-  })
-
-  describe('mapErr', () => {
-    it('Maps an error using a synchronous function', async () => {
-      const asyncErr = errAsync('Wrong format')
-
-      const mapErrSyncFn = jest.fn((str) => 'Error: ' + str)
-
-      const mappedErr = asyncErr.mapErr(mapErrSyncFn)
-
-      expect(mappedErr).toBeInstanceOf(ResultAsync)
-
-      const newVal = await mappedErr
-
-      expect(newVal.isErr()).toBe(true)
-      expect(newVal._unsafeUnwrapErr()).toBe('Error: Wrong format')
-      expect(mapErrSyncFn).toHaveBeenCalledTimes(1)
-    })
-
-    it('Maps an error using an asynchronous function', async () => {
-      const asyncErr = errAsync('Wrong format')
-
-      const mapErrAsyncFn = jest.fn((str) => Promise.resolve('Error: ' + str))
-
-      const mappedErr = asyncErr.mapErr(mapErrAsyncFn)
-
-      expect(mappedErr).toBeInstanceOf(ResultAsync)
-
-      const newVal = await mappedErr
-
-      expect(newVal.isErr()).toBe(true)
-      expect(newVal._unsafeUnwrapErr()).toBe('Error: Wrong format')
-      expect(mapErrAsyncFn).toHaveBeenCalledTimes(1)
-    })
-
-    it('Skips a value', async () => {
-      const asyncVal = okAsync(12)
-
-      const mapErrSyncFn = jest.fn((str) => 'Error: ' + str)
-
-      const notMapped = asyncVal.mapErr(mapErrSyncFn)
-
-      expect(notMapped).toBeInstanceOf(ResultAsync)
-
-      const newVal = await notMapped
-
-      expect(newVal.isOk()).toBe(true)
-      expect(newVal._unsafeUnwrap()).toBe(12)
-      expect(mapErrSyncFn).toHaveBeenCalledTimes(0)
-    })
-  })
-
-  describe('andThen', () => {
-    it('Maps a value using a function returning a ResultAsync', async () => {
-      const asyncVal = okAsync(12)
-
-      const andThenResultAsyncFn = jest.fn(() => okAsync('good'))
-
-      const mapped = asyncVal.andThen(andThenResultAsyncFn)
-
-      expect(mapped).toBeInstanceOf(ResultAsync)
-
-      const newVal = await mapped
-
-      expect(newVal.isOk()).toBe(true)
-      expect(newVal._unsafeUnwrap()).toBe('good')
-      expect(andThenResultAsyncFn).toHaveBeenCalledTimes(1)
-    })
-
-    it('Maps a value using a function returning a Result', async () => {
-      const asyncVal = okAsync(12)
-
-      const andThenResultFn = jest.fn(() => ok('good'))
-
-      const mapped = asyncVal.andThen(andThenResultFn)
-
-      expect(mapped).toBeInstanceOf(ResultAsync)
-
-      const newVal = await mapped
-
-      expect(newVal.isOk()).toBe(true)
-      expect(newVal._unsafeUnwrap()).toBe('good')
-      expect(andThenResultFn).toHaveBeenCalledTimes(1)
-    })
-
-    it('Skips an Error', async () => {
-      const asyncVal = errAsync<string, string>('Wrong format')
-
-      const andThenResultFn = jest.fn(() => ok<string, string>('good'))
-
-      const notMapped = asyncVal.andThen(andThenResultFn)
-
-      expect(notMapped).toBeInstanceOf(ResultAsync)
-
-      const newVal = await notMapped
-
-      expect(newVal.isErr()).toBe(true)
-      expect(newVal._unsafeUnwrapErr()).toBe('Wrong format')
-      expect(andThenResultFn).toHaveBeenCalledTimes(0)
-    })
-  })
-
-  describe('andThrough', () => {
-    it('Returns the original value when map function returning ResultAsync succeeds', async () => {
-      const asyncVal = okAsync(12)
-      /*
+	describe("andThrough", () => {
+		it("Returns the original value when map function returning ResultAsync succeeds", async () => {
+			const asyncVal = okAsync(12);
+			/*
         A couple examples of this function
 
         DB persistence (create or update)
         API calls (create or update)
       */
-      const andThroughResultAsyncFn = jest.fn(() => okAsync('good'))
+			const andThroughResultAsyncFn = jest.fn(() => okAsync("good"));
 
-      const thrued = asyncVal.andThrough(andThroughResultAsyncFn)
+			const thrued = asyncVal.andThrough(andThroughResultAsyncFn);
 
-      expect(thrued).toBeInstanceOf(ResultAsync)
+			expect(thrued).toBeInstanceOf(ResultAsync);
 
-      const result = await thrued
+			const result = await thrued;
 
-      expect(result.isOk()).toBe(true)
-      expect(result._unsafeUnwrap()).toBe(12)
-      expect(andThroughResultAsyncFn).toHaveBeenCalledTimes(1)
-    })
+			expect(result.isOk()).toBe(true);
+			expect(result._unsafeUnwrap()).toBe(12);
+			expect(andThroughResultAsyncFn).toHaveBeenCalledTimes(1);
+		});
 
-    it('Maps to an error when map function returning ResultAsync fails', async () => {
-      const asyncVal = okAsync(12)
+		it("Maps to an error when map function returning ResultAsync fails", async () => {
+			const asyncVal = okAsync(12);
 
-      const andThroughResultAsyncFn = jest.fn(() => errAsync('oh no!'))
+			const andThroughResultAsyncFn = jest.fn(() => errAsync("oh no!"));
 
-      const thrued = asyncVal.andThrough(andThroughResultAsyncFn)
+			const thrued = asyncVal.andThrough(andThroughResultAsyncFn);
 
-      expect(thrued).toBeInstanceOf(ResultAsync)
+			expect(thrued).toBeInstanceOf(ResultAsync);
 
-      const result = await thrued
+			const result = await thrued;
 
-      expect(result.isErr()).toBe(true)
-      expect(result._unsafeUnwrapErr()).toBe('oh no!')
-      expect(andThroughResultAsyncFn).toHaveBeenCalledTimes(1)
-    })
+			expect(result.isErr()).toBe(true);
+			expect(result._unsafeUnwrapErr()).toBe("oh no!");
+			expect(andThroughResultAsyncFn).toHaveBeenCalledTimes(1);
+		});
 
-    it('Returns the original value when map function returning Result succeeds', async () => {
-      const asyncVal = okAsync(12)
+		it("Returns the original value when map function returning Result succeeds", async () => {
+			const asyncVal = okAsync(12);
 
-      const andThroughResultFn = jest.fn(() => ok('good'))
+			const andThroughResultFn = jest.fn(() => ok("good"));
 
-      const thrued = asyncVal.andThrough(andThroughResultFn)
+			const thrued = asyncVal.andThrough(andThroughResultFn);
 
-      expect(thrued).toBeInstanceOf(ResultAsync)
+			expect(thrued).toBeInstanceOf(ResultAsync);
 
-      const newVal = await thrued
+			const newVal = await thrued;
 
-      expect(newVal.isOk()).toBe(true)
-      expect(newVal._unsafeUnwrap()).toBe(12)
-      expect(andThroughResultFn).toHaveBeenCalledTimes(1)
-    })
+			expect(newVal.isOk()).toBe(true);
+			expect(newVal._unsafeUnwrap()).toBe(12);
+			expect(andThroughResultFn).toHaveBeenCalledTimes(1);
+		});
 
-    it('Maps to an error when map function returning Result fails', async () => {
-      const asyncVal = okAsync(12)
+		it("Maps to an error when map function returning Result fails", async () => {
+			const asyncVal = okAsync(12);
 
-      const andThroughResultFn = jest.fn(() => err('oh no!'))
+			const andThroughResultFn = jest.fn(() => err("oh no!"));
 
-      const thrued = asyncVal.andThrough(andThroughResultFn)
+			const thrued = asyncVal.andThrough(andThroughResultFn);
 
-      expect(thrued).toBeInstanceOf(ResultAsync)
+			expect(thrued).toBeInstanceOf(ResultAsync);
 
-      const newVal = await thrued
+			const newVal = await thrued;
 
-      expect(newVal.isErr()).toBe(true)
-      expect(newVal._unsafeUnwrapErr()).toBe('oh no!')
-      expect(andThroughResultFn).toHaveBeenCalledTimes(1)
-    })
+			expect(newVal.isErr()).toBe(true);
+			expect(newVal._unsafeUnwrapErr()).toBe("oh no!");
+			expect(andThroughResultFn).toHaveBeenCalledTimes(1);
+		});
 
-    it('Skips an Error', async () => {
-      const asyncVal = errAsync<string, string>('Wrong format')
+		it("Skips an Error", async () => {
+			const asyncVal = errAsync<string, string>("Wrong format");
 
-      const andThroughResultFn = jest.fn(() => ok<string, string>('good'))
+			const andThroughResultFn = jest.fn(() => ok<string, string>("good"));
 
-      const notMapped = asyncVal.andThrough(andThroughResultFn)
+			const notMapped = asyncVal.andThrough(andThroughResultFn);
 
-      expect(notMapped).toBeInstanceOf(ResultAsync)
+			expect(notMapped).toBeInstanceOf(ResultAsync);
 
-      const newVal = await notMapped
+			const newVal = await notMapped;
 
-      expect(newVal.isErr()).toBe(true)
-      expect(newVal._unsafeUnwrapErr()).toBe('Wrong format')
-      expect(andThroughResultFn).toHaveBeenCalledTimes(0)
-    })
-  })
+			expect(newVal.isErr()).toBe(true);
+			expect(newVal._unsafeUnwrapErr()).toBe("Wrong format");
+			expect(andThroughResultFn).toHaveBeenCalledTimes(0);
+		});
+	});
 
-  describe('andTee', () => {
-    it('Calls the passed function but returns an original ok', async () => {
-      const okVal = okAsync(12)
-      const passedFn = jest.fn((_number) => {})
+	describe("andTee", () => {
+		it("Calls the passed function but returns an original ok", async () => {
+			const okVal = okAsync(12);
+			const passedFn = jest.fn((_number) => {});
 
-      const teed = await okVal.andTee(passedFn)
+			const teed = await okVal.andTee(passedFn);
 
-      expect(teed.isOk()).toBe(true)
-      expect(passedFn).toHaveBeenCalledTimes(1)
-      expect(teed._unsafeUnwrap()).toStrictEqual(12)
-    })
-    it('returns an original ok even when the passed function fails', async () => {
-      const okVal = okAsync(12)
-      const passedFn = jest.fn((_number) => { throw new Error('OMG!') })
+			expect(teed.isOk()).toBe(true);
+			expect(passedFn).toHaveBeenCalledTimes(1);
+			expect(teed._unsafeUnwrap()).toStrictEqual(12);
+		});
+		it("returns an original ok even when the passed function fails", async () => {
+			const okVal = okAsync(12);
+			const passedFn = jest.fn((_number) => {
+				throw new Error("OMG!");
+			});
 
-      const teed = await okVal.andTee(passedFn)
+			const teed = await okVal.andTee(passedFn);
 
-      expect(teed.isOk()).toBe(true)
-      expect(passedFn).toHaveBeenCalledTimes(1)
-      expect(teed._unsafeUnwrap()).toStrictEqual(12)
-    })
-  })
+			expect(teed.isOk()).toBe(true);
+			expect(passedFn).toHaveBeenCalledTimes(1);
+			expect(teed._unsafeUnwrap()).toStrictEqual(12);
+		});
+	});
+
+	describe("orElse", () => {
+		it("Skips orElse on an Ok value", async () => {
+			const okVal = okAsync(12);
+			const errorCallback = jest.fn((_errVal) =>
+				errAsync<number, string>("It is now a string"),
+			);
+
+			const result = await okVal.orElse(errorCallback);
+
+			expect(result).toEqual(ok(12));
+
+			expect(errorCallback).not.toHaveBeenCalled();
+		});
+
+		it("Invokes the orElse callback on an Err value", async () => {
+			const myResult = errAsync("BOOOM!");
+			const errorCallback = jest.fn((_errVal) => errAsync(true));
+
+			const result = await myResult.orElse(errorCallback);
+
+			expect(result).toEqual(err(true));
+			expect(errorCallback).toHaveBeenCalledTimes(1);
+		});
+
+		it("Accepts a regular Result in the callback", async () => {
+			const myResult = errAsync("BOOOM!");
+			const errorCallback = jest.fn((_errVal) => err(true));
+
+			const result = await myResult.orElse(errorCallback);
+
+			expect(result).toEqual(err(true));
+			expect(errorCallback).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe("match", () => {
+		it("Matches on an Ok", async () => {
+			const okMapper = jest.fn((_val) => "weeeeee");
+			const errMapper = jest.fn((_val) => "wooooo");
+
+			const matched = await okAsync(12).match(okMapper, errMapper);
+
+			expect(matched).toBe("weeeeee");
+			expect(okMapper).toHaveBeenCalledTimes(1);
+			expect(errMapper).not.toHaveBeenCalled();
+		});
+
+		it("Matches on an Error", async () => {
+			const okMapper = jest.fn((_val) => "weeeeee");
+			const errMapper = jest.fn((_val) => "wooooo");
+
+			const matched = await errAsync("bad").match(okMapper, errMapper);
+
+			expect(matched).toBe("wooooo");
+			expect(okMapper).not.toHaveBeenCalled();
+			expect(errMapper).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe("unwrapOr", () => {
+		it("returns a promise to the result value on an Ok", async () => {
+			const unwrapped = await okAsync(12).unwrapOr(10);
+			expect(unwrapped).toBe(12);
+		});
+
+		it("returns a promise to the provided default value on an Error", async () => {
+			const unwrapped = await errAsync<number, number>(12).unwrapOr(10);
+			expect(unwrapped).toBe(10);
+		});
+	});
 
-  describe('orElse', () => {
-    it('Skips orElse on an Ok value', async () => {
-      const okVal = okAsync(12)
-      const errorCallback = jest.fn((_errVal) => errAsync<number, string>('It is now a string'))
+	describe("fromSafePromise", () => {
+		it("Creates a ResultAsync from a Promise", async () => {
+			const res = ResultAsync.fromSafePromise(Promise.resolve(12));
+
+			expect(res).toBeInstanceOf(ResultAsync);
 
+			const val = await res;
+			expect(val.isOk()).toBe(true);
+			expect(val._unsafeUnwrap()).toEqual(12);
+		});
 
-      const result = await okVal.orElse(errorCallback)
+		it("has a top level export", () => {
+			expect(fromSafePromise).toBe(ResultAsync.fromSafePromise);
+		});
+	});
 
-      expect(result).toEqual(ok(12))
+	describe("fromPromise", () => {
+		it("Accepts an error handler as a second argument", async () => {
+			const res = ResultAsync.fromPromise(
+				Promise.reject("No!"),
+				(e) => new Error("Oops: " + e),
+			);
 
-      expect(errorCallback).not.toHaveBeenCalled()
-    })
+			expect(res).toBeInstanceOf(ResultAsync);
 
-    it('Invokes the orElse callback on an Err value', async () => {
-      const myResult = errAsync('BOOOM!')
-      const errorCallback = jest.fn((_errVal) => errAsync(true))
+			const val = await res;
+			expect(val.isErr()).toBe(true);
+			expect(val._unsafeUnwrapErr()).toEqual(Error("Oops: No!"));
+		});
 
-      const result = await myResult.orElse(errorCallback)
+		it("has a top level export", () => {
+			expect(fromPromise).toBe(ResultAsync.fromPromise);
+		});
+	});
 
-      expect(result).toEqual(err(true))
-      expect(errorCallback).toHaveBeenCalledTimes(1)
-    })
+	describe("ResultAsync.fromThrowable", () => {
+		it("creates a new function that returns a ResultAsync", async () => {
+			const example = ResultAsync.fromThrowable(
+				async (a: number, b: number) => a + b,
+			);
+			const res = example(4, 8);
+			expect(res).toBeInstanceOf(ResultAsync);
 
-    it('Accepts a regular Result in the callback', async () => {
-      const myResult = errAsync('BOOOM!')
-      const errorCallback = jest.fn((_errVal) => err(true))
+			const val = await res;
+			expect(val.isOk()).toBe(true);
+			expect(val._unsafeUnwrap()).toEqual(12);
+		});
 
-      const result = await myResult.orElse(errorCallback)
+		it("handles synchronous errors", async () => {
+			const example = ResultAsync.fromThrowable(() => {
+				if (1 > 0) throw new Error("Oops: No!");
 
-      expect(result).toEqual(err(true))
-      expect(errorCallback).toHaveBeenCalledTimes(1)
-    })
-  })
+				return Promise.resolve(12);
+			});
 
-  describe('match', () => {
-    it('Matches on an Ok', async () => {
-      const okMapper = jest.fn((_val) => 'weeeeee')
-      const errMapper = jest.fn((_val) => 'wooooo')
+			const val = await example();
+			expect(val.isErr()).toBe(true);
 
-      const matched = await okAsync(12).match(okMapper, errMapper)
+			expect(val._unsafeUnwrapErr()).toEqual(Error("Oops: No!"));
+		});
 
-      expect(matched).toBe('weeeeee')
-      expect(okMapper).toHaveBeenCalledTimes(1)
-      expect(errMapper).not.toHaveBeenCalled()
-    })
+		it("handles asynchronous errors", async () => {
+			const example = ResultAsync.fromThrowable(async () => {
+				if (1 > 0) throw new Error("Oops: No!");
 
-    it('Matches on an Error', async () => {
-      const okMapper = jest.fn((_val) => 'weeeeee')
-      const errMapper = jest.fn((_val) => 'wooooo')
+				return 12;
+			});
 
-      const matched = await errAsync('bad').match(okMapper, errMapper)
+			const val = await example();
+			expect(val.isErr()).toBe(true);
 
-      expect(matched).toBe('wooooo')
-      expect(okMapper).not.toHaveBeenCalled()
-      expect(errMapper).toHaveBeenCalledTimes(1)
-    })
-  })
+			expect(val._unsafeUnwrapErr()).toEqual(Error("Oops: No!"));
+		});
 
-  describe('unwrapOr', () => {
-    it('returns a promise to the result value on an Ok', async () => {
-      const unwrapped = await okAsync(12).unwrapOr(10)
-      expect(unwrapped).toBe(12)
-    })
+		it("Accepts an error handler as a second argument", async () => {
+			const example = ResultAsync.fromThrowable(
+				() => Promise.reject("No!"),
+				(e) => new Error("Oops: " + e),
+			);
 
-    it('returns a promise to the provided default value on an Error', async () => {
-      const unwrapped = await errAsync<number, number>(12).unwrapOr(10)
-      expect(unwrapped).toBe(10)
-    })
-  })
+			const val = await example();
+			expect(val.isErr()).toBe(true);
 
-  describe('fromSafePromise', () => {
-    it('Creates a ResultAsync from a Promise', async () => {
-      const res = ResultAsync.fromSafePromise(Promise.resolve(12))
+			expect(val._unsafeUnwrapErr()).toEqual(TypeError("Oops: No!"));
+		});
 
-      expect(res).toBeInstanceOf(ResultAsync)
+		it("has a top level export", () => {
+			expect(fromAsyncThrowable).toBe(ResultAsync.fromThrowable);
+		});
+	});
 
-      const val = await res
-      expect(val.isOk()).toBe(true)
-      expect(val._unsafeUnwrap()).toEqual(12)
-    })
+	describe("okAsync", () => {
+		it("Creates a ResultAsync that resolves to an Ok", async () => {
+			const val = okAsync(12);
 
-    it('has a top level export', () => {
-      expect(fromSafePromise).toBe(ResultAsync.fromSafePromise)
-    })
-  })
+			expect(val).toBeInstanceOf(ResultAsync);
 
-  describe('fromPromise', () => {
-    it('Accepts an error handler as a second argument', async () => {
-      const res = ResultAsync.fromPromise(Promise.reject('No!'), (e) => new Error('Oops: ' + e))
+			const res = await val;
 
-      expect(res).toBeInstanceOf(ResultAsync)
+			expect(res.isOk()).toBe(true);
+			expect(res._unsafeUnwrap()).toEqual(12);
+		});
+	});
 
-      const val = await res
-      expect(val.isErr()).toBe(true)
-      expect(val._unsafeUnwrapErr()).toEqual(Error('Oops: No!'))
-    })
+	describe("errAsync", () => {
+		it("Creates a ResultAsync that resolves to an Err", async () => {
+			const err = errAsync("bad");
 
-    it('has a top level export', () => {
-      expect(fromPromise).toBe(ResultAsync.fromPromise)
-    })
-  })
+			expect(err).toBeInstanceOf(ResultAsync);
 
-  describe('ResultAsync.fromThrowable', () => {
-    it('creates a new function that returns a ResultAsync', async () => {
-      const example = ResultAsync.fromThrowable(async (a: number, b: number) => a + b)
-      const res = example(4, 8)
-      expect(res).toBeInstanceOf(ResultAsync)
+			const res = await err;
 
-      const val = await res
-      expect(val.isOk()).toBe(true)
-      expect(val._unsafeUnwrap()).toEqual(12)
-    })
-
-    it('handles synchronous errors', async () => {
-      const example = ResultAsync.fromThrowable(() => {
-        if (1 > 0) throw new Error('Oops: No!')
-
-        return Promise.resolve(12)
-      })
-
-      const val = await example()
-      expect(val.isErr()).toBe(true)
-
-      expect(val._unsafeUnwrapErr()).toEqual(Error('Oops: No!'))
-    })
-
-    it('handles asynchronous errors', async () => {
-      const example = ResultAsync.fromThrowable(async () => {
-        if (1 > 0) throw new Error('Oops: No!')
-
-        return 12
-      })
-      
-      const val = await example()
-      expect(val.isErr()).toBe(true)
-
-      expect(val._unsafeUnwrapErr()).toEqual(Error('Oops: No!'))
-    })
-
-    it('Accepts an error handler as a second argument', async () => {
-      const example = ResultAsync.fromThrowable(
-        () => Promise.reject('No!'),
-        (e) => new Error('Oops: ' + e)
-      )
-      
-      const val = await example()
-      expect(val.isErr()).toBe(true)
-
-      expect(val._unsafeUnwrapErr()).toEqual(TypeError('Oops: No!'))
-    })
-
-    it('has a top level export', () => {
-      expect(fromAsyncThrowable).toBe(ResultAsync.fromThrowable)
-    })
-  })
-
-  describe('okAsync', () => {
-    it('Creates a ResultAsync that resolves to an Ok', async () => {
-      const val = okAsync(12)
-
-      expect(val).toBeInstanceOf(ResultAsync)
-
-      const res = await val
-
-      expect(res.isOk()).toBe(true)
-      expect(res._unsafeUnwrap()).toEqual(12)
-    })
-  })
-
-  describe('errAsync', () => {
-    it('Creates a ResultAsync that resolves to an Err', async () => {
-      const err = errAsync('bad')
-
-      expect(err).toBeInstanceOf(ResultAsync)
-
-      const res = await err
-
-      expect(res.isErr()).toBe(true)
-      expect(res._unsafeUnwrapErr()).toEqual('bad')
-    })
-  })
-})
+			expect(res.isErr()).toBe(true);
+			expect(res._unsafeUnwrapErr()).toEqual("bad");
+		});
+	});
+});
