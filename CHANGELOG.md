@@ -1,5 +1,25 @@
 # neverthrow
 
+## 8.0.0
+
+### Major Changes
+
+- [#484](https://github.com/supermacro/neverthrow/pull/484) [`09faf35`](https://github.com/supermacro/neverthrow/commit/09faf35a5ce701ed55b13b82074da9e50050526d) Thanks [@braxtonhall](https://github.com/braxtonhall)! - Allow orElse method to change ok types.
+  This makes the orElse types match the implementation.
+
+  This is a breaking change for the orElse type argument list,
+  as the ok type must now be provided before the err type.
+
+  ```diff
+  - result.orElse<ErrType>(foo)
+  + result.orElse<OkType, ErrType>(foo)
+  ```
+
+  This only applies if type arguments were
+  explicitly provided at an orElse callsite.
+  If the type arguments were inferred,
+  no updates are needed during the upgrade.
+
 ## 7.2.0
 
 ### Minor Changes
