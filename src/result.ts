@@ -382,7 +382,7 @@ export class Ok<T, E> implements IResult<T, E> {
     throw createNeverThrowError('Called `_unsafeUnwrapErr` on an Ok', this, config)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-this-alias require-yield
+  // eslint-disable-next-line @typescript-eslint/no-this-alias, require-yield
   *[Symbol.iterator](): Generator<Err<never, E>, T> {
     return this.value
   }
