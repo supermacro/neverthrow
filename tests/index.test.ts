@@ -204,6 +204,11 @@ describe('Result.Ok', () => {
     expect(okVal.unwrapOr(1)).toEqual(12)
   })
 
+  it('unwrapOrElse and return the Ok value', () => {
+    const okVal = ok(12)
+    expect(okVal.unwrapOrElse(() => 1)).toEqual(12)
+  })
+
   it('Maps to a ResultAsync', async () => {
     const okVal = ok(12)
 
@@ -318,6 +323,11 @@ describe('Result.Err', () => {
   it('unwrapOr and return the default value', () => {
     const okVal = err<number, string>('Oh nooo')
     expect(okVal.unwrapOr(1)).toEqual(1)
+  })
+
+  it('unwrapOrElse and return the default value', () => {
+    const okVal = err<number, string>('Oh nooo')
+    expect(okVal.unwrapOrElse(() => 1)).toEqual(1)
   })
 
   it('Skips over andThen', () => {
@@ -1130,6 +1140,18 @@ describe('ResultAsync', () => {
 
     it('returns a promise to the provided default value on an Error', async () => {
       const unwrapped = await errAsync<number, number>(12).unwrapOr(10)
+      expect(unwrapped).toBe(10)
+    })
+  })
+
+  describe('unwrapOrElse', () => {
+    it('returns a promise to the result value on an Ok', async () => {
+      const unwrapped = await okAsync(12).unwrapOrElse(() => 10)
+      expect(unwrapped).toBe(12)
+    })
+
+    it('returns a promise to the provided default function value on an Error', async () => {
+      const unwrapped = await errAsync<number, number>(12).unwrapOrElse(() => 10)
       expect(unwrapped).toBe(10)
     })
   })

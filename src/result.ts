@@ -245,6 +245,13 @@ interface IResult<T, E> {
   unwrapOr<A>(v: A): T | A
 
   /**
+   * Unwrap the `Ok` value, or return the default by function if there is an `Err`
+   *
+   * @param err the function that return if there is an `Err`
+   */
+  unwrapOrElse<A>(err: (e: E) => A): T | A
+
+  /**
    *
    * Given 2 functions (one for the `Ok` variant and one for the `Err` variant)
    * execute the function that matches the `Result` variant.
@@ -362,6 +369,11 @@ export class Ok<T, E> implements IResult<T, E> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  unwrapOrElse<A>(_err: (e: E) => A): T | A {
+    return this.value
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   match<A, B = A>(ok: (t: T) => A, _err: (e: E) => B): A | B {
     return ok(this.value)
   }
@@ -445,6 +457,10 @@ export class Err<T, E> implements IResult<T, E> {
 
   unwrapOr<A>(v: A): T | A {
     return v
+  }
+
+  unwrapOrElse<A>(err: (e: E) => A): T | A {
+    return err(this.error)
   }
 
   match<A, B = A>(_ok: (t: T) => A, err: (e: E) => B): A | B {
