@@ -30,6 +30,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.map` (method)](#resultmap-method)
     - [`Result.mapErr` (method)](#resultmaperr-method)
     - [`Result.unwrapOr` (method)](#resultunwrapor-method)
+    - [`Result.unwrapOrElse` (method)](#resultunwraporelse-method)
     - [`Result.andThen` (method)](#resultandthen-method)
     - [`Result.asyncAndThen` (method)](#resultasyncandthen-method)
     - [`Result.orElse` (method)](#resultorelse-method)
@@ -51,6 +52,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.map` (method)](#resultasyncmap-method)
     - [`ResultAsync.mapErr` (method)](#resultasyncmaperr-method)
     - [`ResultAsync.unwrapOr` (method)](#resultasyncunwrapor-method)
+    - [`ResultAsync.unwrapOrElse` (method)](#resultasyncunwraporelse-method)
     - [`ResultAsync.andThen` (method)](#resultasyncandthen-method)
     - [`ResultAsync.orElse` (method)](#resultasyncorelse-method)
     - [`ResultAsync.match` (method)](#resultasyncmatch-method)
@@ -312,6 +314,32 @@ const myResult = err('Oh noooo')
 const multiply = (value: number): number => value * 2
 
 const unwrapped: number = myResult.map(multiply).unwrapOr(10)
+```
+
+[⬆️  Back to top](#toc)
+
+---
+
+#### `Result.unwrapOrElse` (method)
+
+Unwrap the `Ok` value, or return the default by function if there is an `Err`
+
+**Signature:**
+
+```typescript
+class Result<T, E> {
+  unwrapOrElse<A>(err: (e: E) => A): T | A { ... }
+}
+```
+
+**Example**:
+
+```typescript
+const myResult = err('Oh noooo')
+
+const multiply = (value: number): number => value * 2
+
+const unwrapped: number = myResult.map(multiply).unwrapOrElse(() => 10)
 ```
 
 [⬆️  Back to top](#toc)
@@ -1107,6 +1135,30 @@ class ResultAsync<T, E> {
 
 ```typescript
 const unwrapped: number = await errAsync(0).unwrapOr(10)
+// unwrapped = 10
+```
+
+[⬆️  Back to top](#toc)
+
+---
+
+#### `ResultAsync.unwrapOrElse` (method)
+
+Unwrap the `Ok` value, or return the default by function if there is an `Err`.  
+Works just like `Result.unwrapOrElse` but returns a `Promise<T>` instead of `T`.
+
+**Signature:**
+
+```typescript
+class ResultAsync<T, E> {
+  unwrapOrElse<A>(err: (e: E) => A): Promise<T | A> { ... }
+}
+```
+
+**Example**:
+
+```typescript
+const unwrapped: number = await errAsync(0).unwrapOrElse(() => 10)
 // unwrapped = 10
 ```
 
