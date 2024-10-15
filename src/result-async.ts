@@ -192,13 +192,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   }
 
   unwrapOrElse<A>(err: (e: E) => A): Promise<T | A> {
-    return this._promise.then((res) => {
-      if (res.isErr()) {
-        return err(res.error)
-      }
-
-      return res.value
-    })
+    return this._promise.then((res) => res.unwrapOrElse(err))
   }
 
   /**
