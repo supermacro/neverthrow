@@ -1,0 +1,5 @@
+---
+'neverthrow': minor
+---
+
+Add unwrapOrElse
