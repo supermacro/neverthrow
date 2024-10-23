@@ -381,6 +381,11 @@ export class Ok<T, E> implements IResult<T, E> {
   _unsafeUnwrapErr(config?: ErrorConfig): E {
     throw createNeverThrowError('Called `_unsafeUnwrapErr` on an Ok', this, config)
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-this-alias, require-yield
+  *[Symbol.iterator](): Generator<Err<never, E>, T> {
+    return this.value
+  }
 }
 
 export class Err<T, E> implements IResult<T, E> {
@@ -466,6 +471,15 @@ export class Err<T, E> implements IResult<T, E> {
 
   _unsafeUnwrapErr(_?: ErrorConfig): E {
     return this.error
+  }
+
+  *[Symbol.iterator](): Generator<Err<never, E>, T> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this
+    // @ts-expect-error -- This is structurally equivalent and safe
+    yield self
+    // @ts-expect-error -- This is structurally equivalent and safe
+    return self
   }
 }
 

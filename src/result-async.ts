@@ -205,6 +205,18 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   ): PromiseLike<A | B> {
     return this._promise.then(successCallback, failureCallback)
   }
+
+  async *[Symbol.asyncIterator](): AsyncGenerator<Err<never, E>, T> {
+    const result = await this._promise
+
+    if (result.isErr()) {
+      // @ts-expect-error -- This is structurally equivalent and safe
+      yield errAsync(result.error)
+    }
+
+    // @ts-expect-error -- This is structurally equivalent and safe
+    return result.value
+  }
 }
 
 export const okAsync = <T, E = never>(value: T): ResultAsync<T, E> =>
