@@ -10,6 +10,8 @@ import {
   ResultAsync,
 } from "../src"
 
+import { describe, expect, test } from 'vitest'
+
 describe('Returns what is returned from the generator function', () => {
   const val = "value"
 
