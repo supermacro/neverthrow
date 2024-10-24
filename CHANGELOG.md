@@ -1,5 +1,11 @@
 # neverthrow
 
+## 8.1.1
+
+### Patch Changes
+
+- [#600](https://github.com/supermacro/neverthrow/pull/600) [`3aee20a`](https://github.com/supermacro/neverthrow/commit/3aee20a1c429062d26f440fde32a3f26ef05533a) Thanks [@m-shaka](https://github.com/m-shaka)! - docs: updated README.md about `safeTry` and added @deprecated tag to safeUnwrap
+
 ## 8.1.0
 
 ### Minor Changes
