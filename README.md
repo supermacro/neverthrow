@@ -802,7 +802,7 @@ const result = Result.combineWithAllErrors(resultList)
 
 #### `Result.safeUnwrap()`
 
-**⚠️ You must use `.safeUnwrap` in a generator context with `safeTry`**. Please see [safeTry](#safeTry).
+**Deprecated**. You don't need to use this method anymore.
 
 Allows for unwrapping a `Result` or returning an `Err` implicitly, thereby reducing boilerplate.
 
@@ -1412,7 +1412,7 @@ const result = ResultAsync.combineWithAllErrors(resultList)
 
 #### `ResultAsync.safeUnwrap()`
 
-**⚠️ You must use `.safeUnwrap` in a generator context with `safeTry`**. Please see [safeTry](#safeTry).
+**Deprecated**. You don't need to use this method anymore.
 
 Allows for unwrapping a `Result` or returning an `Err` implicitly, thereby reducing boilerplate.
 
@@ -1492,13 +1492,11 @@ function myFunc(): Result<number, string> {
             // aborted here and the enclosing `safeTry` block is evaluated to that `Err`.
             // Otherwise, this `(yield* ...)` is evaluated to its `.value`.
             (yield* mayFail1()
-                .mapErr(e => `aborted by an error from 1st function, ${e}`)
-                .safeUnwrap())
+                .mapErr(e => `aborted by an error from 1st function, ${e}`))
             +
             // The same as above.
             (yield* mayFail2()
-                .mapErr(e => `aborted by an error from 2nd function, ${e}`)
-                .safeUnwrap())
+                .mapErr(e => `aborted by an error from 2nd function, ${e}`))
         )
     })
 }
@@ -1520,13 +1518,11 @@ function myFunc(): Promise<Result<number, string>> {
         return ok(
             // You have to await if the expression is Promise<Result>
             (yield* (await mayFail1())
-                .mapErr(e => `aborted by an error from 1st function, ${e}`)
-                .safeUnwrap())
+                .mapErr(e => `aborted by an error from 1st function, ${e}`))
             +
             // You can call `safeUnwrap` directly if its ResultAsync
             (yield* mayFail2()
-                .mapErr(e => `aborted by an error from 2nd function, ${e}`)
-                .safeUnwrap())
+                .mapErr(e => `aborted by an error from 2nd function, ${e}`))
         )
     })
 }
