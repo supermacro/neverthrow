@@ -1,14 +1,25 @@
-import { errAsync, ResultAsync } from './'
+import { errAsync, ResultAsync, InferAsyncErrTypes } from './'
 import { createNeverThrowError, ErrorConfig } from './_internals/error'
 import {
   combineResultList,
   combineResultListWithAllErrors,
   ExtractErrTypes,
   ExtractOkTypes,
-  InferAsyncErrTypes,
-  InferErrTypes,
-  InferOkTypes,
 } from './_internals/utils'
+
+/**
+ * Infers the ok types from a Result
+ * @example
+ * type OkType = InferOkTypes<Result<number, string>> // number
+ */
+export type InferOkTypes<R> = R extends Result<infer T, unknown> ? T : never
+
+/**
+ * Infers the error types from a Result
+ * @example
+ * type ErrType = InferErrTypes<Result<number, string>> // string
+ */
+export type InferErrTypes<R> = R extends Result<unknown, infer E> ? E : never
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Result {

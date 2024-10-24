@@ -1,4 +1,14 @@
-export { Err, Ok, Result, err, fromThrowable, ok, safeTry } from './result'
+export {
+  Err,
+  Ok,
+  Result,
+  err,
+  fromThrowable,
+  ok,
+  safeTry,
+  InferErrTypes,
+  InferOkTypes,
+} from './result'
 export {
   ResultAsync,
   errAsync,
@@ -6,6 +16,6 @@ export {
   fromPromise,
   fromSafePromise,
   okAsync,
+  InferAsyncErrTypes,
+  InferAsyncOkTypes,
 } from './result-async'
-export type { ResultError } from './result-error'
-export type { ResultValue } from './result-value'
