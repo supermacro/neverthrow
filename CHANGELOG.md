@@ -1,5 +1,11 @@
 # neverthrow
 
+## 8.1.0
+
+### Minor Changes
+
+- [#589](https://github.com/supermacro/neverthrow/pull/589) [`609b398`](https://github.com/supermacro/neverthrow/commit/609b398aa1fd258a1fede974707d54eb4c230f3c) Thanks [@dmmulroy](https://github.com/dmmulroy)! - safeTry should not require .safeUnwrap()
+
 ## 8.0.0
 
 ### Major Changes
