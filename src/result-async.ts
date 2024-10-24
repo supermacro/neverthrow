@@ -192,6 +192,15 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   }
 
   /**
+   * @deprecated will be removed in 9.0.0.
+   *
+   * You can use `safeTry` without this method.
+   * @example
+   * ```typescript
+   * safeTry(async function* () {
+   *   const okValue = yield* yourResult
+   * })
+   * ```
    * Emulates Rust's `?` operator in `safeTry`'s body. See also `safeTry`.
    */
   async *safeUnwrap(): AsyncGenerator<Err<never, E>, T> {
@@ -204,6 +213,18 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     failureCallback?: (reason: unknown) => B | PromiseLike<B>,
   ): PromiseLike<A | B> {
     return this._promise.then(successCallback, failureCallback)
+  }
+
+  async *[Symbol.asyncIterator](): AsyncGenerator<Err<never, E>, T> {
+    const result = await this._promise
+
+    if (result.isErr()) {
+      // @ts-expect-error -- This is structurally equivalent and safe
+      yield errAsync(result.error)
+    }
+
+    // @ts-expect-error -- This is structurally equivalent and safe
+    return result.value
   }
 }
 
