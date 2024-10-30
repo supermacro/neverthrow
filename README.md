@@ -1431,7 +1431,7 @@ Please find documentation at [Result.fromThrowable](#resultfromthrowable-static-
 
 #### `fromAsyncThrowable`
 
-Top level export of `ResultAsync.fromSafePromise`.
+Top level export of `ResultAsync.fromThrowable`.
 Please find documentation at [ResultAsync.fromThrowable](#resultasyncfromthrowable-static-class-method)
 
 [⬆️  Back to top](#toc)
