@@ -18,7 +18,8 @@
     "clean": "rm -rf ./dist ./tmp",
     "build": "npm run clean && rollup --config && mv tmp/*.js dist",
     "prepack": "npm run build",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "version": "changeset version && npm i --lockfile-only"
   },
   "repository": {
     "type": "git",
