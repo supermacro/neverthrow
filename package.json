@@ -1,6 +1,6 @@
 {
   "name": "neverthrow",
-  "version": "8.1.1",
+  "version": "8.2.0",
   "description": "Stop throwing errors, and instead return Results!",
   "main": "dist/index.cjs.js",
   "module": "dist/index.es.js",
