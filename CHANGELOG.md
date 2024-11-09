@@ -1,5 +1,11 @@
 # neverthrow
 
+## 8.2.0
+
+### Minor Changes
+
+- [#584](https://github.com/supermacro/neverthrow/pull/584) [`acea44a`](https://github.com/supermacro/neverthrow/commit/acea44adb98dda2ca32fe4e882879461cc7cedc2) Thanks [@macksal](https://github.com/macksal)! - Allow ok/err/okAsync/errAsync to accept zero arguments when returning void
+
 ## 8.1.1
 
 ### Patch Changes
