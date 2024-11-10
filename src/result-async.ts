@@ -201,6 +201,15 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   }
 
   /**
+   * @deprecated will be removed in 9.0.0.
+   *
+   * You can use `safeTry` without this method.
+   * @example
+   * ```typescript
+   * safeTry(async function* () {
+   *   const okValue = yield* yourResult
+   * })
+   * ```
    * Emulates Rust's `?` operator in `safeTry`'s body. See also `safeTry`.
    */
   async *safeUnwrap(): AsyncGenerator<Err<never, E>, T> {
@@ -214,13 +223,31 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   ): PromiseLike<A | B> {
     return this._promise.then(successCallback, failureCallback)
   }
+
+  async *[Symbol.asyncIterator](): AsyncGenerator<Err<never, E>, T> {
+    const result = await this._promise
+
+    if (result.isErr()) {
+      // @ts-expect-error -- This is structurally equivalent and safe
+      yield errAsync(result.error)
+    }
+
+    // @ts-expect-error -- This is structurally equivalent and safe
+    return result.value
+  }
 }
 
-export const okAsync = <T, E = never>(value: T): ResultAsync<T, E> =>
-  new ResultAsync(Promise.resolve(new Ok<T, E>(value)))
+export function okAsync<T, E = never>(value: T): ResultAsync<T, E>
+export function okAsync<T extends void = void, E = never>(value: void): ResultAsync<void, E>
+export function okAsync<T, E = never>(value: T): ResultAsync<T, E> {
+  return new ResultAsync(Promise.resolve(new Ok<T, E>(value)))
+}
 
-export const errAsync = <T = never, E = unknown>(err: E): ResultAsync<T, E> =>
-  new ResultAsync(Promise.resolve(new Err<T, E>(err)))
+export function errAsync<T = never, E = unknown>(err: E): ResultAsync<T, E>
+export function errAsync<T = never, E extends void = void>(err: void): ResultAsync<T, void>
+export function errAsync<T = never, E = unknown>(err: E): ResultAsync<T, E> {
+  return new ResultAsync(Promise.resolve(new Err<T, E>(err)))
+}
 
 export const fromPromise = ResultAsync.fromPromise
 export const fromSafePromise = ResultAsync.fromSafePromise
