@@ -41,6 +41,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.fromThrowable` (static class method)](#resultfromthrowable-static-class-method)
     - [`Result.combine` (static class method)](#resultcombine-static-class-method)
     - [`Result.combineWithAllErrors` (static class method)](#resultcombinewithallerrors-static-class-method)
+    - [`Result.struct` (static class method)](#resultstruct-static-class-method)
     - [`Result.safeUnwrap()`](#resultsafeunwrap)
   + [Asynchronous API (`ResultAsync`)](#asynchronous-api-resultasync)
     - [`okAsync`](#okasync)
@@ -58,6 +59,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.andThrough` (method)](#resultasyncandthrough-method)
     - [`ResultAsync.combine` (static class method)](#resultasynccombine-static-class-method)
     - [`ResultAsync.combineWithAllErrors` (static class method)](#resultasynccombinewithallerrors-static-class-method)
+    - [`ResultAsync.struct` (static class method)](#resultasyncstruct-static-class-method)
     - [`ResultAsync.safeUnwrap()`](#resultasyncsafeunwrap)
   + [Utilities](#utilities)
     - [`fromThrowable`](#fromthrowable)
@@ -800,6 +802,59 @@ const result = Result.combineWithAllErrors(resultList)
 
 [⬆️  Back to top](#toc)
 
+---
+
+#### `Result.struct` (static class method)
+
+> Although Result is not an actual JS class, the way that `struct` has been implemented requires that you call `struct` as though it were a static method on `Result`. See examples below.
+
+Combine objects of `Result`s.
+
+**`struct` works on both heterogeneous and homogeneous objects**. This means that you can have objects that contain different kinds of `Result`s and still be able to combine them. Note that you cannot combine objects that contain both `Result`s **and** `ResultAsync`s.
+
+The `struct` function takes an object of results and returns a single result. If all the results in the object are `Ok`, then the return value will be a `Ok` containing an object of all the individual `Ok` values.
+
+If multiple results in the object are `Err` then the `struct` function returns an `Err` containing an array of all the error values.
+
+Example:
+```typescript
+const resultObject: {
+  a: Result<number, never>
+  b: Result<number, never>
+} = {
+  a: ok(1),
+  b: ok(2),
+}
+
+const combinedList: Result<{
+  a: number
+  b: number
+}, never> = Result.struct(resultObject)
+```
+
+Example of error:
+```typescript
+const resultObject: {
+  a: Result<number, unknown>
+  b: Result<never, number>
+  c: Result<never, string>
+} = {
+  a: ok(1),
+  b: err(2),
+  c: err('3'),
+}
+
+const combinedList: Result<{
+  a: number
+  b: unknown
+  c: unknown
+}, (number | number)[]> = Result.struct(resultObject)
+```
+
+[⬆️  Back to top](#toc)
+
+---
+
 #### `Result.safeUnwrap()`
 
 **Deprecated**. You don't need to use this method anymore.
@@ -1409,6 +1464,57 @@ const result = ResultAsync.combineWithAllErrors(resultList)
 
 // result is Err(['boooom!', 'ahhhhh!'])
 ```
+
+---
+
+#### `ResultAsync.struct` (static class method)
+
+Combine objects of `ResultAsyncs`s.
+
+**`struct` works on both heterogeneous and homogeneous objects**. This means that you can have objects that contain different kinds of `Result`s and still be able to combine them. Note that unlike `Result.struct`, you can combine objects containing both `Result`s and `ResultAsync`s.
+
+The `struct` function takes an object of results and returns a single result. If all the results in the object are `Ok`, then the return value will be a `Ok` containing an object of all the individual `Ok` values.
+
+If multiple results in the object are `Err` then the `struct` function returns an `Err` containing an array of all the error values.
+
+Example:
+```typescript
+const resultObject: {
+  a: ResultAsync<number, never>
+  b: ResultAsync<number, never>
+} = {
+  a: okAsync(1),
+  b: okAsync(2),
+}
+
+const combinedList: ResultAsync<{
+  a: number
+  b: number
+}, never> = ResultAsync.struct(resultObject)
+```
+
+Example of error:
+```typescript
+const resultObject: {
+  a: ResultAsync<number, unknown>
+  b: ResultAsync<never, number>
+  c: ResultAsync<never, string>
+} = {
+  a: okAsync(1),
+  b: errAsync(2),
+  c: errAsync('3'),
+}
+
+const combinedList: ResultAsync<{
+  a: number
+  b: unknown
+  c: unknown
+}, (number | number)[]> = ResultAsync.struct(resultObject)
+```
+
+[⬆️  Back to top](#toc)
+
+---
 
 #### `ResultAsync.safeUnwrap()`
 
