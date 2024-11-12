@@ -16,7 +16,10 @@ import {
   InferAsyncErrTypes,
   InferAsyncOkTypes,
   InferErrTypes,
+  InferMaybeAsyncErrTypes,
+  InferMaybeAsyncOkTypes,
   InferOkTypes,
+  MaybeResultAsync,
 } from './_internals/utils'
 
 export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
@@ -84,6 +87,35 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     return combineResultAsyncListWithAllErrors(
       asyncResultList,
     ) as CombineResultsWithAllErrorsArrayAsync<T>
+  }
+
+  static struct<E, T extends Record<string, MaybeResultAsync<unknown, E>>>(
+    record: T,
+  ): StructResultAsync<E, T> {
+    const results = Object.entries(record).reduce<
+      Array<MaybeResultAsync<[string, unknown], unknown>>
+    >((previous, [key, value]) => {
+      previous.push(value.map((result) => [key, result]))
+      return previous
+    }, [])
+
+    return ResultAsync.fromSafePromise(Promise.all(results)).andThen((results) => {
+      const errors = results.filter((result) => result.isErr())
+      if (0 < errors.length) {
+        return errAsync(
+          errors.map((error) => (error as Err<unknown, InferMaybeAsyncErrTypes<T[keyof T]>>).error),
+        )
+      }
+
+      const successes = results as Ok<[string, unknown], unknown>[]
+      return okAsync(
+        successes.reduce<Record<string, unknown>>((previous, result) => {
+          const [key, value] = result.value
+          previous[key] = value
+          return previous
+        }, {}) as { [Key in keyof T]: InferMaybeAsyncOkTypes<T[Key]> },
+      )
+    })
   }
 
   map<A>(f: (t: T) => A | Promise<A>): ResultAsync<A, E> {
@@ -258,6 +290,14 @@ export type CombineResultsWithAllErrorsArrayAsync<
 > = IsLiteralArray<T> extends 1
   ? TraverseWithAllErrorsAsync<UnwrapAsync<T>>
   : ResultAsync<ExtractOkAsyncTypes<T>, ExtractErrAsyncTypes<T>[number][]>
+
+export type StructResultAsync<
+  E,
+  T extends Record<string, MaybeResultAsync<unknown, E>>
+> = ResultAsync<
+  { [Key in keyof T]: InferMaybeAsyncOkTypes<T[Key]> },
+  Array<InferMaybeAsyncErrTypes<T[keyof T]>>
+>
 
 // Unwraps the inner `Result` from a `ResultAsync` for all elements.
 type UnwrapAsync<T> = IsLiteralArray<T> extends 1
