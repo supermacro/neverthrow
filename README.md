@@ -38,6 +38,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.andTee` (method)](#resultandtee-method)
     - [`Result.andThrough` (method)](#resultandthrough-method)
     - [`Result.asyncAndThrough` (method)](#resultasyncandthrough-method)
+    - [`Result.andInspectErr` (method)](#resultandinspecterr-method)
     - [`Result.fromThrowable` (static class method)](#resultfromthrowable-static-class-method)
     - [`Result.combine` (static class method)](#resultcombine-static-class-method)
     - [`Result.combineWithAllErrors` (static class method)](#resultcombinewithallerrors-static-class-method)
@@ -56,6 +57,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.match` (method)](#resultasyncmatch-method)
     - [`ResultAsync.andTee` (method)](#resultasyncandtee-method)
     - [`ResultAsync.andThrough` (method)](#resultasyncandthrough-method)
+    - [`ResultAsync.andInspectErr` (method)](#resultasyncandinspecterr-method)
     - [`ResultAsync.combine` (static class method)](#resultasynccombine-static-class-method)
     - [`ResultAsync.combineWithAllErrors` (static class method)](#resultasynccombinewithallerrors-static-class-method)
     - [`ResultAsync.safeUnwrap()`](#resultasyncsafeunwrap)
@@ -549,7 +551,7 @@ Note that in the above example if `parseHeaders` returns an `Err` then `.map` an
 #### `Result.andTee` (method)
 
 Takes a `Result<T, E>` and lets the original `Result<T, E>` pass through regardless the result of the passed-in function.
-This is a handy way to handle side effects whose failure or success should not affect your main logics such as logging. 
+This is a handy way to handle side effects whose failure or success should not affect your main logics such as logging.
 
 **Signature:**
 
@@ -676,6 +678,56 @@ resAsync.then((res: Result<void, ParseError | InsertError | NotificationError>) 
 [⬆️  Back to top](#toc)
 
 ---
+
+#### `Result.andInspectErr` (method)
+
+Similar to `andTee`, but for error. This method allows you to inspect the current
+error value by applying it to a provided function, while still returning the same
+current value as the result. This is useful when you want to pass the current error
+to your side-track work such as logging, but want to continue main-track work after that.
+This method does not care about the result of the passed-in computation.
+
+**Signature:**
+
+```typescript
+class Result<T, E> {
+  andInspectErr(
+    callback: (error: E) => unknown
+  ): Result<T, E> { ... }
+}
+```
+
+**Example:**
+
+```typescript
+import { parseUserInput } from 'imaginary-parser'
+import { logError } from 'imaginary-logger'
+import { insertUser } from 'imaginary-database'
+
+// ^ assume parseUseInput, logError and insertUser have the following signatures:
+// parseUserInput(input: RequestData): Result<User, ParseError>
+// logError(error: ParseError): Result<void, LogError>
+// insertUser(user: User): ResultAsync<void, InsertError>
+// Note logError returns void upon success but insertUser takes User type.
+
+const resAsync = parseUserInput(userInput)
+               .andInspectErr(logError)
+               .asyncAndThen(insertUser)
+
+// Note there is no LogError in the types below 
+resAsync.then((res: Result<void, ParseError | InsertError>) => {e
+  if (res.isErr()) {
+    console.log("Oops, at least one step failed", res.error)
+  } else {
+    console.log("User input has been parsed and inserted successfully.")
+  }
+}))
+```
+  
+[⬆️  Back to top](#toc)
+
+---
+
 #### `Result.fromThrowable` (static class method)
 
 > Although Result is not an actual JS class, the way that `fromThrowable` has been implemented requires that you call `fromThrowable` as though it were a static method on `Result`. See examples below.
@@ -1231,11 +1283,12 @@ const resultMessage = await validateUser(user)
 [⬆️  Back to top](#toc)
 
 ---
+
 #### `ResultAsync.andTee` (method)
 
-Takes a `ResultAsync<T, E>` and lets the original `ResultAsync<T, E>` pass through regardless 
+Takes a `ResultAsync<T, E>` and lets the original `ResultAsync<T, E>` pass through regardless
 the result of the passed-in function.
-This is a handy way to handle side effects whose failure or success should not affect your main logics such as logging. 
+This is a handy way to handle side effects whose failure or success should not affect your main logics such as logging.
 
 **Signature:**
 
@@ -1278,8 +1331,8 @@ resAsync.then((res: Result<void, InsertError | NotificationError>) => {e
 [⬆️  Back to top](#toc)
 
 ---
-#### `ResultAsync.andThrough` (method)
 
+#### `ResultAsync.andThrough` (method)
 
 Similar to `andTee` except for:
 
@@ -1326,6 +1379,52 @@ resAsync.then((res: Result<void, BuildError | InsertError | NotificationError>) 
 [⬆️  Back to top](#toc)
 
 ---
+
+#### `ResultAsync.andInspectErr` (method)
+
+An asynchronous version of [`Result.andInspectErr`](#resultandinspecterr-method).
+
+**Signature:**
+
+```typescript
+class ResultAsync<T, E> {
+  andInspectErr(
+    callback: (error: E) => unknown
+  ): ResultAsync<T, E> { ... }
+}
+```
+
+**Example:**
+
+```typescript
+import { insertUser } from 'imaginary-database'
+import { logError } from 'imaginary-logger'
+import { sendNotification } from 'imaginary-service'
+
+// ^ assume insertUser, logError and sendNotification have the following signatures:
+// insertUser(user: User): ResultAsync<User, InsertError>
+// logError(error: InsertError): Result<void, LogError>
+// sendNotification(user: User): ResultAsync<void, NotificationError>
+// Note logError returns void on success but sendNotification takes User type.
+
+const resAsync = insertUser(user)
+               .andInspectErr(logError)
+               .andThen(sendNotification)
+
+// Note there is no LogError in the types below
+resAsync.then((res: Result<void, InsertError | NotificationError>) => {e
+  if (res.isErr()) {
+    console.log("Oops, at least one step failed", res.error)
+  } else {
+    console.log("User has been inserted and notified successfully.")
+  }
+}))
+```
+
+[⬆️  Back to top](#toc)
+
+---
+
 #### `ResultAsync.combine` (static class method)
 
 Combine lists of `ResultAsync`s.
