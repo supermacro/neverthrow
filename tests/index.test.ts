@@ -159,6 +159,29 @@ describe('Result.Ok', () => {
     })
   })
 
+  describe('andInspectErr', () => {
+    it('Skips over andInspectErr for Ok Result', () => {
+      const okVal = ok(12)
+      const passedFn = vitest.fn((_number) => {})
+
+      const inspected = okVal.andInspectErr(passedFn)
+
+      expect(inspected.isOk()).toBe(true)
+      expect(passedFn).not.toHaveBeenCalled()
+      expect(inspected._unsafeUnwrap()).toBe(12)
+    })
+    it('Skips over andInspectErr for Ok ResultAsync', async () => {
+      const okVal = okAsync(12)
+      const passedFn = vitest.fn((_number) => {})
+
+      const inspected = await okVal.andInspectErr(passedFn)
+
+      expect(inspected.isOk()).toBe(true)
+      expect(passedFn).not.toHaveBeenCalled()
+      expect(inspected._unsafeUnwrap()).toBe(12)
+    })
+  })
+
   describe('asyncAndThrough', () => {
     it('Calls the passed function but returns an original ok as Async', async () => {
       const okVal = ok(12)
@@ -358,6 +381,57 @@ describe('Result.Err', () => {
     expect(hopefullyNotFlattened.isErr()).toBe(true)
     expect(mapper).not.toHaveBeenCalled()
     expect(errVal._unsafeUnwrapErr()).toEqual('Yolo')
+  })
+
+  describe('andInspectErr', () => {
+    it('Calls the passed function but returns an original err value', async () => {
+      const errVal = err('oops')
+      const passedFn = vitest.fn((_string) => {
+        return err('new error')
+      })
+
+      const inspected = errVal.andInspectErr(passedFn)
+
+      expect(inspected.isErr()).toBe(true)
+      expect(passedFn).toHaveBeenCalledTimes(1)
+      expect(inspected._unsafeUnwrapErr()).toBe('oops')
+    })
+    it('Calls the passed function but returns an original async err value', async () => {
+      const errVal = errAsync('oops')
+      const passedFn = vitest.fn((_string) => {
+        return errAsync('new error')
+      })
+
+      const inspected = await errVal.andInspectErr(passedFn)
+
+      expect(inspected.isErr()).toBe(true)
+      expect(passedFn).toHaveBeenCalledTimes(1)
+      expect(inspected._unsafeUnwrapErr()).toBe('oops')
+    })
+    it('returns an original err even when the passed function fails', async () => {
+      const errVal = err('original error')
+      const passedFn = vitest.fn((_string) => {
+        throw new Error('OMG!')
+      })
+
+      const inspected = errVal.andInspectErr(passedFn)
+
+      expect(inspected.isErr()).toBe(true)
+      expect(passedFn).toHaveBeenCalledTimes(1)
+      expect(inspected._unsafeUnwrapErr()).toBe('original error')
+    })
+    it('returns an original async err even when the passed function fails', async () => {
+      const errVal = errAsync('original error')
+      const passedFn = vitest.fn((_string) => {
+        throw new Error('OMG!')
+      })
+
+      const inspected = await errVal.andInspectErr(passedFn)
+
+      expect(inspected.isErr()).toBe(true)
+      expect(passedFn).toHaveBeenCalledTimes(1)
+      expect(inspected._unsafeUnwrapErr()).toBe('original error')
+    })
   })
 
   it('Skips over asyncAndThrough but returns ResultAsync instead', async () => {
@@ -1040,6 +1114,31 @@ describe('ResultAsync', () => {
   })
 
   describe('andTee', () => {
+    it('Calls the passed function but returns an original ok', async () => {
+      const okVal = okAsync(12)
+      const passedFn = vitest.fn((_number) => {})
+
+      const teed = await okVal.andTee(passedFn)
+
+      expect(teed.isOk()).toBe(true)
+      expect(passedFn).toHaveBeenCalledTimes(1)
+      expect(teed._unsafeUnwrap()).toStrictEqual(12)
+    })
+    it('returns an original ok even when the passed function fails', async () => {
+      const okVal = okAsync(12)
+      const passedFn = vitest.fn((_number) => {
+        throw new Error('OMG!')
+      })
+
+      const teed = await okVal.andTee(passedFn)
+
+      expect(teed.isOk()).toBe(true)
+      expect(passedFn).toHaveBeenCalledTimes(1)
+      expect(teed._unsafeUnwrap()).toStrictEqual(12)
+    })
+  })
+
+  describe('andInspectErr', () => {
     it('Calls the passed function but returns an original ok', async () => {
       const okVal = okAsync(12)
       const passedFn = vitest.fn((_number) => {})
