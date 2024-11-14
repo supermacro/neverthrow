@@ -36,6 +36,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.match` (method)](#resultmatch-method)
     - [`Result.asyncMap` (method)](#resultasyncmap-method)
     - [`Result.andTee` (method)](#resultandtee-method)
+    - [`Result.orTee` (method)](#resultortee-method)
     - [`Result.andThrough` (method)](#resultandthrough-method)
     - [`Result.asyncAndThrough` (method)](#resultasyncandthrough-method)
     - [`Result.fromThrowable` (static class method)](#resultfromthrowable-static-class-method)
@@ -55,6 +56,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.orElse` (method)](#resultasyncorelse-method)
     - [`ResultAsync.match` (method)](#resultasyncmatch-method)
     - [`ResultAsync.andTee` (method)](#resultasyncandtee-method)
+    - [`ResultAsync.orTee` (method)](#resultasyncortee-method)
     - [`ResultAsync.andThrough` (method)](#resultasyncandthrough-method)
     - [`ResultAsync.combine` (static class method)](#resultasynccombine-static-class-method)
     - [`ResultAsync.combineWithAllErrors` (static class method)](#resultasynccombinewithallerrors-static-class-method)
@@ -576,6 +578,53 @@ import { insertUser } from 'imaginary-database'
 
 const resAsync = parseUserInput(userInput)
                .andTee(logUser)
+               .asyncAndThen(insertUser)
+
+// Note no LogError shows up in the Result type
+resAsync.then((res: Result<void, ParseError | InsertError>) => {e
+  if(res.isErr()){
+    console.log("Oops, at least one step failed", res.error)
+  }
+  else{
+    console.log("User input has been parsed and inserted successfully.")
+  }
+}))
+```
+
+[⬆️  Back to top](#toc)
+
+---
+
+#### `Result.orTee` (method)
+
+Like `andTee` for the error track. Takes a `Result<T, E>` and lets the `Err` value pass through regardless the result of the passed-in function.
+This is a handy way to handle side effects whose failure or success should not affect your main logics such as logging.
+
+**Signature:**
+
+```typescript
+class Result<T, E> {
+  orTee(
+    callback: (value: E) => unknown
+  ): Result<T, E> { ... }
+}
+```
+
+**Example:**
+
+```typescript
+import { parseUserInput } from 'imaginary-parser'
+import { logParseError } from 'imaginary-logger'
+import { insertUser } from 'imaginary-database'
+
+// ^ assume parseUserInput, logParseError and insertUser have the following signatures:
+// parseUserInput(input: RequestData): Result<User, ParseError>
+// logParseError(parseError: ParseError): Result<void, LogError> 
+// insertUser(user: User): ResultAsync<void, InsertError>
+// Note logParseError returns void upon success but insertUser takes User type.
+
+const resAsync = parseUserInput(userInput)
+               .orTee(logParseError)
                .asyncAndThen(insertUser)
 
 // Note no LogError shows up in the Result type
@@ -1273,6 +1322,53 @@ resAsync.then((res: Result<void, InsertError | NotificationError>) => {e
     console.log("User has been inserted and notified successfully.")
   }
 }))  
+```
+
+[⬆️  Back to top](#toc)
+
+---
+#### `ResultAsync.orTee` (method)
+
+Like `andTee` for the error track. Takes a `ResultAsync<T, E>` and lets the original `Err` value pass through regardless 
+the result of the passed-in function.
+This is a handy way to handle side effects whose failure or success should not affect your main logics such as logging. 
+
+**Signature:**
+
+```typescript
+class ResultAsync<T, E> {
+  orTee(
+    callback: (value: E) => unknown
+  ): ResultAsync<T, E>  => { ... }
+}
+```
+
+**Example:**
+
+```typescript
+import { insertUser } from 'imaginary-database'
+import { logInsertError } from 'imaginary-logger'
+import { sendNotification } from 'imaginary-service'
+
+// ^ assume insertUser, logInsertError and sendNotification have the following signatures:
+// insertUser(user: User): ResultAsync<User, InsertError>
+// logInsertError(insertError: InsertError): Result<void, LogError>
+// sendNotification(user: User): ResultAsync<void, NotificationError>
+// Note logInsertError returns void on success but sendNotification takes User type. 
+
+const resAsync = insertUser(user)
+                .orTee(logUser)
+                .andThen(sendNotification)
+
+// Note there is no LogError in the types below 
+resAsync.then((res: Result<void, InsertError | NotificationError>) => {e
+  if(res.isErr()){
+    console.log("Oops, at least one step failed", res.error)
+  }
+  else{
+    console.log("User has been inserted and notified successfully.")
+  }
+}))
 ```
 
 [⬆️  Back to top](#toc)

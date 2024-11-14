@@ -130,6 +130,22 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     )
   }
 
+  orTee(f: (t: E) => unknown): ResultAsync<T, E> {
+    return new ResultAsync(
+      this._promise.then(async (res: Result<T, E>) => {
+        if (res.isOk()) {
+          return new Ok<T, E>(res.value)
+        }
+        try {
+          await f(res.error)
+        } catch (e) {
+          // Tee does not care about the error
+        }
+        return new Err<T, E>(res.error)
+      }),
+    )
+  }
+
   mapErr<U>(f: (e: E) => U | Promise<U>): ResultAsync<T, U> {
     return new ResultAsync(
       this._promise.then(async (res: Result<T, E>) => {
