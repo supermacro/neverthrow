@@ -159,6 +159,31 @@ describe('Result.Ok', () => {
     })
   })
 
+  describe('orTee', () => {
+    it('Calls the passed function but returns an original err', () => {
+      const errVal = err(12)
+      const passedFn = vitest.fn((_number) => {})
+
+      const teed = errVal.orTee(passedFn)
+
+      expect(teed.isErr()).toBe(true)
+      expect(passedFn).toHaveBeenCalledTimes(1)
+      expect(teed._unsafeUnwrapErr()).toStrictEqual(12)
+    })
+    it('returns an original err even when the passed function fails', () => {
+      const errVal = err(12)
+      const passedFn = vitest.fn((_number) => {
+        throw new Error('OMG!')
+      })
+
+      const teed = errVal.orTee(passedFn)
+
+      expect(teed.isErr()).toBe(true)
+      expect(passedFn).toHaveBeenCalledTimes(1)
+      expect(teed._unsafeUnwrapErr()).toStrictEqual(12)
+    })
+  })
+
   describe('asyncAndThrough', () => {
     it('Calls the passed function but returns an original ok as Async', async () => {
       const okVal = ok(12)
@@ -1061,6 +1086,31 @@ describe('ResultAsync', () => {
       expect(teed.isOk()).toBe(true)
       expect(passedFn).toHaveBeenCalledTimes(1)
       expect(teed._unsafeUnwrap()).toStrictEqual(12)
+    })
+  })
+
+  describe('orTee', () => {
+    it('Calls the passed function but returns an original err', async () => {
+      const errVal = errAsync(12)
+      const passedFn = vitest.fn((_number) => {})
+
+      const teed = await errVal.orTee(passedFn)
+
+      expect(teed.isErr()).toBe(true)
+      expect(passedFn).toHaveBeenCalledTimes(1)
+      expect(teed._unsafeUnwrapErr()).toStrictEqual(12)
+    })
+    it('returns an original err even when the passed function fails', async () => {
+      const errVal = errAsync(12)
+      const passedFn = vitest.fn((_number) => {
+        throw new Error('OMG!')
+      })
+
+      const teed = await errVal.orTee(passedFn)
+
+      expect(teed.isErr()).toBe(true)
+      expect(passedFn).toHaveBeenCalledTimes(1)
+      expect(teed._unsafeUnwrapErr()).toStrictEqual(12)
     })
   })
 
