@@ -16,8 +16,8 @@
     "format": "prettier --write 'src/**/*.ts?(x)' && npm run lint -- --fix",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf ./dist ./tmp",
-    "build": "npm run clean && rollup --config && mv tmp/*.js dist",
-    "prepack": "npm run build",
+    "build": "npm run clean && rollup --config && mv tmp/*.js dist && attw --pack .",
+    "prepublishOnly": "npm run build",
     "release": "changeset publish",
     "version": "changeset version && npm i --lockfile-only"
   },
@@ -32,6 +32,7 @@
   },
   "homepage": "https://github.com/supermacro/neverthrow#readme",
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.17.3",
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.7",
     "@types/node": "^18.19.39",
@@ -56,7 +57,8 @@
     "error"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=18",
+    "npm": ">=11"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.24.0"
