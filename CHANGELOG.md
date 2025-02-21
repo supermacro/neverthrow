@@ -1,5 +1,13 @@
 # neverthrow
 
+## 8.2.0
+
+### Minor Changes
+
+- [#615](https://github.com/supermacro/neverthrow/pull/615) [`85ed7fd`](https://github.com/supermacro/neverthrow/commit/85ed7fd3a1247e4c0e83bba13f5e874282243d75) Thanks [@konker](https://github.com/konker)! - Add orTee, which is the equivalent of andTee but for the error track.
+
+- [#584](https://github.com/supermacro/neverthrow/pull/584) [`acea44a`](https://github.com/supermacro/neverthrow/commit/acea44adb98dda2ca32fe4e882879461cc7cedc2) Thanks [@macksal](https://github.com/macksal)! - Allow ok/err/okAsync/errAsync to accept zero arguments when returning void
+
 ## 8.1.1
 
 ### Patch Changes
