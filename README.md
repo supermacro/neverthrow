@@ -34,7 +34,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.asyncAndThen` (method)](#resultasyncandthen-method)
     - [`Result.orElse` (method)](#resultorelse-method)
     - [`Result.match` (method)](#resultmatch-method)
-    - [`Result.asyncMap` (method)](#resultasyncmap-method)
+    - [`Result.asyncMap` (method)](#result-asyncmap-method)
     - [`Result.andTee` (method)](#resultandtee-method)
     - [`Result.orTee` (method)](#resultortee-method)
     - [`Result.andThrough` (method)](#resultandthrough-method)
@@ -511,6 +511,7 @@ const answer = computationThatMightFail()
 
 ---
 
+<a name="result-asyncmap-method"></a>
 #### `Result.asyncMap` (method)
 
 Similar to `map` except for two things:
