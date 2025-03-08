@@ -210,6 +210,18 @@ interface IResult<T, E> {
   andTee(f: (t: T) => unknown): Result<T, E>
 
   /**
+   * This "tee"s the current `Err` value to an passed-in computation such as side
+   * effect functions but still returns the same `Err` value as the result.
+   *
+   * This is useful when you want to pass the current `Err` value to your side-track
+   * work such as logging but want to continue error-track work after that.
+   * This method does not care about the result of the passed in computation.
+   *
+   * @param f The function to apply to the current `Err` value
+   */
+  orTee(f: (t: E) => unknown): Result<T, E>
+
+  /**
    * Similar to `andTee` except error result of the computation will be passed
    * to the downstream in case of an error.
    *
@@ -357,6 +369,10 @@ export class Ok<T, E> implements IResult<T, E> {
     return ok<T, E>(this.value)
   }
 
+  orTee(_f: (t: E) => unknown): Result<T, E> {
+    return ok<T, E>(this.value)
+  }
+
   orElse<R extends Result<unknown, unknown>>(
     _f: (e: E) => R,
   ): Result<InferOkTypes<R> | T, InferErrTypes<R>>
@@ -441,6 +457,15 @@ export class Err<T, E> implements IResult<T, E> {
 
   andTee(_f: (t: T) => unknown): Result<T, E> {
     return err(this.error)
+  }
+
+  orTee(f: (t: E) => unknown): Result<T, E> {
+    try {
+      f(this.error)
+    } catch (e) {
+      // Tee doesn't care about the error
+    }
+    return err<T, E>(this.error)
   }
 
   andThen<R extends Result<unknown, unknown>>(
