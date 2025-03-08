@@ -288,6 +288,19 @@ describe('Result.Ok', () => {
     expect(errMapper).not.toHaveBeenCalled()
   })
 
+  it('Forks on an Ok', () => {
+    const okMapper = vitest.fn((_val) => ok('weeeeee'))
+    const errMapper = vitest.fn((_val) => err('wooooo'))
+
+    const forked = ok(12).fork(okMapper, errMapper)
+
+    expect(forked.isOk()).toBe(true)
+    expect(forked).toBeInstanceOf(Ok)
+    expect(forked._unsafeUnwrap()).toBe('weeeeee')
+    expect(okMapper).toHaveBeenCalledTimes(1)
+    expect(errMapper).not.toHaveBeenCalled()
+  })
+
   it('Unwraps without issue', () => {
     const okVal = ok(12)
 
@@ -446,6 +459,19 @@ describe('Result.Err', () => {
     const matched = err(12).match(okMapper, errMapper)
 
     expect(matched).toBe('wooooo')
+    expect(okMapper).not.toHaveBeenCalled()
+    expect(errMapper).toHaveBeenCalledTimes(1)
+  })
+
+  it('Forks on an Err', () => {
+    const okMapper = vitest.fn((_val) => ok('weeeeee'))
+    const errMapper = vitest.fn((_val) => err('wooooo'))
+
+    const forked = err(12).fork(okMapper, errMapper)
+
+    expect(forked.isErr()).toBe(true)
+    expect(forked).toBeInstanceOf(Err)
+    expect(forked._unsafeUnwrapErr()).toBe('wooooo')
     expect(okMapper).not.toHaveBeenCalled()
     expect(errMapper).toHaveBeenCalledTimes(1)
   })
@@ -1166,6 +1192,32 @@ describe('ResultAsync', () => {
       const matched = await errAsync('bad').match(okMapper, errMapper)
 
       expect(matched).toBe('wooooo')
+      expect(okMapper).not.toHaveBeenCalled()
+      expect(errMapper).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('fork', () => {
+    it('Forks on an Ok', async () => {
+      const okMapper = vitest.fn((_val) => ok('weeeeee'))
+      const errMapper = vitest.fn((_val) => err('wooooo'))
+
+      const forked = await okAsync(12).fork(okMapper, errMapper)
+
+      expect(forked.isOk()).toBe(true)
+      expect(forked._unsafeUnwrap()).toBe('weeeeee')
+      expect(okMapper).toHaveBeenCalledTimes(1)
+      expect(errMapper).not.toHaveBeenCalled()
+    })
+
+    it('Forks on an Error', async () => {
+      const okMapper = vitest.fn((_val) => ok('weeeeee'))
+      const errMapper = vitest.fn((_val) => err('wooooo'))
+
+      const forked = await errAsync('bad').fork(okMapper, errMapper)
+
+      expect(forked.isErr()).toBe(true)
+      expect(forked._unsafeUnwrapErr()).toBe('wooooo')
       expect(okMapper).not.toHaveBeenCalled()
       expect(errMapper).toHaveBeenCalledTimes(1)
     })
