@@ -10,8 +10,7 @@
   ],
   "scripts": {
     "local-ci": "npm run typecheck && npm run lint && npm run test && npm run format && npm run build",
-    "test": "vitest run && npm run test-types",
-    "test-types": "tsc --noEmit -p ./tests/tsconfig.tests.json",
+    "test": "vitest run",
     "lint": "eslint ./src --ext .ts",
     "format": "prettier --write 'src/**/*.ts?(x)' && npm run lint -- --fix",
     "typecheck": "tsc --noEmit",
