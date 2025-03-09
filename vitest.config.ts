@@ -5,7 +5,7 @@ export default defineConfig({
     typecheck: {
       enabled: true,
       include: ['tests/typecheck-tests.ts'],
-      tsconfig: 'tsconfig.test.json',
+      tsconfig: 'tests/tsconfig.test.json',
     },
   },
 })
