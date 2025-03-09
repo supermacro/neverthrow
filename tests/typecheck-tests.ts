@@ -4,6 +4,7 @@
  * This file is ran during CI to ensure that there aren't breaking changes with types
  */
 
+import { describe, expectTypeOf, it } from 'vitest';
 import {
   err,
   errAsync,
@@ -33,16 +34,18 @@ type CreateTuple<L, V = string> =
     : never;
 
 
-(function describe(_ = 'Result') {
-  (function describe(_ = 'andThen') {
-    (function it(_ = 'Combines two equal error types (native scalar types)') {
-      type Expectation = Result<unknown, string>
+describe('Result', () => {
+  describe('andThen', () => {
+    it('Combines two equal error types (native scalar types)', () => {
+      type Expectation = Result<never, string>
 
-      const result: Expectation = ok<number, string>(123)
+      const result = ok<number, string>(123)
         .andThen((val) => err('yoooooo dude' + val))
+
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
 
-    (function it(_ = 'Combines two equal error types (custom types)') {
+    it('Combines two equal error types (custom types)', () => {
       interface MyError { 
         stack: string
         code: number
@@ -50,26 +53,30 @@ type CreateTuple<L, V = string> =
 
       type Expectation = Result<string, MyError>
 
-      const result: Expectation = ok<number, MyError>(123)
+      const result = ok<number, MyError>(123)
         .andThen((val) => err<string, MyError>({ stack: '/blah', code: 500 }))
+
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
 
-    (function it(_ = 'Creates a union of error types for disjoint types') {
+    it('Creates a union of error types for disjoint types', () => {
       interface MyError { 
         stack: string
         code: number
       }
-
+    
       type Expectation = Result<string, MyError | string[]>
 
-      const result: Expectation = ok<number, MyError>(123)
+      const result = ok<number, MyError>(123)
         .andThen((val) => err<string, string[]>(['oh nooooo']))
+
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
 
-    (function it(_ = 'Infers error type when returning disjoint types (native scalar types)') {
-      type Expectation = Result<unknown, string | number | boolean>
+    it('Infers error type when returning disjoint types (native scalar types)', () => {
+      type Expectation = Result<never, string | number | boolean>
 
-      const result: Expectation = ok<number, string>(123)
+      const result = ok<number, string>(123)
         .andThen((val) => {
           switch (val) {
             case 1:
@@ -80,16 +87,18 @@ type CreateTuple<L, V = string> =
               return err(false)
           }
         })
+
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
 
-    (function it(_ = 'Infers error type when returning disjoint types (custom types)') {
+    it('Infers error type when returning disjoint types (custom types)', () => {
       interface MyError { 
         stack: string
         code: number
       }
-      type Expectation = Result<unknown, string | number | MyError>
+      type Expectation = Result<never, string | number | MyError>
 
-      const result: Expectation = ok<number, string>(123)
+      const result = ok<number, string>(123)
         .andThen((val) => {
           switch (val) {
             case 1:
@@ -100,12 +109,14 @@ type CreateTuple<L, V = string> =
               return err({ stack: '/blah', code: 500 })
           }
         })
+
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
 
-    (function it(_ = 'Infers new ok type when returning both Ok and Err (same as initial)') {
-      type Expectation = Result<number, unknown>
+    it('Infers new ok type when returning both Ok and Err (same as initial)', () => {
+      type Expectation = Result<number, string>
 
-      const result: Expectation = ok<number, string>(123)
+      const result = ok<number, string>(123)
         .andThen((val) => {
           switch (val) {
             case 1:
@@ -114,13 +125,15 @@ type CreateTuple<L, V = string> =
               return ok(val + 456)
           }
         })
+
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
 
-    (function it(_ = 'Infers new ok type when returning both Ok and Err (different from initial)') {
+    it('Infers new ok type when returning both Ok and Err (different from initial)', () => {
       const initial = ok<number, string>(123)
-      type Expectation = Result<string, unknown>
+      type Expectation = Result<string, string>
 
-      const result: Expectation = initial
+      const result = initial
         .andThen((val) => {
           switch (val) {
             case 1:
@@ -129,16 +142,18 @@ type CreateTuple<L, V = string> =
               return ok(val + ' string')
           }
         })
+
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
 
-    (function it(_ = 'Infers new err type when returning both Ok and Err') {
+    it('Infers new err type when returning both Ok and Err', () => {
       interface MyError { 
         stack: string
         code: number
       }
-      type Expectation = Result<unknown, string | number | MyError>
+      type Expectation = Result<number, string | MyError>
   
-      const result: Expectation = ok<number, string>(123)
+      const result = ok<number, string>(123)
         .andThen((val) => {
           switch (val) {
             case 1:
@@ -149,26 +164,32 @@ type CreateTuple<L, V = string> =
               return err({ stack: '/blah', code: 500 })
           }
         })
+
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
 
-    (function it(_ = 'allows specifying the E and T types explicitly') {
+    it('allows specifying the E and T types explicitly', () => {
       type Expectation = Result<'yo', number>
 
-      const result: Expectation = ok(123).andThen<'yo', number>(val => {
+      const result = ok(123).andThen<'yo', number>(val => {
         return ok('yo')
       })
+
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
   });
 
-  (function describe(_ = 'andThrough') {
-    (function it(_ = 'Combines two equal error types (native scalar types)') {
+  describe('andThrough', () => {
+    it('Combines two equal error types (native scalar types)', () => {
       type Expectation = Result<number, string>
 
-      const result: Expectation = ok<number, string>(123)
+      const result = ok<number, string>(123)
         .andThrough((val) => err('yoooooo dude' + val))
+
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
 
-    (function it(_ = 'Combines two equal error types (custom types)') {
+    it('Combines two equal error types (custom types)', () => {
       interface MyError { 
         stack: string
         code: number
@@ -176,11 +197,13 @@ type CreateTuple<L, V = string> =
 
       type Expectation = Result<number, MyError>
 
-      const result: Expectation = ok<number, MyError>(123)
+      const result = ok<number, MyError>(123)
         .andThrough((val) => err<string, MyError>({ stack: '/blah', code: 500 }))
+
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
 
-    (function it(_ = 'Creates a union of error types for disjoint types') {
+    it('Creates a union of error types for disjoint types', () => {
       interface MyError { 
         stack: string
         code: number
@@ -188,14 +211,16 @@ type CreateTuple<L, V = string> =
 
       type Expectation = Result<number, MyError | string[]>
 
-      const result: Expectation = ok<number, MyError>(123)
+      const result = ok<number, MyError>(123)
         .andThrough((val) => err<string, string[]>(['oh nooooo']))
+        
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
 
-    (function it(_ = 'Infers error type when returning disjoint types (native scalar types)') {
+    it('Infers error type when returning disjoint types (native scalar types)', () => {
       type Expectation = Result<number, string | number | boolean>
 
-      const result: Expectation = ok<number, string>(123)
+      const result = ok<number, string>(123)
         .andThrough((val) => {
           switch (val) {
             case 1:
@@ -206,16 +231,18 @@ type CreateTuple<L, V = string> =
               return err(false)
           }
         })
+        
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
 
-    (function it(_ = 'Infers error type when returning disjoint types (custom types)') {
+    it('Infers error type when returning disjoint types (custom types)', () => {
       interface MyError { 
         stack: string
         code: number
       }
       type Expectation = Result<number, string | number | MyError>
 
-      const result: Expectation = ok<number, string>(123)
+      const result = ok<number, string>(123)
         .andThrough((val) => {
           switch (val) {
             case 1:
@@ -223,15 +250,17 @@ type CreateTuple<L, V = string> =
             case 2:
               return err(123)
             default:
-              return err({ stack: '/blah', code: 500 })
+              return err<string, MyError>({ stack: '/blah', code: 500 })
           }
         })
+        
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
 
-    (function it(_ = 'Returns the original ok type when returning both Ok and Err (same as initial)') {
-      type Expectation = Result<number, unknown>
+    it('Returns the original ok type when returning both Ok and Err (same as initial)', () => {
+      type Expectation = Result<number, string>
 
-      const result: Expectation = ok<number, string>(123)
+      const result = ok<number, string>(123)
         .andThrough((val) => {
           switch (val) {
             case 1:
@@ -240,13 +269,14 @@ type CreateTuple<L, V = string> =
               return ok(val + 456)
           }
         })
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
 
-    (function it(_ = 'Returns the original ok type when returning both Ok and Err (different from initial)') {
+    it('Returns the original ok type when returning both Ok and Err (different from initial)', () => {
       const initial = ok<number, string>(123)
-      type Expectation = Result<number, unknown>
+      type Expectation = Result<number, string>
 
-      const result: Expectation = initial
+      const result = initial
         .andThrough((val) => {
           switch (val) {
             case 1:
@@ -255,16 +285,17 @@ type CreateTuple<L, V = string> =
               return ok("Hi" + val)
           }
         })
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
 
-    (function it(_ = 'Infers new err type when returning both Ok and Err') {
+    it('Infers new err type when returning both Ok and Err', () => {
       interface MyError { 
         stack: string
         code: number
       }
-      type Expectation = Result<number, string | number | MyError>
+      type Expectation = Result<number, string | MyError>
   
-      const result: Expectation = ok<number, string>(123)
+      const result = ok<number, string>(123)
         .andThrough((val) => {
           switch (val) {
             case 1:
@@ -275,14 +306,16 @@ type CreateTuple<L, V = string> =
               return err({ stack: '/blah', code: 500 })
           }
         })
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
 
-    (function it(_ = 'allows specifying the E type explicitly') {
+    it('allows specifying the E type explicitly', () => {
       type Expectation = Result<number, string>
 
-      const result: Expectation = ok(123).andThrough<string>(val => {
+      const result = ok(123).andThrough<string>(val => {
         return ok('yo')
       })
+      expectTypeOf(result).toEqualTypeOf<Expectation>()
     });
   });
 
