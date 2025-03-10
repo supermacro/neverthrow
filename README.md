@@ -581,14 +581,14 @@ const resAsync = parseUserInput(userInput)
                .asyncAndThen(insertUser)
 
 // Note no LogError shows up in the Result type
-resAsync.then((res: Result<void, ParseError | InsertError>) => {e
+resAsync.then((res: Result<void, ParseError | InsertError>) => {
   if(res.isErr()){
     console.log("Oops, at least one step failed", res.error)
   }
   else{
     console.log("User input has been parsed and inserted successfully.")
   }
-}))
+})
 ```
 
 [⬆️  Back to top](#toc)
@@ -628,14 +628,14 @@ const resAsync = parseUserInput(userInput)
                .asyncAndThen(insertUser)
 
 // Note no LogError shows up in the Result type
-resAsync.then((res: Result<void, ParseError | InsertError>) => {e
+resAsync.then((res: Result<void, ParseError | InsertError>) => {
   if(res.isErr()){
     console.log("Oops, at least one step failed", res.error)
   }
   else{
     console.log("User input has been parsed and inserted successfully.")
   }
-}))
+})
 ```
 
 [⬆️  Back to top](#toc)
@@ -675,14 +675,14 @@ const resAsync = parseUserInput(userInput)
                .andThrough(validateUser)
                .asyncAndThen(insertUser)
 
-resAsync.then((res: Result<void, ParseErro | ValidateError | InsertError>) => {e
+resAsync.then((res: Result<void, ParseErro | ValidateError | InsertError>) => {
   if(res.isErr()){
     console.log("Oops, at least one step failed", res.error)
   }
   else{
     console.log("User input has been parsed, validated, inserted successfully.")
   }
-}))
+})
 ```
   
 [⬆️  Back to top](#toc)
@@ -712,14 +712,14 @@ const resAsync = parseUserInput(userInput)
                .asyncAndThrough(insertUser)
                .andThen(sendNotification)
 
-resAsync.then((res: Result<void, ParseError | InsertError | NotificationError>) => {e
+resAsync.then((res: Result<void, ParseError | InsertError | NotificationError>) => {
   if(res.isErr()){
     console.log("Oops, at least one step failed", res.error)
   }
   else{
     console.log("User has been parsed, inserted and notified successfully.")
   }
-}))
+})
 ```
   
 [⬆️  Back to top](#toc)
@@ -1314,14 +1314,14 @@ const resAsync = insertUser(user)
                 .andThen(sendNotification)
 
 // Note there is no LogError in the types below 
-resAsync.then((res: Result<void, InsertError | NotificationError>) => {e
+resAsync.then((res: Result<void, InsertError | NotificationError>) => {
   if(res.isErr()){
     console.log("Oops, at least one step failed", res.error)
   }
   else{
     console.log("User has been inserted and notified successfully.")
   }
-}))  
+})
 ```
 
 [⬆️  Back to top](#toc)
@@ -1361,14 +1361,14 @@ const resAsync = insertUser(user)
                 .andThen(sendNotification)
 
 // Note there is no LogError in the types below 
-resAsync.then((res: Result<void, InsertError | NotificationError>) => {e
+resAsync.then((res: Result<void, InsertError | NotificationError>) => {
   if(res.isErr()){
     console.log("Oops, at least one step failed", res.error)
   }
   else{
     console.log("User has been inserted and notified successfully.")
   }
-}))
+})
 ```
 
 [⬆️  Back to top](#toc)
@@ -1409,14 +1409,14 @@ const resAsync = buildUser(userRaw)
                 .andThrough(insertUser)
                 .andThen(sendNotification)
 
-resAsync.then((res: Result<void, BuildError | InsertError | NotificationError>) => {e
+resAsync.then((res: Result<void, BuildError | InsertError | NotificationError>) => {
   if(res.isErr()){
     console.log("Oops, at least one step failed", res.error)
   }
   else{
     console.log("User data has been built, inserted and notified successfully.")
   }
-}))  
+})
 ```
 
 [⬆️  Back to top](#toc)
