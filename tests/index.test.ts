@@ -763,6 +763,104 @@ describe('Utils', () => {
       })
     })
   })
+  describe('`Result.struct`', () => {
+    it('returns Ok with all values when all results are Ok', () => {
+      const input = {
+        a: ok(1),
+        b: ok('test'),
+        c: ok(true),
+      }
+
+      const result = Result.struct(input)
+
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toEqual({ a: 1, b: 'test', c: true })
+    })
+
+    it('returns Err with a single error when one result is Err', () => {
+      const input = {
+        a: ok(1),
+        b: err('error1'),
+        c: ok(true),
+      }
+
+      const result = Result.struct(input)
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toEqual(['error1'])
+    })
+
+    it('returns Err with all errors when some results are Err', () => {
+      const input = {
+        a: ok(1),
+        b: err('error1'),
+        c: err('error2'),
+      }
+
+      const result = Result.struct(input)
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toEqual(['error1', 'error2'])
+    })
+
+    it('returns Ok with an empty object when input is an empty object', () => {
+      const input = {}
+
+      const result = Result.struct(input)
+
+      expect(result.isOk()).toBe(true)
+      expect(result.unwrapOr({})).toEqual({})
+    })
+  })
+  describe('`ResultAsync.struct`', () => {
+    it('returns Ok with all values when all results are Ok', async () => {
+      const input = {
+        a: okAsync(1),
+        b: okAsync('test'),
+        c: okAsync(true),
+      }
+
+      const result = await ResultAsync.struct(input)
+
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toEqual({ a: 1, b: 'test', c: true })
+    })
+
+    it('returns Err with a single error when one result is Err', async () => {
+      const input = {
+        a: okAsync(1),
+        b: errAsync('error1'),
+        c: okAsync(true),
+      }
+
+      const result = await ResultAsync.struct(input)
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toEqual(['error1'])
+    })
+
+    it('returns Err with all errors when some results are Err', async () => {
+      const input = {
+        a: okAsync(1),
+        b: errAsync('error1'),
+        c: errAsync('error2'),
+      }
+
+      const result = await ResultAsync.struct(input)
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toEqual(['error1', 'error2'])
+    })
+
+    it('returns Ok with an empty object when input is an empty object', async () => {
+      const input = {}
+
+      const result = await ResultAsync.struct(input)
+
+      expect(result.isOk()).toBe(true)
+      expect(result.unwrapOr({})).toEqual({})
+    })
+  })
 })
 
 describe('ResultAsync', () => {

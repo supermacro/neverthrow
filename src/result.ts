@@ -57,6 +57,23 @@ export namespace Result {
   ): CombineResultsWithAllErrorsArray<T> {
     return combineResultListWithAllErrors(resultList) as CombineResultsWithAllErrorsArray<T>
   }
+
+  export function struct<E, T extends Record<string, Result<unknown, E>>>(
+    record: T,
+  ): StructResult<E, T> {
+    const errors = Object.values(record).filter((result) => result.isErr())
+    if (0 < errors.length) {
+      return err(errors.map((error) => (error as Err<unknown, InferErrTypes<T[keyof T]>>).error))
+    }
+
+    const successes = Object.entries(record) as [string, Ok<T[keyof T], unknown>][]
+    return ok(
+      successes.reduce<Record<string, unknown>>((previous, [key, result]) => {
+        previous[key] = result.value
+        return previous
+      }, {}) as { [Key in keyof T]: InferOkTypes<T[Key]> },
+    )
+  }
 }
 
 export type Result<T, E> = Ok<T, E> | Err<T, E>
@@ -721,5 +738,10 @@ export type CombineResultsWithAllErrorsArray<
 > = IsLiteralArray<T> extends 1
   ? TraverseWithAllErrors<T>
   : Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number][]>
+
+export type StructResult<E, T extends Record<string, Result<unknown, E>>> = Result<
+  { [Key in keyof T]: InferOkTypes<T[Key]> },
+  Array<InferErrTypes<T[keyof T]>>
+>
 
 //#endregion
