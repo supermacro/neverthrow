@@ -276,6 +276,25 @@ interface IResult<T, E> {
   match<A, B = A>(ok: (t: T) => A, err: (e: E) => B): A | B
 
   /**
+   * Similar to `match` except the functions must return a new `Result`.
+   *
+   * @param ok
+   * @param err
+   */
+  fork<A, B, C, D>(ok: (t: T) => Result<A, B>, err: (e: E) => Result<C, D>): Result<A | C, B | D>
+
+  /**
+   * Similar to `fork` except the functions must return a new `ResultAsync`.
+   *
+   * @param ok
+   * @param err
+   */
+  asyncFork<A, B, C, D>(
+    ok: (t: T) => Result<A, B> | ResultAsync<A, B>,
+    err: (e: E) => Result<C, D> | ResultAsync<C, D>,
+  ): ResultAsync<A | C, B | D>
+
+  /**
    * @deprecated will be removed in 9.0.0.
    *
    * You can use `safeTry` without this method.
@@ -394,6 +413,17 @@ export class Ok<T, E> implements IResult<T, E> {
     return ok(this.value)
   }
 
+  fork<A, B, C, D>(ok: (t: T) => Result<A, B>, _err: (e: E) => Result<C, D>): Result<A | C, B | D> {
+    return ok(this.value)
+  }
+
+  asyncFork<A, B, C, D>(
+    ok: (t: T) => Result<A, B> | ResultAsync<A, B>,
+    _err: (e: E) => Result<C, D> | ResultAsync<C, D>,
+  ): ResultAsync<A | C, B | D> {
+    return new ResultAsync(Promise.resolve(ok(this.value)))
+  }
+
   safeUnwrap(): Generator<Err<never, E>, T> {
     const value = this.value
     /* eslint-disable-next-line require-yield */
@@ -491,6 +521,17 @@ export class Err<T, E> implements IResult<T, E> {
 
   match<A, B = A>(_ok: (t: T) => A, err: (e: E) => B): A | B {
     return err(this.error)
+  }
+
+  fork<A, B, C, D>(_ok: (t: T) => Result<A, B>, err: (e: E) => Result<C, D>): Result<A | C, B | D> {
+    return err(this.error)
+  }
+
+  asyncFork<A, B, C, D>(
+    _ok: (t: T) => Result<A, B> | ResultAsync<A, B>,
+    err: (e: E) => Result<C, D> | ResultAsync<C, D>,
+  ): ResultAsync<A | C, B | D> {
+    return new ResultAsync(Promise.resolve(err(this.error)))
   }
 
   safeUnwrap(): Generator<Err<never, E>, T> {
