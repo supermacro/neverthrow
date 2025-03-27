@@ -157,7 +157,7 @@ interface IResult<T, E> {
   map<A>(f: (t: T) => A): Result<A, E>
 
   /**
-   * Calls a function with a the contained error if `Ok` value, leaving both `Ok` and `Err` untouched.
+   * Calls a function with the contained `Ok` value, leaving both `Ok` and `Err` untouched.
    *
    * This function can be used to perform side-effects without transforming the contained value.
    *
@@ -177,7 +177,7 @@ interface IResult<T, E> {
   mapErr<U>(f: (e: E) => U): Result<T, U>
 
   /**
-   * Calls a function with a the contained error if `Err`, leaving both `Ok` and `Err` untouched.
+   * Calls a function with the contained `Err` error, leaving both `Ok` and `Err` untouched.
    *
    * This function can be used to perform side-effects without transforming the contained error.
    *
