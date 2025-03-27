@@ -157,6 +157,15 @@ interface IResult<T, E> {
   map<A>(f: (t: T) => A): Result<A, E>
 
   /**
+   * Calls a function with a the contained error if `Ok` value, leaving both `Ok` and `Err` untouched.
+   * 
+   * This function can be used to perform side-effects without transforming the contained value.
+   * 
+   * @param f a callback function that receives the contained `Ok` value
+   */
+  inspect(f: (t: T) => void): Result<T, E>
+
+  /**
    * Maps a `Result<T, E>` to `Result<T, F>` by applying a function to a
    * contained `Err` value, leaving an `Ok` value untouched.
    *
@@ -166,6 +175,15 @@ interface IResult<T, E> {
    * @param f a function to apply to the error `Err` value
    */
   mapErr<U>(f: (e: E) => U): Result<T, U>
+
+  /**
+   * Calls a function with a the contained error if `Err`, leaving both `Ok` and `Err` untouched.
+   * 
+   * This function can be used to perform side-effects without transforming the contained error.
+   * 
+   * @param f a callback function that receives the contained `Err` value
+   */
+  inspectErr(f: (e: E) => void): Result<T, E>
 
   /**
    * Similar to `map` Except you must return a new `Result`.
@@ -310,7 +328,7 @@ interface IResult<T, E> {
 }
 
 export class Ok<T, E> implements IResult<T, E> {
-  constructor(readonly value: T) {}
+  constructor(readonly value: T) { }
 
   isOk(): this is Ok<T, E> {
     return true
@@ -324,8 +342,18 @@ export class Ok<T, E> implements IResult<T, E> {
     return ok(f(this.value))
   }
 
+  inspect(f: (t: T) => void): Result<T, E> {
+    f(this.value)
+    return ok(this.value)
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mapErr<U>(_f: (e: E) => U): Result<T, U> {
+    return ok(this.value)
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  inspectErr(_f: (e: E) => void): Result<T, E> {
     return ok(this.value)
   }
 
@@ -417,7 +445,7 @@ export class Ok<T, E> implements IResult<T, E> {
 }
 
 export class Err<T, E> implements IResult<T, E> {
-  constructor(readonly error: E) {}
+  constructor(readonly error: E) { }
 
   isOk(): this is Ok<T, E> {
     return false
@@ -434,6 +462,16 @@ export class Err<T, E> implements IResult<T, E> {
 
   mapErr<U>(f: (e: E) => U): Result<T, U> {
     return err(f(this.error))
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  inspect(_f: (t: T) => void): Result<T, E> {
+    return err(this.error)
+  }
+
+  inspectErr(f: (e: E) => void): Result<T, E> {
+    f(this.error)
+    return err(this.error)
   }
 
   andThrough<F>(_f: (t: T) => Result<unknown, F>): Result<T, E | F> {
@@ -593,17 +631,17 @@ type CollectResults<T, Collected extends unknown[] = [], Depth extends number = 
   ? []
   : T extends [infer H, ...infer Rest]
   ? // And test whether the head of the list is a result
-    H extends Result<infer L, infer R>
-    ? // Continue collecting...
-      CollectResults<
-        // the rest of the elements
-        Rest,
-        // The collected
-        [...Collected, [L, R]],
-        // and one less of the current depth
-        Prev[Depth]
-      >
-    : never // Impossible
+  H extends Result<infer L, infer R>
+  ? // Continue collecting...
+  CollectResults<
+    // the rest of the elements
+    Rest,
+    // The collected
+    [...Collected, [L, R]],
+    // and one less of the current depth
+    Prev[Depth]
+  >
+  : never // Impossible
   : Collected
 
 // Transposes an array
@@ -617,14 +655,14 @@ export type Transpose<
   Depth extends number = 10
 > = A extends [infer T, ...infer Rest]
   ? T extends [infer L, infer R]
-    ? Transposed extends [infer PL, infer PR]
-      ? PL extends unknown[]
-        ? PR extends unknown[]
-          ? Transpose<Rest, [[...PL, L], [...PR, R]], Prev[Depth]>
-          : never
-        : never
-      : Transpose<Rest, [[L], [R]], Prev[Depth]>
-    : Transposed
+  ? Transposed extends [infer PL, infer PR]
+  ? PL extends unknown[]
+  ? PR extends unknown[]
+  ? Transpose<Rest, [[...PL, L], [...PR, R]], Prev[Depth]>
+  : never
+  : never
+  : Transpose<Rest, [[L], [R]], Prev[Depth]>
+  : Transposed
   : Transposed
 
 // Combines the both sides of the array of the results into a tuple of the
@@ -644,17 +682,17 @@ export type Combine<T, Depth extends number = 5> = Transpose<CollectResults<T>, 
 // Deduplicates the result, as the result type is a union of Err and Ok types.
 export type Dedup<T> = T extends Result<infer RL, infer RR>
   ? [unknown] extends [RL]
-    ? Err<RL, RR>
-    : Ok<RL, RR>
+  ? Err<RL, RR>
+  : Ok<RL, RR>
   : T
 
 // Given a union, this gives the array of the union members.
 export type MemberListOf<T> = (
   (T extends unknown ? (t: T) => T : never) extends infer U
-    ? (U extends unknown ? (u: U) => unknown : never) extends (v: infer V) => unknown
-      ? V
-      : never
-    : never
+  ? (U extends unknown ? (u: U) => unknown : never) extends (v: infer V) => unknown
+  ? V
+  : never
+  : never
 ) extends (_: unknown) => infer W
   ? [...MemberListOf<Exclude<T, W>>, W]
   : []
@@ -670,10 +708,10 @@ export type EmptyArrayToNever<T, NeverArrayToNever extends number = 0> = T exten
   ? never
   : NeverArrayToNever extends 1
   ? T extends [never, ...infer Rest]
-    ? [EmptyArrayToNever<Rest>] extends [never]
-      ? never
-      : T
-    : T
+  ? [EmptyArrayToNever<Rest>] extends [never]
+  ? never
+  : T
+  : T
   : T
 
 // Converts the `unknown` items of an array to `never`s.
@@ -687,10 +725,10 @@ export type MembersToUnion<T> = T extends unknown[] ? T[number] : never
 // Checks if the given type is a literal array.
 export type IsLiteralArray<T> = T extends { length: infer L }
   ? L extends number
-    ? number extends L
-      ? 0
-      : 1
-    : 0
+  ? number extends L
+  ? 0
+  : 1
+  : 0
   : 0
 
 // Traverses an array of results and returns a single result containing
