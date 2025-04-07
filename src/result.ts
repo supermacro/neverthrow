@@ -317,7 +317,7 @@ export class Ok<T, E> implements IResult<T, E> {
   }
 
   isErr(): this is Err<T, E> {
-    return !this.isOk()
+    return false
   }
 
   map<A>(f: (t: T) => A): Result<A, E> {
@@ -424,7 +424,7 @@ export class Err<T, E> implements IResult<T, E> {
   }
 
   isErr(): this is Err<T, E> {
-    return !this.isOk()
+    return true
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
