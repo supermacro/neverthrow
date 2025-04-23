@@ -147,6 +147,15 @@ interface IResult<T, E> {
   isErr(): this is Err<T, E>
 
   /**
+   * This function is used by `JSON.stringify` to serialize the result
+   * without loosing isOk and isErr by turning them into booleans
+   *
+   * @returns `{ error, isOk, isErr }` if the result is an `Err` variant
+   * and { value, isOk, isErr } if the result is `Ok` variant
+   */
+  toJSON(): unknown
+
+  /**
    * Maps a `Result<T, E>` to `Result<U, E>`
    * by applying a function to a contained `Ok` value, leaving an `Err` value
    * untouched.
@@ -320,6 +329,14 @@ export class Ok<T, E> implements IResult<T, E> {
     return !this.isOk()
   }
 
+  toJSON(): unknown {
+    return {
+      value: this.value,
+      isOk: this.isOk(),
+      isErr: this.isErr(),
+    }
+  }
+
   map<A>(f: (t: T) => A): Result<A, E> {
     return ok(f(this.value))
   }
@@ -425,6 +442,14 @@ export class Err<T, E> implements IResult<T, E> {
 
   isErr(): this is Err<T, E> {
     return !this.isOk()
+  }
+
+  toJSON(): unknown {
+    return {
+      error: this.error,
+      isOk: this.isOk(),
+      isErr: this.isErr(),
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
