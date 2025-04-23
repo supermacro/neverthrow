@@ -67,6 +67,16 @@ describe('Result.Ok', () => {
     expect(mapErrorFunc).not.toHaveBeenCalledTimes(1)
   })
 
+  it('Stringifies and parses correctly', () => {
+    const okVal = ok(12)
+    
+    const parsedJSON = JSON.parse(JSON.stringify(okVal))
+    
+    expect(parsedJSON.isOk).toBe(true)
+    expect(parsedJSON.isErr).toBe(false)
+    expect(parsedJSON.value).toBe(12)
+  })
+
   describe('andThen', () => {
     it('Maps to an Ok', () => {
       const okVal = ok(12)
@@ -330,6 +340,16 @@ describe('Result.Err', () => {
     expect(hopefullyNotMapped.isErr()).toBe(true)
     expect(mapper).not.toHaveBeenCalled()
     expect(hopefullyNotMapped._unsafeUnwrapErr()).toEqual(errVal._unsafeUnwrapErr())
+  })
+
+  it('Stringifies and parses correctly', () => {
+    const errVal = err('I am your father')
+    
+    const parsedJSON = JSON.parse(JSON.stringify(errVal))
+    
+    expect(parsedJSON.isOk).toBe(false)
+    expect(parsedJSON.isErr).toBe(true)
+    expect(parsedJSON.error).toBe('I am your father')
   })
 
   it('Maps over an Err', () => {
