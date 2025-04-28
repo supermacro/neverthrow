@@ -8,18 +8,32 @@ const defaultErrorConfig: ErrorConfig = {
   withStackTrace: false,
 }
 
-interface NeverThrowError<T, E> {
-  data:
-    | {
-        type: string
-        value: T
-      }
-    | {
-        type: string
-        value: E
-      }
-  message: string
-  stack: string | undefined
+type ErrorData<T, E> = {
+  type: string
+  value: T
+} | {
+  type: string
+  value: E
+}
+
+class NeverThrowError<T, E> extends Error {
+  data: ErrorData<T, E>
+
+  constructor({
+    data,
+    message,
+    stack,
+  }: {
+    data: ErrorData<T, E>
+    message: string
+    stack: string | undefined
+  }) {
+    super();
+    this.data = data;
+    this.message = message;
+    this.stack = stack;
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
 }
 
 // Custom error object
@@ -35,9 +49,9 @@ export const createNeverThrowError = <T, E>(
 
   const maybeStack = config.withStackTrace ? new Error().stack : undefined
 
-  return {
+  return new NeverThrowError<T, E>({
     data,
     message,
     stack: maybeStack,
-  }
+  })
 }
