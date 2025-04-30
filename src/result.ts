@@ -20,19 +20,19 @@ export namespace Result {
    * @param errorFn when an error is thrown, this will wrap the error result if provided
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  export function fromThrowable<Fn extends (...args: readonly any[]) => any, E>(
-    fn: Fn,
-    errorFn?: (e: unknown) => E,
-  ): (...args: Parameters<Fn>) => Result<ReturnType<Fn>, E> {
-    return (...args) => {
-      try {
-        const result = fn(...args)
-        return ok(result)
-      } catch (e) {
-        return err(errorFn ? errorFn(e) : e)
-      }
+  export function fromThrowable<A extends readonly any[], R, E>(
+  fn: (...args: A) => R,
+  errorFn?: (e: unknown) => E,
+): (...args: A) => Result<R, E> {
+  return (...args: A) => {
+    try {
+      const result = fn(...args);
+      return ok(result);
+    } catch (e) {
+      return err(errorFn ? errorFn(e) : e);
     }
-  }
+  };
+}
 
   export function combine<
     T extends readonly [Result<unknown, unknown>, ...Result<unknown, unknown>[]]
