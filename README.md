@@ -459,10 +459,9 @@ class Result<T, E> {
 }
 ```
 
-`match` is like chaining `map` and `mapErr`, with the distinction that with `match` both functions must have the same return type.
-The differences between `match` and chaining `map` and `mapErr` are that:
-- with `match` both functions must have the same return type `A`
-- `match` unwraps the `Result<T, E>` into an `A` (the match functions' return type)
+`match` is like chaining `map` and `mapErr`.
+The difference between `match` and chaining `map` and `mapErr` is that:
+- `match` unwraps the `Result<T, E>` into an `A | B` (either the return type of the match function's ok callback, or the return type of the match function's error callback)
   - This makes no difference if you are performing side effects only
 
 **Example:**
