@@ -152,6 +152,7 @@ interface IResult<T, E> {
    *
    * Useful for when there is a default `Ok` value you want to return
    * as long as the previous computation was successful.
+   * A more elegant way to do `.map(() => v)`.
    *
    * @param v The default value to return wrapped in an `Ok`
    * @returns Default value wrapped in a `Result` or the original `Err` untouched
@@ -164,6 +165,7 @@ interface IResult<T, E> {
    *
    * Useful for when you want to return a default `Ok` value
    * instead of an `Err` value.
+   * A more elegant way to do `.orElse(() => ok(v))`.
    *
    * @param v The default value to return wrapped in an `Ok`
    * @returns the original `Ok` value or the default value wrapped in a `Result`
