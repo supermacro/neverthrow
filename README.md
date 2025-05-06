@@ -226,6 +226,7 @@ Otherwise, returns the `Err` value untouched.
 
 Useful for when there is a default `Ok` value you want to return
 as long as the previous computation was successful.
+A more elegant way to do `.map(() => defaultValue)`.
 
 **Signature**:
 
@@ -276,6 +277,7 @@ Else, returns a default value wrapped inside an `Ok`.
 
 Useful for when you want to return a default `Ok` value
 instead of an `Err` value.
+A more elegant way to do `.orElse(() => ok(defaultValue))`.
 
 **Signature**:
 
@@ -1097,6 +1099,76 @@ export const signupHandler = route<User>((req, sessionManager) =>
       .map(({ sessionToken, admin }) => AppData.init(admin, sessionToken))
   }),
 )
+```
+
+[⬆️ Back to top](#toc)
+
+---
+
+#### `ResultAsync.and` (method)
+
+Returns a default value wrapped in an `Ok` inside a `Promise` if the `ResultAsync` resolves to an `Ok` variant.
+Otherwise, resolves to the `Err` value untouched.
+
+Useful when you want to proceed with a known default value as long as the asynchronous computation succeeds.
+A more elegant way to do `.map(() => defaultValue)`.
+
+**Signature:**
+
+```typescript
+class ResultAsync<T, E> {
+  and<A>(defaultValue: A): ResultAsync<A, E> { ... }
+}
+```
+
+**Example**:
+
+```typescript
+const fetchUser = (id: number): ResultAsync<User, Error> =>
+  id === 1 ? okAsync({ name: 'Alice', id: 1 }) : errAsync(new Error('User not found'))
+
+const defaultUsername = 'Guest'
+
+// If user is found, `Ok('Guest')` is passed to `someOtherFunction`
+fetchUser(1).and(defaultUsername).andThen(someOtherFunction)
+
+// If user not found, propagate the error
+fetchUser(42).and(defaultUsername).andThen(someOtherFunction)
+```
+
+[⬆️ Back to top](#toc)
+
+---
+
+#### `ResultAsync.or` (method)
+
+If the `ResultAsync` resolves to an `Ok` value, it remains untouched.
+If it resolves to an Err, returns the given default value wrapped in an Ok inside a Promise.
+
+Useful when you want to recover from a failed async operation with a known default `Ok` value.
+A more elegant way to do `.orElse(() => okAsync(defaultValue))`.
+
+**Signature:**
+
+```typescript
+class ResultAsync<T, E> {
+  or<A>(defaultValue: A): ResultAsync<T | A, E> { ... }
+}
+```
+
+**Example**:
+
+```typescript
+const fetchCountryLocation = (countryName: string): ResultAsync<Location, Error> => {
+  const country = countries.find((c) => c.name === countryName)?.location
+  return country ? okAsync(country.location) : errAsync(new Error('Country not found'))
+}
+
+const defaultMapLocation = { lat: 0, lng: 0 }
+
+// If country is found, center the map on the location
+// If not, center the map on the `defaultMapLocation`
+fetchCountryLocation('Atlantis').or(defaultMapLocation).andThrough(centerMapOnLocation)
 ```
 
 [⬆️ Back to top](#toc)
