@@ -86,22 +86,6 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     ) as CombineResultsWithAllErrorsArrayAsync<T>
   }
 
-  // and<A>(v: A): ResultAsync<A, E> {
-  //   return ok(v)
-  // }
-  //
-  // or<A>(_v: A): ResultAsync<T, E> {
-  //   return ok(this.value)
-  // }
-  //
-  // and<A>(_v: A): Result<A, E> {
-  //   return err(this.error)
-  // }
-  //
-  // or<A>(v: A): Result<A, E> {
-  //   return ok(v)
-  // }
-
   and<A>(v: A): ResultAsync<A, E> {
     return new ResultAsync(
       this._promise.then(async (res: Result<T, E>) => {
