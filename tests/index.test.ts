@@ -47,6 +47,26 @@ describe('Result.Ok', () => {
     expect(ok(42)).not.toEqual(ok(43))
   })
 
+  it('If Ok, returns the other value as Ok value, else leave the error untouched', () => {
+    expect(ok(12).and(42)).toEqual(ok(42))
+    expect(err('Wrong').and(42)).toEqual(err('Wrong'))
+  })
+
+  it('If Ok, leaves the Ok value untouched, else returns the other value as Ok value', () => {
+    expect(ok(12).or(42)).toEqual(ok(12))
+    expect(err('Wrong').or(42)).toEqual(ok(42))
+  })
+
+  it('If Ok, returns the other value as Ok value, else leave the error untouched', () => {
+    expect(okAsync(12).and(42)).toEqual(okAsync(42))
+    expect(errAsync('Wrong').and(42)).toEqual(errAsync('Wrong'))
+  })
+
+  it('If Ok, leaves the Ok value untouched, else returns the other value as Ok value', () => {
+    expect(okAsync(12).or(42)).toEqual(okAsync(12))
+    expect(errAsync('Wrong').or(42)).toEqual(okAsync(42))
+  })
+
   it('Maps over an Ok value', () => {
     const okVal = ok(12)
     const mapFn = vitest.fn((number) => number.toString())

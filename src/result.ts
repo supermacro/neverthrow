@@ -147,6 +147,32 @@ interface IResult<T, E> {
   isErr(): this is Err<T, E>
 
   /**
+   * If the result is an `Ok` value, returns a default value inside an `Ok`.
+   * Else, leaves the `Err` value untouched.
+   *
+   * Useful for when there is a default `Ok` value you want to return
+   * as long as the previous computation was successful.
+   * A more elegant way to do `.map(() => v)`.
+   *
+   * @param v The default value to return wrapped in an `Ok`
+   * @returns Default value wrapped in a `Result` or the original `Err` untouched
+   */
+  and<A>(v: A): Result<A, E>
+
+  /**
+   * If the result is an `Ok` value, returns it untouched.
+   * Else, returns a default value wrapped inside an `Ok`.
+   *
+   * Useful for when you want to return a default `Ok` value
+   * instead of an `Err` value.
+   * A more elegant way to do `.orElse(() => ok(v))`.
+   *
+   * @param v The default value to return wrapped in an `Ok`
+   * @returns the original `Ok` value or the default value wrapped in a `Result`
+   */
+  or<A>(v: A): Result<T | A, E>
+
+  /**
    * Maps a `Result<T, E>` to `Result<U, E>`
    * by applying a function to a contained `Ok` value, leaving an `Err` value
    * untouched.
@@ -320,6 +346,14 @@ export class Ok<T, E> implements IResult<T, E> {
     return !this.isOk()
   }
 
+  and<A>(v: A): Result<A, E> {
+    return ok(v)
+  }
+
+  or<A>(_v: A): Result<T, E> {
+    return ok(this.value)
+  }
+
   map<A>(f: (t: T) => A): Result<A, E> {
     return ok(f(this.value))
   }
@@ -425,6 +459,14 @@ export class Err<T, E> implements IResult<T, E> {
 
   isErr(): this is Err<T, E> {
     return !this.isOk()
+  }
+
+  and<A>(_v: A): Result<A, E> {
+    return err(this.error)
+  }
+
+  or<A>(v: A): Result<A, E> {
+    return ok(v)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
