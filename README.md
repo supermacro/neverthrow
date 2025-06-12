@@ -1357,7 +1357,7 @@ import { sendNotification } from 'imaginary-service'
 // Note logInsertError returns void on success but sendNotification takes User type. 
 
 const resAsync = insertUser(user)
-                .orTee(logUser)
+                .orTee(logInsertError)
                 .andThen(sendNotification)
 
 // Note there is no LogError in the types below 
