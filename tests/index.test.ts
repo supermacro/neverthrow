@@ -58,6 +58,19 @@ describe('Result.Ok', () => {
     expect(mapFn).toHaveBeenCalledTimes(1)
   })
 
+  it('Inspects an Ok value', () => {
+    const okVal = ok(12)
+    const inspectorFn = vitest.fn((number) => {
+      console.log("got OK value", number)
+    })
+
+    const inspected = okVal.inspect(inspectorFn)
+
+    expect(inspected.isOk()).toBe(true)
+    expect(inspected._unsafeUnwrap()).toBe(12)
+    expect(inspectorFn).toHaveBeenCalledTimes(1)
+  })
+
   it('Skips `mapErr`', () => {
     const mapErrorFunc = vitest.fn((_error) => 'mapped error value')
 
@@ -65,6 +78,15 @@ describe('Result.Ok', () => {
 
     expect(notMapped.isOk()).toBe(true)
     expect(mapErrorFunc).not.toHaveBeenCalledTimes(1)
+  })
+
+  it('Skips `inspectErr`', () => {
+    const inspectFn = vitest.fn((_error) => 'mapped error value')
+
+    const notMapped = ok(12).inspectErr(inspectFn)
+
+    expect(notMapped.isOk()).toBe(true)
+    expect(inspectFn).not.toHaveBeenCalledTimes(1)
   })
 
   describe('andThen', () => {
@@ -137,7 +159,7 @@ describe('Result.Ok', () => {
   describe('andTee', () => {
     it('Calls the passed function but returns an original ok', () => {
       const okVal = ok(12)
-      const passedFn = vitest.fn((_number) => {})
+      const passedFn = vitest.fn((_number) => { })
 
       const teed = okVal.andTee(passedFn)
 
@@ -162,7 +184,7 @@ describe('Result.Ok', () => {
   describe('orTee', () => {
     it('Calls the passed function but returns an original err', () => {
       const errVal = err(12)
-      const passedFn = vitest.fn((_number) => {})
+      const passedFn = vitest.fn((_number) => { })
 
       const teed = errVal.orTee(passedFn)
 
@@ -332,6 +354,20 @@ describe('Result.Err', () => {
     expect(hopefullyNotMapped._unsafeUnwrapErr()).toEqual(errVal._unsafeUnwrapErr())
   })
 
+  it('Skips `inspect`', () => {
+    const errVal = err('I am your father')
+
+    const inspectorFn = vitest.fn((_value) => {
+      console.log("got value")
+    })
+
+    const notInspected = errVal.inspect(inspectorFn)
+
+    expect(notInspected.isErr()).toBe(true)
+    expect(inspectorFn).not.toHaveBeenCalled()
+    expect(notInspected._unsafeUnwrapErr()).toEqual(errVal._unsafeUnwrapErr())
+  })
+
   it('Maps over an Err', () => {
     const errVal = err('Round 1, Fight!')
 
@@ -342,6 +378,20 @@ describe('Result.Err', () => {
     expect(mapped.isErr()).toBe(true)
     expect(mapper).toHaveBeenCalledTimes(1)
     expect(mapped._unsafeUnwrapErr()).not.toEqual(errVal._unsafeUnwrapErr())
+  })
+
+  it('Inspects an Err', () => {
+    const errVal = err('Round 1, Fight!')
+
+    const inspectorFn = vitest.fn((error: string) => {
+      console.error("Error happened", error)
+    })
+
+    const inspected = errVal.inspectErr(inspectorFn)
+
+    expect(inspected.isErr()).toBe(true)
+    expect(inspectorFn).toHaveBeenCalledTimes(1)
+    expect(inspected._unsafeUnwrapErr()).toEqual(errVal._unsafeUnwrapErr())
   })
 
   it('unwrapOr and return the default value', () => {
@@ -376,7 +426,7 @@ describe('Result.Err', () => {
   it('Skips over andTee', () => {
     const errVal = err('Yolo')
 
-    const mapper = vitest.fn((_val) => {})
+    const mapper = vitest.fn((_val) => { })
 
     const hopefullyNotFlattened = errVal.andTee(mapper)
 
@@ -877,6 +927,118 @@ describe('ResultAsync', () => {
     })
   })
 
+  describe("inspect", () => {
+    it('Inspects a value using a synchronous function', async () => {
+      const asyncVal = okAsync(12)
+
+      const inspectorFn = vitest.fn((number) => {
+        console.log("got value", number)
+      })
+
+      const inspected = asyncVal.inspect(inspectorFn)
+
+      expect(inspected).toBeInstanceOf(ResultAsync)
+
+      const newVal = await inspected
+
+      expect(newVal.isOk()).toBe(true)
+      expect(newVal._unsafeUnwrap()).toBe(12)
+      expect(inspectorFn).toHaveBeenCalledTimes(1)
+    })
+
+    it('Inspects a value using a asynchronous function', async () => {
+      const asyncVal = okAsync(12)
+
+      const inspectorFn = vitest.fn(async (number) => {
+        console.log("got value", number)
+      })
+
+      const inspected = asyncVal.inspect(inspectorFn)
+
+      expect(inspected).toBeInstanceOf(ResultAsync)
+
+      const newVal = await inspected
+
+      expect(newVal.isOk()).toBe(true)
+      expect(newVal._unsafeUnwrap()).toBe(12)
+      expect(inspectorFn).toHaveBeenCalledTimes(1)
+    })
+
+    it('Skips an error', async () => {
+      const asyncErr = errAsync<number, string>('Wrong format')
+
+      const inspectorFn = vitest.fn((number) => {
+        console.log("got value", number)
+      })
+
+      const notInspected = asyncErr.inspect(inspectorFn)
+
+      expect(notInspected).toBeInstanceOf(ResultAsync)
+
+      const newVal = await notInspected
+
+      expect(newVal.isErr()).toBe(true)
+      expect(newVal._unsafeUnwrapErr()).toBe('Wrong format')
+      expect(inspectorFn).toHaveBeenCalledTimes(0)
+    })
+  })
+
+  describe("inspectErr", () => {
+    it('Inspects an error using an synchronous function', async () => {
+      const asyncErr = errAsync('Wrong format')
+
+      const inspectorFn = vitest.fn((str) => {
+        console.error("error happened", str)
+      })
+
+      const inspectedErr = asyncErr.inspectErr(inspectorFn)
+
+      expect(inspectedErr).toBeInstanceOf(ResultAsync)
+
+      const newVal = await inspectedErr
+
+      expect(newVal.isErr()).toBe(true)
+      expect(newVal._unsafeUnwrapErr()).toBe('Wrong format')
+      expect(inspectorFn).toHaveBeenCalledTimes(1)
+    })
+
+    it('Inspects an error using an asynchronous function', async () => {
+      const asyncErr = errAsync('Wrong format')
+
+      const inspectorFn = vitest.fn(async (str) => {
+        console.error("error happened", str)
+      })
+
+      const inspectedErr = asyncErr.inspectErr(inspectorFn)
+
+      expect(inspectedErr).toBeInstanceOf(ResultAsync)
+
+      const newVal = await inspectedErr
+
+      expect(newVal.isErr()).toBe(true)
+      expect(newVal._unsafeUnwrapErr()).toBe('Wrong format')
+      expect(inspectorFn).toHaveBeenCalledTimes(1)
+    })
+
+    it('Skips a value', async () => {
+      const asyncVal = okAsync(12)
+
+      const inspectorFn = vitest.fn((str) => {
+        console.error("got error", str)
+      })
+
+      const notInspected = asyncVal.inspectErr(inspectorFn)
+
+      expect(notInspected).toBeInstanceOf(ResultAsync)
+
+      const newVal = await notInspected
+
+      expect(newVal.isOk()).toBe(true)
+      expect(newVal._unsafeUnwrap()).toBe(12)
+      expect(inspectorFn).toHaveBeenCalledTimes(0)
+    })
+  })
+
   describe('mapErr', () => {
     it('Maps an error using a synchronous function', async () => {
       const asyncErr = errAsync('Wrong format')
@@ -1067,7 +1229,7 @@ describe('ResultAsync', () => {
   describe('andTee', () => {
     it('Calls the passed function but returns an original ok', async () => {
       const okVal = okAsync(12)
-      const passedFn = vitest.fn((_number) => {})
+      const passedFn = vitest.fn((_number) => { })
 
       const teed = await okVal.andTee(passedFn)
 
@@ -1092,7 +1254,7 @@ describe('ResultAsync', () => {
   describe('orTee', () => {
     it('Calls the passed function but returns an original err', async () => {
       const errVal = errAsync(12)
-      const passedFn = vitest.fn((_number) => {})
+      const passedFn = vitest.fn((_number) => { })
 
       const teed = await errVal.orTee(passedFn)
 
