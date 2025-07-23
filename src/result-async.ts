@@ -86,14 +86,14 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     ) as CombineResultsWithAllErrorsArrayAsync<T>
   }
 
-  map<A>(f: (t: T) => A | Promise<A>): ResultAsync<A, E> {
+  map<A>(f: (t: T) => A): ResultAsync<Awaited<A>, E> {
     return new ResultAsync(
       this._promise.then(async (res: Result<T, E>) => {
         if (res.isErr()) {
-          return new Err<A, E>(res.error)
+          return new Err<Awaited<A>, E>(res.error)
         }
 
-        return new Ok<A, E>(await f(res.value))
+        return new Ok<Awaited<A>, E>(await f(res.value))
       }),
     )
   }
@@ -146,14 +146,14 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     )
   }
 
-  mapErr<U>(f: (e: E) => U | Promise<U>): ResultAsync<T, U> {
+  mapErr<U>(f: (e: E) => U): ResultAsync<T, Awaited<U>> {
     return new ResultAsync(
       this._promise.then(async (res: Result<T, E>) => {
         if (res.isOk()) {
-          return new Ok<T, U>(res.value)
+          return new Ok<T, Awaited<U>>(res.value)
         }
 
-        return new Err<T, U>(await f(res.error))
+        return new Err<T, Awaited<U>>(await f(res.error))
       }),
     )
   }
