@@ -42,6 +42,12 @@ describe('Result.Ok', () => {
     expect(okVal._unsafeUnwrap()).toBeUndefined()
   })
 
+  it('Throws an error that is an instance of error', () => {
+    const okVal = ok(undefined)
+
+    expect(() => okVal._unsafeUnwrapErr()).toThrowError(Error);
+  });
+
   it('Is comparable', () => {
     expect(ok(42)).toEqual(ok(42))
     expect(ok(42)).not.toEqual(ok(43))
