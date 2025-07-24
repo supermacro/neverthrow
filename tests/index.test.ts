@@ -15,7 +15,7 @@ import {
   ResultAsync,
 } from '../src'
 
-import { vitest, describe, expect, it } from 'vitest'
+import { describe, expect, it, vitest } from 'vitest'
 
 describe('Result.Ok', () => {
   it('Creates an Ok value', () => {
@@ -181,6 +181,25 @@ describe('Result.Ok', () => {
       expect(teed.isErr()).toBe(true)
       expect(passedFn).toHaveBeenCalledTimes(1)
       expect(teed._unsafeUnwrapErr()).toStrictEqual(12)
+    })
+  })
+
+  describe('andFinally', () => {
+    it('calls the callback and returns the original ok value', () => {
+      const okVal = ok("original ok value");
+      const andFinallyFn = jest.fn(() => ok("finally ok value"));
+      const finalResult = okVal.andFinally(andFinallyFn);
+
+      expect(andFinallyFn).toHaveBeenCalledTimes(1);
+      expect(finalResult._unsafeUnwrap()).toBe("original ok value");
+    })
+    it('calls the callback and returns the error from the callback', () => {
+      const okVal = ok("original ok value");
+      const andFinallyFn = jest.fn(() => err("error from callback"));
+      const finalResult = okVal.andFinally(andFinallyFn);
+
+      expect(andFinallyFn).toHaveBeenCalledTimes(1);
+      expect(finalResult._unsafeUnwrapErr()).toBe("error from callback");
     })
   })
 
@@ -383,6 +402,25 @@ describe('Result.Err', () => {
     expect(hopefullyNotFlattened.isErr()).toBe(true)
     expect(mapper).not.toHaveBeenCalled()
     expect(errVal._unsafeUnwrapErr()).toEqual('Yolo')
+  })
+
+  describe('andFinally', () => {
+    it('calls the callback and returns the original error', () => {
+      const okVal = err("original error");
+      const andFinallyFn = jest.fn(() => ok("finally ok value"));
+      const finalResult = okVal.andFinally(andFinallyFn);
+
+      expect(andFinallyFn).toHaveBeenCalledTimes(1);
+      expect(finalResult._unsafeUnwrapErr()).toBe("original error");
+    })
+    it('calls the callback and returns the error from the callback', () => {
+      const okVal = err("original error");
+      const andFinallyFn = jest.fn(() => err("error from callback"));
+      const finalResult = okVal.andFinally(andFinallyFn);
+
+      expect(andFinallyFn).toHaveBeenCalledTimes(1);
+      expect(finalResult._unsafeUnwrapErr()).toBe("error from callback");
+    })
   })
 
   it('Skips over asyncAndThrough but returns ResultAsync instead', async () => {
@@ -1111,6 +1149,66 @@ describe('ResultAsync', () => {
       expect(teed.isErr()).toBe(true)
       expect(passedFn).toHaveBeenCalledTimes(1)
       expect(teed._unsafeUnwrapErr()).toStrictEqual(12)
+    })
+  })
+  
+  describe('andFinally', () => {
+    it('runs the callback when the result is Ok and passes through the value', async () => {
+      const okVal = okAsync(42)
+      const finallyFn = jest.fn(() => {
+        return ok('this value is unused')
+      })
+      const finalResult = okVal.andFinally(finallyFn)
+      const awaitedResult = await finalResult
+
+      expect(finallyFn).toHaveBeenCalledTimes(1)
+      expect(finalResult).toBeInstanceOf(ResultAsync)
+      expect(awaitedResult._unsafeUnwrap()).toBe(42)
+    })
+    it('runs the callback when the result is Ok and returns an error from the callback', async () => {
+      const okVal = okAsync(42)
+      const finallyFn = jest.fn(() => {
+        return err('error from andFinally')
+      })
+      const finalResult = okVal.andFinally(finallyFn)
+      const awaitedResult = await finalResult
+
+      expect(finalResult).toBeInstanceOf(ResultAsync)
+      expect(finallyFn).toHaveBeenCalledTimes(1)
+      expect(awaitedResult._unsafeUnwrapErr()).toBe('error from andFinally')
+    })
+    it('runs the callback when the result is Err and passes through the error', async () => {
+      const errVal = errAsync('original error');
+      const finallyFn = jest.fn(() => {
+        return ok('this value is unused');
+      })
+      const finalResult = errVal.andFinally(finallyFn);
+      const awaitedResult = await finalResult;
+
+      expect(finalResult).toBeInstanceOf(ResultAsync);
+      expect(finallyFn).toHaveBeenCalledTimes(1);
+      expect(awaitedResult._unsafeUnwrapErr()).toBe('original error');
+    })
+    it('runs the callback when the result is Err and returns an error from the callback', async ()=>{
+      const errVal = errAsync('original error');
+      const finallyFn = jest.fn(() => {
+        return err('error from finally');
+      })
+      const finalResult = errVal.andFinally(finallyFn);
+      const awaitedResult = await finalResult;
+
+      expect(finalResult).toBeInstanceOf(ResultAsync);
+      expect(finallyFn).toHaveBeenCalledTimes(1);
+      expect(awaitedResult._unsafeUnwrapErr()).toBe('error from finally');
+    })
+    it('runs the callback when a misbehaving ResultAsync rejects, and propagates the rejection', async () => {
+      const misbehavingResult = new ResultAsync(Promise.reject('oops'));
+      const finallyFn = jest.fn(() => {
+        return ok('this value is unused');
+      })
+      const finalResult = misbehavingResult.andFinally(finallyFn);
+      await expect(finalResult).rejects.toBe('oops');
+      expect(finallyFn).toHaveBeenCalledTimes(1);
     })
   })
 
