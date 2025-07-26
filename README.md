@@ -73,7 +73,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
 ## Installation
 
 ```sh
-> npm install neverthrow
+npm install neverthrow
 ```
 
 ## Recommended: Use `eslint-plugin-neverthrow`
@@ -83,7 +83,7 @@ As part of `neverthrow`s [bounty program](https://github.com/supermacro/neverthr
 Install by running:
 
 ```sh
-> npm install eslint-plugin-neverthrow
+npm install eslint-plugin-neverthrow
 ```
 
 With `eslint-plugin-neverthrow`, you are forced to consume the result in one of the following three ways:
