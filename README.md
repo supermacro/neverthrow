@@ -36,6 +36,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.match` (method)](#resultmatch-method)
     - [`Result.asyncMap` (method)](#resultasyncmap-method)
     - [`Result.andTee` (method)](#resultandtee-method)
+    - [`Result.orTee` (method)](#resultortee-method)
     - [`Result.andThrough` (method)](#resultandthrough-method)
     - [`Result.asyncAndThrough` (method)](#resultasyncandthrough-method)
     - [`Result.fromThrowable` (static class method)](#resultfromthrowable-static-class-method)
@@ -55,6 +56,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.orElse` (method)](#resultasyncorelse-method)
     - [`ResultAsync.match` (method)](#resultasyncmatch-method)
     - [`ResultAsync.andTee` (method)](#resultasyncandtee-method)
+    - [`ResultAsync.orTee` (method)](#resultasyncortee-method)
     - [`ResultAsync.andThrough` (method)](#resultasyncandthrough-method)
     - [`ResultAsync.combine` (static class method)](#resultasynccombine-static-class-method)
     - [`ResultAsync.combineWithAllErrors` (static class method)](#resultasynccombinewithallerrors-static-class-method)
@@ -407,9 +409,9 @@ Takes an `Err` value and maps it to a `Result<T, SomeNewType>`. This is useful f
 
 ```typescript
 class Result<T, E> {
-  orElse<A>(
-    callback: (error: E) => Result<T, A>
-  ): Result<T, A> { ... }
+  orElse<U, A>(
+    callback: (error: E) => Result<U, A>
+  ): Result<U | T, A> { ... }
 }
 ```
 
@@ -579,14 +581,61 @@ const resAsync = parseUserInput(userInput)
                .asyncAndThen(insertUser)
 
 // Note no LogError shows up in the Result type
-resAsync.then((res: Result<void, ParseError | InsertError>) => {e
+resAsync.then((res: Result<void, ParseError | InsertError>) => {
   if(res.isErr()){
     console.log("Oops, at least one step failed", res.error)
   }
   else{
     console.log("User input has been parsed and inserted successfully.")
   }
-}))
+})
+```
+
+[⬆️  Back to top](#toc)
+
+---
+
+#### `Result.orTee` (method)
+
+Like `andTee` for the error track. Takes a `Result<T, E>` and lets the `Err` value pass through regardless the result of the passed-in function.
+This is a handy way to handle side effects whose failure or success should not affect your main logics such as logging.
+
+**Signature:**
+
+```typescript
+class Result<T, E> {
+  orTee(
+    callback: (value: E) => unknown
+  ): Result<T, E> { ... }
+}
+```
+
+**Example:**
+
+```typescript
+import { parseUserInput } from 'imaginary-parser'
+import { logParseError } from 'imaginary-logger'
+import { insertUser } from 'imaginary-database'
+
+// ^ assume parseUserInput, logParseError and insertUser have the following signatures:
+// parseUserInput(input: RequestData): Result<User, ParseError>
+// logParseError(parseError: ParseError): Result<void, LogError> 
+// insertUser(user: User): ResultAsync<void, InsertError>
+// Note logParseError returns void upon success but insertUser takes User type.
+
+const resAsync = parseUserInput(userInput)
+               .orTee(logParseError)
+               .asyncAndThen(insertUser)
+
+// Note no LogError shows up in the Result type
+resAsync.then((res: Result<void, ParseError | InsertError>) => {
+  if(res.isErr()){
+    console.log("Oops, at least one step failed", res.error)
+  }
+  else{
+    console.log("User input has been parsed and inserted successfully.")
+  }
+})
 ```
 
 [⬆️  Back to top](#toc)
@@ -626,14 +675,14 @@ const resAsync = parseUserInput(userInput)
                .andThrough(validateUser)
                .asyncAndThen(insertUser)
 
-resAsync.then((res: Result<void, ParseErro | ValidateError | InsertError>) => {e
+resAsync.then((res: Result<void, ParseErro | ValidateError | InsertError>) => {
   if(res.isErr()){
     console.log("Oops, at least one step failed", res.error)
   }
   else{
     console.log("User input has been parsed, validated, inserted successfully.")
   }
-}))
+})
 ```
   
 [⬆️  Back to top](#toc)
@@ -663,14 +712,14 @@ const resAsync = parseUserInput(userInput)
                .asyncAndThrough(insertUser)
                .andThen(sendNotification)
 
-resAsync.then((res: Result<void, ParseError | InsertError | NotificationError>) => {e
+resAsync.then((res: Result<void, ParseError | InsertError | NotificationError>) => {
   if(res.isErr()){
     console.log("Oops, at least one step failed", res.error)
   }
   else{
     console.log("User has been parsed, inserted and notified successfully.")
   }
-}))
+})
 ```
   
 [⬆️  Back to top](#toc)
@@ -802,7 +851,7 @@ const result = Result.combineWithAllErrors(resultList)
 
 #### `Result.safeUnwrap()`
 
-**⚠️ You must use `.safeUnwrap` in a generator context with `safeTry`**. Please see [safeTry](#safeTry).
+**Deprecated**. You don't need to use this method anymore.
 
 Allows for unwrapping a `Result` or returning an `Err` implicitly, thereby reducing boilerplate.
 
@@ -1179,9 +1228,9 @@ Takes an `Err` value and maps it to a `ResultAsync<T, SomeNewType>`. This is use
 
 ```typescript
 class ResultAsync<T, E> {
-  orElse<A>(
-    callback: (error: E) => Result<T, A> | ResultAsync<T, A>
-  ): ResultAsync<T, A> { ... }
+  orElse<U, A>(
+    callback: (error: E) => Result<U, A> | ResultAsync<U, A>
+  ): ResultAsync<U | T, A> { ... }
 }
 ```
 
@@ -1265,14 +1314,61 @@ const resAsync = insertUser(user)
                 .andThen(sendNotification)
 
 // Note there is no LogError in the types below 
-resAsync.then((res: Result<void, InsertError | NotificationError>) => {e
+resAsync.then((res: Result<void, InsertError | NotificationError>) => {
   if(res.isErr()){
     console.log("Oops, at least one step failed", res.error)
   }
   else{
     console.log("User has been inserted and notified successfully.")
   }
-}))  
+})
+```
+
+[⬆️  Back to top](#toc)
+
+---
+#### `ResultAsync.orTee` (method)
+
+Like `andTee` for the error track. Takes a `ResultAsync<T, E>` and lets the original `Err` value pass through regardless 
+the result of the passed-in function.
+This is a handy way to handle side effects whose failure or success should not affect your main logics such as logging. 
+
+**Signature:**
+
+```typescript
+class ResultAsync<T, E> {
+  orTee(
+    callback: (value: E) => unknown
+  ): ResultAsync<T, E>  => { ... }
+}
+```
+
+**Example:**
+
+```typescript
+import { insertUser } from 'imaginary-database'
+import { logInsertError } from 'imaginary-logger'
+import { sendNotification } from 'imaginary-service'
+
+// ^ assume insertUser, logInsertError and sendNotification have the following signatures:
+// insertUser(user: User): ResultAsync<User, InsertError>
+// logInsertError(insertError: InsertError): Result<void, LogError>
+// sendNotification(user: User): ResultAsync<void, NotificationError>
+// Note logInsertError returns void on success but sendNotification takes User type. 
+
+const resAsync = insertUser(user)
+                .orTee(logInsertError)
+                .andThen(sendNotification)
+
+// Note there is no LogError in the types below 
+resAsync.then((res: Result<void, InsertError | NotificationError>) => {
+  if(res.isErr()){
+    console.log("Oops, at least one step failed", res.error)
+  }
+  else{
+    console.log("User has been inserted and notified successfully.")
+  }
+})
 ```
 
 [⬆️  Back to top](#toc)
@@ -1313,14 +1409,14 @@ const resAsync = buildUser(userRaw)
                 .andThrough(insertUser)
                 .andThen(sendNotification)
 
-resAsync.then((res: Result<void, BuildError | InsertError | NotificationError>) => {e
+resAsync.then((res: Result<void, BuildError | InsertError | NotificationError>) => {
   if(res.isErr()){
     console.log("Oops, at least one step failed", res.error)
   }
   else{
     console.log("User data has been built, inserted and notified successfully.")
   }
-}))  
+})
 ```
 
 [⬆️  Back to top](#toc)
@@ -1412,7 +1508,7 @@ const result = ResultAsync.combineWithAllErrors(resultList)
 
 #### `ResultAsync.safeUnwrap()`
 
-**⚠️ You must use `.safeUnwrap` in a generator context with `safeTry`**. Please see [safeTry](#safeTry).
+**Deprecated**. You don't need to use this method anymore.
 
 Allows for unwrapping a `Result` or returning an `Err` implicitly, thereby reducing boilerplate.
 
@@ -1431,7 +1527,7 @@ Please find documentation at [Result.fromThrowable](#resultfromthrowable-static-
 
 #### `fromAsyncThrowable`
 
-Top level export of `ResultAsync.fromSafePromise`.
+Top level export of `ResultAsync.fromThrowable`.
 Please find documentation at [ResultAsync.fromThrowable](#resultasyncfromthrowable-static-class-method)
 
 [⬆️  Back to top](#toc)
@@ -1492,13 +1588,11 @@ function myFunc(): Result<number, string> {
             // aborted here and the enclosing `safeTry` block is evaluated to that `Err`.
             // Otherwise, this `(yield* ...)` is evaluated to its `.value`.
             (yield* mayFail1()
-                .mapErr(e => `aborted by an error from 1st function, ${e}`)
-                .safeUnwrap())
+                .mapErr(e => `aborted by an error from 1st function, ${e}`))
             +
             // The same as above.
             (yield* mayFail2()
-                .mapErr(e => `aborted by an error from 2nd function, ${e}`)
-                .safeUnwrap())
+                .mapErr(e => `aborted by an error from 2nd function, ${e}`))
         )
     })
 }
@@ -1520,13 +1614,11 @@ function myFunc(): Promise<Result<number, string>> {
         return ok(
             // You have to await if the expression is Promise<Result>
             (yield* (await mayFail1())
-                .mapErr(e => `aborted by an error from 1st function, ${e}`)
-                .safeUnwrap())
+                .mapErr(e => `aborted by an error from 1st function, ${e}`))
             +
             // You can call `safeUnwrap` directly if its ResultAsync
             (yield* mayFail2()
-                .mapErr(e => `aborted by an error from 2nd function, ${e}`)
-                .safeUnwrap())
+                .mapErr(e => `aborted by an error from 2nd function, ${e}`))
         )
     })
 }

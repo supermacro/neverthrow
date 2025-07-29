@@ -61,10 +61,15 @@ export namespace Result {
 
 export type Result<T, E> = Ok<T, E> | Err<T, E>
 
-export const ok = <T, E = never>(value: T): Ok<T, E> => new Ok(value)
+export function ok<T, E = never>(value: T): Ok<T, E>
+export function ok<T extends void = void, E = never>(value: void): Ok<void, E>
+export function ok<T, E = never>(value: T): Ok<T, E> {
+  return new Ok(value)
+}
 
 export function err<T = never, E extends string = string>(err: E): Err<T, E>
 export function err<T = never, E = unknown>(err: E): Err<T, E>
+export function err<T = never, E extends void = void>(err: void): Err<T, void>
 export function err<T = never, E = unknown>(err: E): Err<T, E> {
   return new Err(err)
 }
@@ -73,13 +78,12 @@ export function err<T = never, E = unknown>(err: E): Err<T, E> {
  * Evaluates the given generator to a Result returned or an Err yielded from it,
  * whichever comes first.
  *
- * This function, in combination with `Result.safeUnwrap()`, is intended to emulate
- * Rust's ? operator.
+ * This function is intended to emulate Rust's ? operator.
  * See `/tests/safeTry.test.ts` for examples.
  *
- * @param body - What is evaluated. In body, `yield* result.safeUnwrap()` works as
+ * @param body - What is evaluated. In body, `yield* result` works as
  * Rust's `result?` expression.
- * @returns The first occurence of either an yielded Err or a returned Result.
+ * @returns The first occurrence of either an yielded Err or a returned Result.
  */
 export function safeTry<T, E>(body: () => Generator<Err<never, E>, Result<T, E>>): Result<T, E>
 export function safeTry<
@@ -96,13 +100,12 @@ export function safeTry<
  * Evaluates the given generator to a Result returned or an Err yielded from it,
  * whichever comes first.
  *
- * This function, in combination with `Result.safeUnwrap()`, is intended to emulate
- * Rust's ? operator.
+ * This function is intended to emulate Rust's ? operator.
  * See `/tests/safeTry.test.ts` for examples.
  *
- * @param body - What is evaluated. In body, `yield* result.safeUnwrap()` and
- * `yield* resultAsync.safeUnwrap()` work as Rust's `result?` expression.
- * @returns The first occurence of either an yielded Err or a returned Result.
+ * @param body - What is evaluated. In body, `yield* result` and
+ * `yield* resultAsync` work as Rust's `result?` expression.
+ * @returns The first occurrence of either an yielded Err or a returned Result.
  */
 export function safeTry<T, E>(
   body: () => AsyncGenerator<Err<never, E>, Result<T, E>>,
@@ -192,6 +195,18 @@ interface IResult<T, E> {
   andTee(f: (t: T) => unknown): Result<T, E>
 
   /**
+   * This "tee"s the current `Err` value to an passed-in computation such as side
+   * effect functions but still returns the same `Err` value as the result.
+   *
+   * This is useful when you want to pass the current `Err` value to your side-track
+   * work such as logging but want to continue error-track work after that.
+   * This method does not care about the result of the passed in computation.
+   *
+   * @param f The function to apply to the current `Err` value
+   */
+  orTee(f: (t: E) => unknown): Result<T, E>
+
+  /**
    * Similar to `andTee` except error result of the computation will be passed
    * to the downstream in case of an error.
    *
@@ -212,8 +227,10 @@ interface IResult<T, E> {
    * @param f  A function to apply to an `Err` value, leaving `Ok` values
    * untouched.
    */
-  orElse<R extends Result<unknown, unknown>>(f: (e: E) => R): Result<T, InferErrTypes<R>>
-  orElse<A>(f: (e: E) => Result<T, A>): Result<T, A>
+  orElse<R extends Result<unknown, unknown>>(
+    f: (e: E) => R,
+  ): Result<InferOkTypes<R> | T, InferErrTypes<R>>
+  orElse<U, A>(f: (e: E) => Result<U, A>): Result<U | T, A>
 
   /**
    * Similar to `map` Except you must return a new `Result`.
@@ -259,6 +276,15 @@ interface IResult<T, E> {
   match<A, B = A>(ok: (t: T) => A, err: (e: E) => B): A | B
 
   /**
+   * @deprecated will be removed in 9.0.0.
+   *
+   * You can use `safeTry` without this method.
+   * @example
+   * ```typescript
+   * safeTry(function* () {
+   *   const okValue = yield* yourResult
+   * })
+   * ```
    * Emulates Rust's `?` operator in `safeTry`'s body. See also `safeTry`.
    */
   safeUnwrap(): Generator<Err<never, E>, T>
@@ -328,8 +354,14 @@ export class Ok<T, E> implements IResult<T, E> {
     return ok<T, E>(this.value)
   }
 
-  orElse<R extends Result<unknown, unknown>>(_f: (e: E) => R): Result<T, InferErrTypes<R>>
-  orElse<A>(_f: (e: E) => Result<T, A>): Result<T, A>
+  orTee(_f: (t: E) => unknown): Result<T, E> {
+    return ok<T, E>(this.value)
+  }
+
+  orElse<R extends Result<unknown, unknown>>(
+    _f: (e: E) => R,
+  ): Result<InferOkTypes<R> | T, InferErrTypes<R>>
+  orElse<U, A>(_f: (e: E) => Result<U, A>): Result<U | T, A>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
   orElse(_f: any): any {
     return ok(this.value)
@@ -377,6 +409,11 @@ export class Ok<T, E> implements IResult<T, E> {
   _unsafeUnwrapErr(config?: ErrorConfig): E {
     throw createNeverThrowError('Called `_unsafeUnwrapErr` on an Ok', this, config)
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-this-alias, require-yield
+  *[Symbol.iterator](): Generator<Err<never, E>, T> {
+    return this.value
+  }
 }
 
 export class Err<T, E> implements IResult<T, E> {
@@ -407,6 +444,15 @@ export class Err<T, E> implements IResult<T, E> {
     return err(this.error)
   }
 
+  orTee(f: (t: E) => unknown): Result<T, E> {
+    try {
+      f(this.error)
+    } catch (e) {
+      // Tee doesn't care about the error
+    }
+    return err<T, E>(this.error)
+  }
+
   andThen<R extends Result<unknown, unknown>>(
     _f: (t: T) => R,
   ): Result<InferOkTypes<R>, InferErrTypes<R> | E>
@@ -416,8 +462,10 @@ export class Err<T, E> implements IResult<T, E> {
     return err(this.error)
   }
 
-  orElse<R extends Result<unknown, unknown>>(f: (e: E) => R): Result<T, InferErrTypes<R>>
-  orElse<A>(f: (e: E) => Result<T, A>): Result<T, A>
+  orElse<R extends Result<unknown, unknown>>(
+    f: (e: E) => R,
+  ): Result<InferOkTypes<R> | T, InferErrTypes<R>>
+  orElse<U, A>(f: (e: E) => Result<U, A>): Result<U | T, A>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
   orElse(f: any): any {
     return f(this.error)
@@ -460,6 +508,15 @@ export class Err<T, E> implements IResult<T, E> {
 
   _unsafeUnwrapErr(_?: ErrorConfig): E {
     return this.error
+  }
+
+  *[Symbol.iterator](): Generator<Err<never, E>, T> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this
+    // @ts-expect-error -- This is structurally equivalent and safe
+    yield self
+    // @ts-expect-error -- This is structurally equivalent and safe
+    return self
   }
 }
 

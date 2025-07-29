@@ -349,9 +349,47 @@ type CreateTuple<L, V = string> =
     (function it(_ = 'allows specifying the E and T types explicitly') {
       type Expectation = Result<'yo', string>
 
-      const result: Expectation = ok<'yo', number>('yo').orElse<string>(val => {
+      const result: Expectation = ok<'yo', number>('yo').orElse<'yo', string>(val => {
         return err('yo')
       })
+    });
+
+    (function it(_ = 'Creates a union of ok types for disjoint types') {
+      type Expectation = Result<string | number, boolean>
+
+      const result: Expectation = err<string, boolean[]>([true])
+          .orElse((val) => ok<string, boolean>('recovered!'))
+    });
+
+    (function it(_ = 'Infers ok type when returning disjoint types') {
+      type Expectation = Result<string | number | boolean, unknown>
+
+      const result: Expectation = err<string, number>(123)
+          .orElse((val) => {
+            switch (val) {
+              case 1:
+                return ok('yoooooo dude' + val)
+              case 2:
+                return ok(123)
+              default:
+                return ok(false)
+            }
+          })
+    });
+
+    (function it(_ = 'Infers new type when returning both Ok and Err') {
+      const initial = err<string, number>(123)
+      type Expectation = Result<string | true, false>
+
+      const result: Expectation = initial
+          .orElse((val) => {
+            switch (val) {
+              case 1:
+                return err(false as const)
+              default:
+                return ok(true as const)
+            }
+          })
     });
   });
 
@@ -1604,7 +1642,7 @@ type CreateTuple<L, V = string> =
       type Expectation = ResultAsync<number, number | string>
 
       const result: Expectation = okAsync<number, string>(123)
-        .orElse<number | string>((val) => {
+        .orElse<number, number | string>((val) => {
           switch (val) {
             case '1':
               return ok(1)
@@ -1614,6 +1652,44 @@ type CreateTuple<L, V = string> =
               return errAsync('1')
           }
         })
+    });
+
+    (function it(_ = 'Creates a union of ok types for disjoint types') {
+      type Expectation = ResultAsync<string | number, boolean>
+
+      const result: Expectation = errAsync<string, boolean[]>([true])
+          .orElse((val) => ok<string, boolean>('recovered!'))
+    });
+
+    (function it(_ = 'Infers ok type when returning disjoint types') {
+      type Expectation = ResultAsync<string | number | boolean, unknown>
+
+      const result: Expectation = errAsync<string, number>(123)
+          .orElse((val) => {
+            switch (val) {
+              case 1:
+                return okAsync('yoooooo dude' + val)
+              case 2:
+                return okAsync(123)
+              default:
+                return okAsync(false)
+            }
+          })
+    });
+
+    (function it(_ = 'Infers new type when returning both Ok and Err') {
+      const initial = errAsync<string, number>(123)
+      type Expectation = ResultAsync<string | true, false>
+
+      const result: Expectation = initial
+          .orElse((val) => {
+            switch (val) {
+              case 1:
+                return err(false as const)
+              default:
+                return okAsync(true as const)
+            }
+          })
     });
   });
 

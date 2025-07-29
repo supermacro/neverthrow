@@ -130,6 +130,22 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     )
   }
 
+  orTee(f: (t: E) => unknown): ResultAsync<T, E> {
+    return new ResultAsync(
+      this._promise.then(async (res: Result<T, E>) => {
+        if (res.isOk()) {
+          return new Ok<T, E>(res.value)
+        }
+        try {
+          await f(res.error)
+        } catch (e) {
+          // Tee does not care about the error
+        }
+        return new Err<T, E>(res.error)
+      }),
+    )
+  }
+
   mapErr<U>(f: (e: E) => U | Promise<U>): ResultAsync<T, U> {
     return new ResultAsync(
       this._promise.then(async (res: Result<T, E>) => {
@@ -163,9 +179,13 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     )
   }
 
-  orElse<R extends Result<T, unknown>>(f: (e: E) => R): ResultAsync<T, InferErrTypes<R>>
-  orElse<R extends ResultAsync<T, unknown>>(f: (e: E) => R): ResultAsync<T, InferAsyncErrTypes<R>>
-  orElse<A>(f: (e: E) => Result<T, A> | ResultAsync<T, A>): ResultAsync<T, A>
+  orElse<R extends Result<unknown, unknown>>(
+    f: (e: E) => R,
+  ): ResultAsync<InferOkTypes<R> | T, InferErrTypes<R>>
+  orElse<R extends ResultAsync<unknown, unknown>>(
+    f: (e: E) => R,
+  ): ResultAsync<InferAsyncOkTypes<R> | T, InferAsyncErrTypes<R>>
+  orElse<U, A>(f: (e: E) => Result<U, A> | ResultAsync<U, A>): ResultAsync<U | T, A>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
   orElse(f: any): any {
     return new ResultAsync(
@@ -188,6 +208,15 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   }
 
   /**
+   * @deprecated will be removed in 9.0.0.
+   *
+   * You can use `safeTry` without this method.
+   * @example
+   * ```typescript
+   * safeTry(async function* () {
+   *   const okValue = yield* yourResult
+   * })
+   * ```
    * Emulates Rust's `?` operator in `safeTry`'s body. See also `safeTry`.
    */
   async *safeUnwrap(): AsyncGenerator<Err<never, E>, T> {
@@ -201,13 +230,31 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   ): PromiseLike<A | B> {
     return this._promise.then(successCallback, failureCallback)
   }
+
+  async *[Symbol.asyncIterator](): AsyncGenerator<Err<never, E>, T> {
+    const result = await this._promise
+
+    if (result.isErr()) {
+      // @ts-expect-error -- This is structurally equivalent and safe
+      yield errAsync(result.error)
+    }
+
+    // @ts-expect-error -- This is structurally equivalent and safe
+    return result.value
+  }
 }
 
-export const okAsync = <T, E = never>(value: T): ResultAsync<T, E> =>
-  new ResultAsync(Promise.resolve(new Ok<T, E>(value)))
+export function okAsync<T, E = never>(value: T): ResultAsync<T, E>
+export function okAsync<T extends void = void, E = never>(value: void): ResultAsync<void, E>
+export function okAsync<T, E = never>(value: T): ResultAsync<T, E> {
+  return new ResultAsync(Promise.resolve(new Ok<T, E>(value)))
+}
 
-export const errAsync = <T = never, E = unknown>(err: E): ResultAsync<T, E> =>
-  new ResultAsync(Promise.resolve(new Err<T, E>(err)))
+export function errAsync<T = never, E = unknown>(err: E): ResultAsync<T, E>
+export function errAsync<T = never, E extends void = void>(err: void): ResultAsync<T, void>
+export function errAsync<T = never, E = unknown>(err: E): ResultAsync<T, E> {
+  return new ResultAsync(Promise.resolve(new Err<T, E>(err)))
+}
 
 export const fromPromise = ResultAsync.fromPromise
 export const fromSafePromise = ResultAsync.fromSafePromise
