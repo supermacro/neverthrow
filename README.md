@@ -1582,7 +1582,7 @@ declare function mayFail1(): Result<number, string>;
 declare function mayFail2(): Result<number, string>;
 
 function myFunc(): Result<number, string> {
-    return safeTry<number, string>(function*() {
+    return safeTry(function*() {
         return ok(
             // If the result of mayFail1().mapErr() is an `Err`, the evaluation is
             // aborted here and the enclosing `safeTry` block is evaluated to that `Err`.
@@ -1610,8 +1610,8 @@ You can also use [async generator function](https://developer.mozilla.org/en-US/
 declare function mayFail1(): Promise<Result<number, string>>;
 declare function mayFail2(): ResultAsync<number, string>;
 
-function myFunc(): Promise<Result<number, string>> {
-    return safeTry<number, string>(async function*() {
+function myFunc(): ResultAsync<number, string> {
+    return safeTry(async function*() {
         return ok(
             // You have to await if the expression is Promise<Result>
             (yield* (await mayFail1())
