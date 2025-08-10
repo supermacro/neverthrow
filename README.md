@@ -1603,7 +1603,8 @@ To use `safeTry`, the points are as follows.
 * In that block, you can use `yield* <RESULT>` to state 'Return `<RESULT>` if it's an `Err`, otherwise evaluate to its `.value`'
 * Pass the generator function to `safeTry`
 
-You can also use [async generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*) to pass an async block to `safeTry`.
+You can also use [async generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*) to pass an async block to `safeTry`. For more information, see https://github.com/supermacro/neverthrow/pull/448 and https://github.com/supermacro/neverthrow/issues/444
+
 ```typescript
 // You can use either Promise<Result> or ResultAsync.
 declare function mayFail1(): Promise<Result<number, string>>;
@@ -1624,7 +1625,26 @@ function myFunc(): Promise<Result<number, string>> {
 }
 ```
 
-For more information, see https://github.com/supermacro/neverthrow/pull/448 and https://github.com/supermacro/neverthrow/issues/444
+Additionally, when using `safeTry` in class methods, you can pass `this` context as the first argument:
+
+```typescript
+class MyClass {
+  mayFail1: () => Promise<Result<number, string>>;
+  mayFail2: () => ResultAsync<number, string>;
+
+  myFunc(): ResultAsync<number, string> {
+    return safeTry(this, async function*() {
+        return ok(
+            (yield* (await this.mayFail1())
+                .mapErr(e => `aborted by an error from 1st function, ${e}`))
+            +
+            (yield* this.mayFail2()
+                .mapErr(e => `aborted by an error from 2nd function, ${e}`))
+        )
+    })
+  }
+}
+```
 
 [⬆️  Back to top](#toc)
 
