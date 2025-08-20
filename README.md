@@ -675,7 +675,7 @@ const resAsync = parseUserInput(userInput)
                .andThrough(validateUser)
                .asyncAndThen(insertUser)
 
-resAsync.then((res: Result<void, ParseErro | ValidateError | InsertError>) => {
+resAsync.then((res: Result<void, ParseError | ValidateError | InsertError>) => {
   if(res.isErr()){
     console.log("Oops, at least one step failed", res.error)
   }
