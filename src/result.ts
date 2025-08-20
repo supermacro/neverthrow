@@ -86,11 +86,52 @@ export function err<T = never, E = unknown>(err: E): Err<T, E> {
  * @returns The first occurrence of either an yielded Err or a returned Result.
  */
 export function safeTry<T, E>(body: () => Generator<Err<never, E>, Result<T, E>>): Result<T, E>
+
+/**
+ * Evaluates the given generator to a Result returned or an Err yielded from it,
+ * whichever comes first.
+ *
+ * This function is intended to emulate Rust's ? operator.
+ * See `/tests/safeTry.test.ts` for examples.
+ *
+ * @param thisArg - The `this` context to bind to the generator function
+ * @param body - What is evaluated. In body, `yield* result` works as
+ * Rust's `result?` expression.
+ * @returns The first occurrence of either an yielded Err or a returned Result.
+ */
+export function safeTry<T, E, This>(
+  thisArg: This,
+  body: (this: This) => Generator<Err<never, E>, Result<T, E>>,
+): Result<T, E>
 export function safeTry<
   YieldErr extends Err<never, unknown>,
   GeneratorReturnResult extends Result<unknown, unknown>
 >(
   body: () => Generator<YieldErr, GeneratorReturnResult>,
+): Result<
+  InferOkTypes<GeneratorReturnResult>,
+  InferErrTypes<YieldErr> | InferErrTypes<GeneratorReturnResult>
+>
+
+/**
+ * Evaluates the given generator to a Result returned or an Err yielded from it,
+ * whichever comes first.
+ *
+ * This function is intended to emulate Rust's ? operator.
+ * See `/tests/safeTry.test.ts` for examples.
+ *
+ * @param thisArg - The `this` context to bind to the generator function
+ * @param body - What is evaluated. In body, `yield* result` works as
+ * Rust's `result?` expression.
+ * @returns The first occurrence of either an yielded Err or a returned Result.
+ */
+export function safeTry<
+  YieldErr extends Err<never, unknown>,
+  GeneratorReturnResult extends Result<unknown, unknown>,
+  This
+>(
+  thisArg: This,
+  body: (this: This) => Generator<YieldErr, GeneratorReturnResult>,
 ): Result<
   InferOkTypes<GeneratorReturnResult>,
   InferErrTypes<YieldErr> | InferErrTypes<GeneratorReturnResult>
@@ -110,6 +151,24 @@ export function safeTry<
 export function safeTry<T, E>(
   body: () => AsyncGenerator<Err<never, E>, Result<T, E>>,
 ): ResultAsync<T, E>
+
+/**
+ * Evaluates the given generator to a Result returned or an Err yielded from it,
+ * whichever comes first.
+ *
+ * This function is intended to emulate Rust's ? operator.
+ * See `/tests/safeTry.test.ts` for examples.
+ *
+ * @param thisArg - The `this` context to bind to the generator function
+ * @param body - What is evaluated. In body, `yield* result` and
+ * `yield* resultAsync` work as Rust's `result?` expression.
+ * @returns The first occurrence of either an yielded Err or a returned Result.
+ */
+export function safeTry<T, E, This>(
+  thisArg: This,
+  body: (this: This) => AsyncGenerator<Err<never, E>, Result<T, E>>,
+): ResultAsync<T, E>
+
 export function safeTry<
   YieldErr extends Err<never, unknown>,
   GeneratorReturnResult extends Result<unknown, unknown>
@@ -119,17 +178,50 @@ export function safeTry<
   InferOkTypes<GeneratorReturnResult>,
   InferErrTypes<YieldErr> | InferErrTypes<GeneratorReturnResult>
 >
-export function safeTry<T, E>(
-  body:
-    | (() => Generator<Err<never, E>, Result<T, E>>)
-    | (() => AsyncGenerator<Err<never, E>, Result<T, E>>),
+
+/**
+ * Evaluates the given generator to a Result returned or an Err yielded from it,
+ * whichever comes first.
+ *
+ * This function is intended to emulate Rust's ? operator.
+ * See `/tests/safeTry.test.ts` for examples.
+ *
+ * @param thisArg - The `this` context to bind to the generator function
+ * @param body - What is evaluated. In body, `yield* result` and
+ * `yield* resultAsync` work as Rust's `result?` expression.
+ * @returns The first occurrence of either an yielded Err or a returned Result.
+ */
+export function safeTry<
+  YieldErr extends Err<never, unknown>,
+  GeneratorReturnResult extends Result<unknown, unknown>,
+  This
+>(
+  thisArg: This,
+  body: (this: This) => AsyncGenerator<YieldErr, GeneratorReturnResult>,
+): ResultAsync<
+  InferOkTypes<GeneratorReturnResult>,
+  InferErrTypes<YieldErr> | InferErrTypes<GeneratorReturnResult>
+>
+
+export function safeTry<T, E, This>(
+  bodyOrThisArg: (() => ResultReturnGenerator<T, E>) | This,
+  body?: (this: This) => ResultReturnGenerator<T, E>,
 ): Result<T, E> | ResultAsync<T, E> {
-  const n = body().next()
+  const g =
+    body == undefined
+      ? (bodyOrThisArg as () => ResultReturnGenerator<T, E>)()
+      : (body.call(bodyOrThisArg) as ResultReturnGenerator<T, E>)
+  const n = g.next()
+
   if (n instanceof Promise) {
     return new ResultAsync(n.then((r) => r.value))
   }
   return n.value
 }
+
+type ResultReturnGenerator<T, E> =
+  | Generator<Err<never, E>, Result<T, E>>
+  | AsyncGenerator<Err<never, E>, Result<T, E>>
 
 interface IResult<T, E> {
   /**

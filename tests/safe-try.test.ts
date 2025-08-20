@@ -23,9 +23,25 @@ describe('Returns what is returned from the generator function', () => {
     expect(res._unsafeUnwrap()).toBe(val)
   })
 
+  test("With synchronous Ok and this context", () => {
+    const res = safeTry(val, function*() {
+      return ok(this)
+    })
+    expect(res).toBeInstanceOf(Ok)
+    expect(res._unsafeUnwrap()).toBe(val)
+  })
+
   test("With synchronous Err", () => {
     const res = safeTry(function*() {
       return err(val)
+    })
+    expect(res).toBeInstanceOf(Err)
+    expect(res._unsafeUnwrapErr()).toBe(val)
+  })
+
+  test("With synchronous Err and this context", () => {
+    const res = safeTry(val, function*() {
+      return err(this)
     })
     expect(res).toBeInstanceOf(Err)
     expect(res._unsafeUnwrapErr()).toBe(val)
@@ -39,9 +55,25 @@ describe('Returns what is returned from the generator function', () => {
     expect(res._unsafeUnwrap()).toBe(val)
   })
 
+  test("With async Ok and this context", async () => {
+    const res = await safeTry(val, async function*() {
+      return await okAsync(this)
+    })
+    expect(res).toBeInstanceOf(Ok)
+    expect(res._unsafeUnwrap()).toBe(val)
+  })
+
   test("With async Err", async () => {
     const res = await safeTry(async function*() {
       return await errAsync(val)
+    })
+    expect(res).toBeInstanceOf(Err)
+    expect(res._unsafeUnwrapErr()).toBe(val)
+  })
+
+  test("With async Err and this context", async () => {
+    const res = await safeTry(val, async function*() {
+      return await errAsync(this)
     })
     expect(res).toBeInstanceOf(Err)
     expect(res._unsafeUnwrapErr()).toBe(val)
