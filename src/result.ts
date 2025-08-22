@@ -157,6 +157,15 @@ interface IResult<T, E> {
   map<A>(f: (t: T) => A): Result<A, E>
 
   /**
+   * Calls a function with the contained `Ok` value, leaving both `Ok` and `Err` untouched.
+   *
+   * This function can be used to perform side-effects without transforming the contained value.
+   *
+   * @param f a callback function that receives the contained `Ok` value
+   */
+  inspect(f: (t: T) => void): Result<T, E>
+
+  /**
    * Maps a `Result<T, E>` to `Result<T, F>` by applying a function to a
    * contained `Err` value, leaving an `Ok` value untouched.
    *
@@ -166,6 +175,15 @@ interface IResult<T, E> {
    * @param f a function to apply to the error `Err` value
    */
   mapErr<U>(f: (e: E) => U): Result<T, U>
+
+  /**
+   * Calls a function with the contained `Err` error, leaving both `Ok` and `Err` untouched.
+   *
+   * This function can be used to perform side-effects without transforming the contained error.
+   *
+   * @param f a callback function that receives the contained `Err` value
+   */
+  inspectErr(f: (e: E) => void): Result<T, E>
 
   /**
    * Similar to `map` Except you must return a new `Result`.
@@ -324,8 +342,18 @@ export class Ok<T, E> implements IResult<T, E> {
     return ok(f(this.value))
   }
 
+  inspect(f: (t: T) => void): Result<T, E> {
+    f(this.value)
+    return ok(this.value)
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mapErr<U>(_f: (e: E) => U): Result<T, U> {
+    return ok(this.value)
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  inspectErr(_f: (e: E) => void): Result<T, E> {
     return ok(this.value)
   }
 
@@ -434,6 +462,16 @@ export class Err<T, E> implements IResult<T, E> {
 
   mapErr<U>(f: (e: E) => U): Result<T, U> {
     return err(f(this.error))
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  inspect(_f: (t: T) => void): Result<T, E> {
+    return err(this.error)
+  }
+
+  inspectErr(f: (e: E) => void): Result<T, E> {
+    f(this.error)
+    return err(this.error)
   }
 
   andThrough<F>(_f: (t: T) => Result<unknown, F>): Result<T, E | F> {
