@@ -1059,7 +1059,7 @@ ResultAsync.fromPromiseResult = <A extends readonly any[], T, E>(
 **Example**:
 
 ```typescript
-export const callApi = ResultAsync.fromPromiseResult(async (postId: number): Promise<Result<Person[], Error>> => {
+export const callApi: ResultAsync<Person[], Error> = ResultAsync.fromPromiseResult(async (postId: number): Promise<Result<Person[], Error>> => {
   try {
     const post = await fetch(`/api/posts/${id}`).then(resp => !resp.ok ? Promise.reject(resp) : resp);
     const query = post.comments.map(c => c.commenterId).join(',');
