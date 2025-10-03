@@ -267,6 +267,7 @@ export const fromPromise = ResultAsync.fromPromise
 export const fromSafePromise = ResultAsync.fromSafePromise
 
 export const fromAsyncThrowable = ResultAsync.fromThrowable
+export const fromPromiseResult = ResultAsync.fromPromiseResult
 
 // Combines the array of async results into one result.
 export type CombineResultAsyncs<
