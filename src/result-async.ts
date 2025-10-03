@@ -60,6 +60,13 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static fromPromiseResult = <A extends readonly any[], T, E>(
+    fn: (...args: A) => Promise<Result<T, E>>,
+  ) => (...args: A): ResultAsync<T, E> => {
+    return ResultAsync.fromThrowable(fn, (e) => e as E)(...args).andThen((x) => x)
+  }
+
   static combine<
     T extends readonly [ResultAsync<unknown, unknown>, ...ResultAsync<unknown, unknown>[]]
   >(asyncResultList: T): CombineResultAsyncs<T>
