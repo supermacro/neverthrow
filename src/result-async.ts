@@ -5,6 +5,8 @@ import type {
   IsLiteralArray,
   MemberListOf,
   MembersToUnion,
+  InferErrTypes,
+  InferOkTypes,
 } from './result'
 
 import { Err, Ok, Result } from './'
@@ -13,11 +15,21 @@ import {
   combineResultAsyncListWithAllErrors,
   ExtractErrAsyncTypes,
   ExtractOkAsyncTypes,
-  InferAsyncErrTypes,
-  InferAsyncOkTypes,
-  InferErrTypes,
-  InferOkTypes,
 } from './_internals/utils'
+
+/**
+ * Extract the ok type from a `ResultAsync` type
+ * @example
+ * type OkType = InferAsyncOkTypes<ResultAsync<number, string>> // number
+ */
+export type InferAsyncOkTypes<R> = R extends ResultAsync<infer T, unknown> ? T : never
+
+/**
+ * Extract the error type from a `ResultAsync` type
+ * @example
+ * type ErrType = InferAsyncErrTypes<ResultAsync<number, string>> // string
+ */
+export type InferAsyncErrTypes<R> = R extends ResultAsync<unknown, infer E> ? E : never
 
 export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   private _promise: Promise<Result<T, E>>
