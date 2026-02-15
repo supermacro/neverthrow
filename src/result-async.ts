@@ -98,6 +98,19 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     )
   }
 
+  inspect(f: (t: T) => void | Promise<void>): ResultAsync<T, E> {
+    return new ResultAsync(
+      this._promise.then(async (res: Result<T, E>) => {
+        if (res.isErr()) {
+          return new Err(res.error)
+        }
+
+        await f(res.value)
+        return new Ok(res.value)
+      }),
+    )
+  }
+
   andThrough<F>(f: (t: T) => Result<unknown, F> | ResultAsync<unknown, F>): ResultAsync<T, E | F> {
     return new ResultAsync(
       this._promise.then(async (res: Result<T, E>) => {
@@ -154,6 +167,19 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
         }
 
         return new Err<T, U>(await f(res.error))
+      }),
+    )
+  }
+
+  inspectErr(f: (e: E) => void | Promise<void>): ResultAsync<T, E> {
+    return new ResultAsync(
+      this._promise.then(async (res: Result<T, E>) => {
+        if (res.isOk()) {
+          return new Ok(res.value)
+        }
+
+        await f(res.error)
+        return new Err(res.error)
       }),
     )
   }
