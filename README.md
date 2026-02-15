@@ -1002,9 +1002,9 @@ Same as `ResultAsync.fromPromise` except that it does not handle the rejection o
 **Signature:**
 
 ```typescript
-// fromPromise is a static class method
+// fromSafePromise is a static class method
 // also available as a standalone function
-// import { fromPromise } from 'neverthrow'
+// import { fromSafePromise } from 'neverthrow'
 ResultAsync.fromSafePromise<T, E>(
   promise: PromiseLike<T>
 ): ResultAsync<T, E> { ... }
