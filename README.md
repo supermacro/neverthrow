@@ -51,6 +51,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.fromThrowable` (static class method)](#resultasyncfromthrowable-static-class-method)
     - [`ResultAsync.fromPromise` (static class method)](#resultasyncfrompromise-static-class-method)
     - [`ResultAsync.fromSafePromise` (static class method)](#resultasyncfromsafepromise-static-class-method)
+    - [`ResultAsync.fromPromiseResult` (static class method)](#resultasyncfrompromiseresult-static-class-method)
     - [`ResultAsync.map` (method)](#resultasyncmap-method)
     - [`ResultAsync.mapErr` (method)](#resultasyncmaperr-method)
     - [`ResultAsync.unwrapOr` (method)](#resultasyncunwrapor-method)
@@ -68,6 +69,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`fromAsyncThrowable`](#fromasyncthrowable)
     - [`fromPromise`](#frompromise)
     - [`fromSafePromise`](#fromsafepromise)
+    - [`fromPromiseResult`](#frompromiseresult)
     - [`safeTry`](#safetry)
   + [Testing](#testing)
 * [A note on the Package Name](#a-note-on-the-package-name)
@@ -126,6 +128,7 @@ import {
   fromThrowable,
   fromPromise,
   fromSafePromise,
+  fromPromiseResult,
   safeTry,
 } from 'neverthrow'
 ```
@@ -1034,6 +1037,46 @@ export const signupHandler = route<User>((req, sessionManager) =>
       .map(({ sessionToken, admin }) => AppData.init(admin, sessionToken))
   })
 )
+```
+
+[⬆️  Back to top](#toc)
+
+---
+
+#### `ResultAsync.fromPromiseResult` (static class method)
+
+`ResultAsync.fromPromiseResult` wraps a function returning `Promise<Result<T, E>>` returning function, returning a function with the same signature, expect returning an `ResultAsync<T, E>`. This is particularly useful combined with `async` functions since you cannot return `ResultAsync<T, E>` directly, though you desire to.
+
+**Signature:**
+
+```typescript
+// fromPromiseResult is a static class method
+// also available as a standalone function
+// import { fromPromiseResult } from 'neverthrow'
+ResultAsync.fromPromiseResult = <A extends readonly any[], T, E>(
+    fn: (...args: A) => Promise<Result<T, E>>,
+  ) => (...args: A): ResultAsync<T, E> 
+```
+
+**Example**:
+
+```typescript
+export const callApi: ResultAsync<Person[], Error> = ResultAsync.fromPromiseResult(async (postId: number): Promise<Result<Person[], Error>> => {
+  try {
+    const post = await fetch(`/api/posts/${id}`).then(resp => !resp.ok ? Promise.reject(resp) : resp);
+    const query = post.comments.map(c => c.commenterId).join(',');
+    const people = await fetch(`/api/people?ids=${query}`).then(resp => !resp.ok ? Promise.reject(resp) : resp);
+    return ok(people);
+  } catch(e) {
+    return err(e as Error);
+  }
+});
+
+const people: Person[] = await callApi(123)
+  .orElse(e => {
+    console.error(e);
+    return [];
+  });
 ```
 
 [⬆️  Back to top](#toc)
