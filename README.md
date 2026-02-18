@@ -36,7 +36,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`Result.asyncAndThen` (method)](#resultasyncandthen-method)
     - [`Result.orElse` (method)](#resultorelse-method)
     - [`Result.match` (method)](#resultmatch-method)
-    - [`Result.asyncMap` (method)](#resultasyncmap-method)
+    - [`Result.asyncMap` (method)](#result-asyncmap-method)
     - [`Result.andTee` (method)](#resultandtee-method)
     - [`Result.orTee` (method)](#resultortee-method)
     - [`Result.andThrough` (method)](#resultandthrough-method)
@@ -51,7 +51,7 @@ For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a 
     - [`ResultAsync.fromThrowable` (static class method)](#resultasyncfromthrowable-static-class-method)
     - [`ResultAsync.fromPromise` (static class method)](#resultasyncfrompromise-static-class-method)
     - [`ResultAsync.fromSafePromise` (static class method)](#resultasyncfromsafepromise-static-class-method)
-    - [`ResultAsync.map` (method)](#resultasyncmap-method)
+    - [`ResultAsync.map` (method)](#resultasync-map-method)
     - [`ResultAsync.mapErr` (method)](#resultasyncmaperr-method)
     - [`ResultAsync.unwrapOr` (method)](#resultasyncunwrapor-method)
     - [`ResultAsync.andThen` (method)](#resultasyncandthen-method)
@@ -513,6 +513,7 @@ const answer = computationThatMightFail()
 
 ---
 
+<a id="result-asyncmap-method"></a>
 #### `Result.asyncMap` (method)
 
 Similar to `map` except for two things:
@@ -1040,6 +1041,7 @@ export const signupHandler = route<User>((req, sessionManager) =>
 
 ---
 
+<a id="resultasync-map-method"></a>
 #### `ResultAsync.map` (method)
 
 Maps a `ResultAsync<T, E>` to `ResultAsync<U, E>` by applying a function to a contained `Ok` value, leaving an `Err` value untouched.
