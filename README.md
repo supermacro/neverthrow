@@ -248,7 +248,7 @@ const linesResult = getLines('1\n2\n3\n4\n')
 
 // this Result now has a Array<number> inside it
 const newResult = linesResult.map(
-  (arr: Array<string>) => arr.map(parseInt)
+  (arr: Array<string>) => arr.map((s) => parseInt(s))
 )
 
 newResult.isOk() // true
