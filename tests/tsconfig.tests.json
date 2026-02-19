@@ -21,7 +21,7 @@
     "skipLibCheck": true
   },
   "include": [
-    "./index.test.ts",
+    "./*.test.ts",
     "./typecheck-tests.ts"
   ]
 }
