@@ -203,6 +203,13 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     return this._promise.then((res) => res.match(ok, _err))
   }
 
+  fork<A, B, C, D>(
+    ok: (t: T) => Result<A, B> | ResultAsync<A, B>,
+    err: (e: E) => Result<C, D> | ResultAsync<C, D>,
+  ): ResultAsync<A | C, B | D> {
+    return new ResultAsync(this._promise.then(async (res) => res.match(ok, err)))
+  }
+
   unwrapOr<A>(t: A): Promise<T | A> {
     return this._promise.then((res) => res.unwrapOr(t))
   }
