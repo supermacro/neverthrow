@@ -1286,7 +1286,8 @@ const resultMessage = await validateUser(user)
 
 Takes a `ResultAsync<T, E>` and lets the original `ResultAsync<T, E>` pass through regardless 
 the result of the passed-in function.
-This is a handy way to handle side effects whose failure or success should not affect your main logics such as logging. 
+This is a handy way to handle side effects whose failure or success should not affect your main logics such as logging.
+The callback passed to `andTee` will be awaited
 
 **Signature:**
 
