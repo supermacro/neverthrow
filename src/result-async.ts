@@ -43,16 +43,25 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static fromThrowable<A extends readonly any[], R>(
+    fn: (...args: A) => Promise<R>,
+  ): (...args: A) => ResultAsync<R, unknown>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static fromThrowable<A extends readonly any[], R, E>(
+    fn: (...args: A) => Promise<R>,
+    errorFn: (err: unknown) => E,
+  ): (...args: A) => ResultAsync<R, E>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static fromThrowable<A extends readonly any[], R, E>(
     fn: (...args: A) => Promise<R>,
     errorFn?: (err: unknown) => E,
-  ): (...args: A) => ResultAsync<R, E> {
+  ): (...args: A) => ResultAsync<R, E | unknown> {
     return (...args) => {
       return new ResultAsync(
         (async () => {
           try {
             return new Ok(await fn(...args))
-          } catch (error) {
+          } catch (error: unknown) {
             return new Err(errorFn ? errorFn(error) : error)
           }
         })(),
