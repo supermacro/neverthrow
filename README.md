@@ -6,6 +6,8 @@
 
 Encode failure into your program.
 
+![Demo](assets/demo.png)
+
 This package contains a `Result` type that represents either success (`Ok`) or failure (`Err`).
 
 For asynchronous tasks, `neverthrow` offers a `ResultAsync` class which wraps a `Promise<Result<T, E>>` and gives you the same level of expressivity and control as a regular `Result<T, E>`.
@@ -675,7 +677,7 @@ const resAsync = parseUserInput(userInput)
                .andThrough(validateUser)
                .asyncAndThen(insertUser)
 
-resAsync.then((res: Result<void, ParseErro | ValidateError | InsertError>) => {
+resAsync.then((res: Result<void, ParseError | ValidateError | InsertError>) => {
   if(res.isErr()){
     console.log("Oops, at least one step failed", res.error)
   }
