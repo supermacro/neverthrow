@@ -13,6 +13,7 @@ import {
   okAsync,
   Result,
   ResultAsync,
+  TaggedError,
 } from '../src'
 
 import { vitest, describe, expect, it } from 'vitest'
@@ -472,6 +473,71 @@ describe('Result.Err', () => {
       expect(okVal.orElse(errorCallback)).toEqual(err(true))
       expect(errorCallback).toHaveBeenCalledTimes(1)
     })
+  })
+})
+
+describe('TaggedError', () => {
+  class ParseError extends TaggedError<'ParseError'> {
+    constructor(public readonly input: string) {
+      super('ParseError', `Unable to parse: ${input}`)
+    }
+  }
+
+  class ValidationError extends TaggedError<'ValidationError'> {
+    constructor(public readonly reason: string) {
+      super('ValidationError', `Validation failed: ${reason}`)
+    }
+  }
+
+  it('catches matching tagged errors on Result', () => {
+    const result = err<number, ParseError | ValidationError>(new ParseError('abc')).catchTags({
+      ParseError: (_error) => ok(3),
+    })
+
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toBe(3)
+  })
+
+  it('passes through when no matching handler is present', () => {
+    const source = err<number, ParseError | ValidationError>(new ValidationError('too short'))
+
+    const result = source.catchTags({
+      ParseError: (_error) => ok(123),
+    })
+
+    expect(result.isErr()).toBe(true)
+    expect(result._unsafeUnwrapErr()).toBe(source._unsafeUnwrapErr())
+  })
+
+  it('does not catch non-tagged errors', () => {
+    const originalError = new Error('plain error')
+    const result = err<number, Error>(originalError).catchTags({
+      ParseError: (_error: never) => ok(0),
+    })
+
+    expect(result.isErr()).toBe(true)
+    expect(result._unsafeUnwrapErr()).toBe(originalError)
+  })
+
+  it('catches matching tagged errors on ResultAsync', async () => {
+    const result = await errAsync<number, ParseError | ValidationError>(
+      new ValidationError('missing field'),
+    ).catchTags({
+      ValidationError: (_error) => okAsync('missing field'.length),
+    })
+
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toBe('missing field'.length)
+  })
+
+  it('passes through non-matching tags on ResultAsync', async () => {
+    const sourceError = new ValidationError('missing field')
+    const result = await errAsync<number, ParseError | ValidationError>(sourceError).catchTags({
+      ParseError: (_error) => okAsync(1),
+    })
+
+    expect(result.isErr()).toBe(true)
+    expect(result._unsafeUnwrapErr()).toBe(sourceError)
   })
 })
 

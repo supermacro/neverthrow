@@ -1,4 +1,4 @@
-export { Result, ok, Ok, err, Err, fromThrowable, safeTry } from './result'
+export { Result, ok, Ok, err, Err, TaggedError, fromThrowable, safeTry } from './result'
 export {
   ResultAsync,
   okAsync,
