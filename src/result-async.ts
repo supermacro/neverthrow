@@ -7,7 +7,7 @@ import type {
   MembersToUnion,
 } from './result'
 
-import { Err, Ok, Result } from './'
+import { Err, Ok, Result, TaggedError } from './'
 import {
   combineResultAsyncList,
   combineResultAsyncListWithAllErrors,
@@ -199,6 +199,34 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     )
   }
 
+  catchTags<Handlers extends CatchTagsHandlersFor<E>>(
+    handlers: Handlers,
+  ): ResultAsync<T | CatchTagsHandlerOkTypes<Handlers>, E | CatchTagsHandlerErrTypes<Handlers>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  catchTags(handlers: any): any {
+    return new ResultAsync(
+      this._promise.then(async (res: Result<T, E>) => {
+        if (res.isOk()) {
+          return new Ok(res.value)
+        }
+
+        if (res.error instanceof TaggedError) {
+          const handler = handlers[res.error._tag] as
+            | ((
+                error: TaggedErrorUnion,
+              ) => Result<unknown, unknown> | ResultAsync<unknown, unknown>)
+            | undefined
+          if (handler !== undefined) {
+            const handledResult = handler(res.error)
+            return handledResult instanceof ResultAsync ? handledResult._promise : handledResult
+          }
+        }
+
+        return new Err(res.error)
+      }),
+    )
+  }
+
   match<A, B = A>(ok: (t: T) => A, _err: (e: E) => B): Promise<A | B> {
     return this._promise.then((res) => res.match(ok, _err))
   }
@@ -336,3 +364,34 @@ type TraverseWithAllErrorsAsync<T, Depth extends number = 5> = TraverseAsync<
 
 // Converts a reaodnly array into a writable array
 type Writable<T> = T extends ReadonlyArray<unknown> ? [...T] : T
+
+type TaggedErrorUnion = TaggedError<string>
+type CatchTagsHandlers = {
+  [K in string]?: (
+    error: TaggedErrorUnion,
+  ) => Result<unknown, unknown> | ResultAsync<unknown, unknown>
+}
+type CatchTagsHandlersFor<E> = Partial<
+  {
+    [K in Extract<Extract<E, TaggedErrorUnion>['_tag'], string>]: (
+      error: Extract<Extract<E, TaggedErrorUnion>, { _tag: K }>,
+    ) => Result<unknown, unknown> | ResultAsync<unknown, unknown>
+  }
+>
+type CatchTagsHandlerResultUnion<Handlers> = {
+  [K in keyof Handlers]: Handlers[K] extends (...args: readonly unknown[]) => infer R ? R : never
+}[keyof Handlers]
+type CatchTagsHandlerResultSyncUnion<Handlers> = Extract<
+  CatchTagsHandlerResultUnion<Handlers>,
+  Result<unknown, unknown>
+>
+type CatchTagsHandlerResultAsyncUnion<Handlers> = Extract<
+  CatchTagsHandlerResultUnion<Handlers>,
+  ResultAsync<unknown, unknown>
+>
+type CatchTagsHandlerOkTypes<Handlers> =
+  | InferOkTypes<CatchTagsHandlerResultSyncUnion<Handlers>>
+  | InferAsyncOkTypes<CatchTagsHandlerResultAsyncUnion<Handlers>>
+type CatchTagsHandlerErrTypes<Handlers> =
+  | InferErrTypes<CatchTagsHandlerResultSyncUnion<Handlers>>
+  | InferAsyncErrTypes<CatchTagsHandlerResultAsyncUnion<Handlers>>

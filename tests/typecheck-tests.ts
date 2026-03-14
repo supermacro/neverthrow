@@ -12,6 +12,7 @@ import {
   okAsync,
   Result,
   ResultAsync,
+  TaggedError,
 } from '../src'
 import { safeTry, Transpose } from '../src/result'
 import { type N, Test } from 'ts-toolbelt'
@@ -390,6 +391,41 @@ type CreateTuple<L, V = string> =
                 return ok(true as const)
             }
           })
+    });
+  });
+
+  (function describe(_ = 'catchTags') {
+    class ParseError extends TaggedError<'ParseError'> {
+      constructor(readonly input: string) {
+        super('ParseError', input)
+      }
+    }
+
+    class ValidationError extends TaggedError<'ValidationError'> {
+      constructor(readonly reason: string) {
+        super('ValidationError', reason)
+      }
+    }
+
+    (function it(_ = 'suggests keys based on tagged errors in Result error union') {
+      type SourceError = ParseError | ValidationError | Error
+      type Expectation = Result<number | string, SourceError | Error>
+
+      const source: Result<number, SourceError> = err(new ParseError('raw-input'))
+      const result: Expectation = source.catchTags({
+        ParseError: (_error) => ok('raw-input'),
+      })
+    });
+
+    (function it(_ = 'supports multiple handlers and unions their output types') {
+      type SourceError = ParseError | ValidationError | Error
+      type Expectation = Result<number | boolean, SourceError | Error>
+
+      const source: Result<number, SourceError> = err(new ValidationError('missing-field'))
+      const result: Expectation = source.catchTags({
+        ParseError: (_error) => ok(true),
+        ValidationError: (_error) => err(new Error('validated')),
+      })
     });
   });
 
@@ -1690,6 +1726,41 @@ type CreateTuple<L, V = string> =
                 return okAsync(true as const)
             }
           })
+    });
+  });
+
+  (function describe(_ = 'catchTags') {
+    class ParseError extends TaggedError<'ParseError'> {
+      constructor(readonly input: string) {
+        super('ParseError', input)
+      }
+    }
+
+    class ValidationError extends TaggedError<'ValidationError'> {
+      constructor(readonly reason: string) {
+        super('ValidationError', reason)
+      }
+    }
+
+    (function it(_ = 'suggests keys based on tagged errors in ResultAsync error union') {
+      type SourceError = ParseError | ValidationError | Error
+      type Expectation = ResultAsync<number | string, SourceError | Error>
+
+      const source: ResultAsync<number, SourceError> = errAsync(new ParseError('raw-input'))
+      const result: Expectation = source.catchTags({
+        ParseError: (_error) => okAsync('raw-input'),
+      })
+    });
+
+    (function it(_ = 'supports mixing Result and ResultAsync handlers') {
+      type SourceError = ParseError | ValidationError | Error
+      type Expectation = ResultAsync<number | boolean, SourceError | Error>
+
+      const source: ResultAsync<number, SourceError> = errAsync(new ValidationError('missing-field'))
+      const result: Expectation = source.catchTags({
+        ParseError: (_error) => ok(true),
+        ValidationError: (_error) => errAsync(new Error('validated')),
+      })
     });
   });
 

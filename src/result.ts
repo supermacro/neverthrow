@@ -61,6 +61,31 @@ export namespace Result {
 
 export type Result<T, E> = Ok<T, E> | Err<T, E>
 
+type TaggedErrorUnion = TaggedError<string>
+type CatchTagsHandlers = {
+  [K in string]?: (error: TaggedErrorUnion) => Result<unknown, unknown>
+}
+type CatchTagsHandlersFor<E> = Partial<
+  {
+    [K in Extract<Extract<E, TaggedErrorUnion>['_tag'], string>]: (
+      error: Extract<Extract<E, TaggedErrorUnion>, { _tag: K }>,
+    ) => Result<unknown, unknown>
+  }
+>
+type CatchTagsHandlerResultUnion<Handlers> = {
+  [K in keyof Handlers]: Handlers[K] extends (...args: readonly unknown[]) => infer R ? R : never
+}[keyof Handlers]
+
+export class TaggedError<Tag extends string = string> extends Error {
+  readonly _tag: Tag
+
+  constructor(tag: Tag, message?: string) {
+    super(message)
+    this._tag = tag
+    this.name = this.constructor.name
+  }
+}
+
 export function ok<T, E = never>(value: T): Ok<T, E>
 export function ok<T extends void = void, E = never>(value: void): Ok<void, E>
 export function ok<T, E = never>(value: T): Ok<T, E> {
@@ -233,6 +258,16 @@ interface IResult<T, E> {
   orElse<U, A>(f: (e: E) => Result<U, A>): Result<U | T, A>
 
   /**
+   * Catches tagged errors by matching against the `_tag` property.
+   */
+  catchTags<Handlers extends CatchTagsHandlersFor<E>>(
+    handlers: Handlers,
+  ): Result<
+    T | InferOkTypes<CatchTagsHandlerResultUnion<Handlers>>,
+    E | InferErrTypes<CatchTagsHandlerResultUnion<Handlers>>
+  >
+
+  /**
    * Similar to `map` Except you must return a new `Result`.
    *
    * This is useful for when you need to do a subsequent async computation using
@@ -367,6 +402,15 @@ export class Ok<T, E> implements IResult<T, E> {
     return ok(this.value)
   }
 
+  catchTags<Handlers extends CatchTagsHandlersFor<E>>(
+    _handlers: Handlers,
+  ): Result<
+    T | InferOkTypes<CatchTagsHandlerResultUnion<Handlers>>,
+    E | InferErrTypes<CatchTagsHandlerResultUnion<Handlers>>
+  > {
+    return ok(this.value)
+  }
+
   asyncAndThen<U, F>(f: (t: T) => ResultAsync<U, F>): ResultAsync<U, E | F> {
     return f(this.value)
   }
@@ -396,8 +440,10 @@ export class Ok<T, E> implements IResult<T, E> {
 
   safeUnwrap(): Generator<Err<never, E>, T> {
     const value = this.value
-    /* eslint-disable-next-line require-yield */
     return (function* () {
+      for (const _err of [] as Err<never, E>[]) {
+        yield _err
+      }
       return value
     })()
   }
@@ -410,8 +456,10 @@ export class Ok<T, E> implements IResult<T, E> {
     throw createNeverThrowError('Called `_unsafeUnwrapErr` on an Ok', this, config)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-this-alias, require-yield
   *[Symbol.iterator](): Generator<Err<never, E>, T> {
+    for (const _err of [] as Err<never, E>[]) {
+      yield _err
+    }
     return this.value
   }
 }
@@ -469,6 +517,31 @@ export class Err<T, E> implements IResult<T, E> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
   orElse(f: any): any {
     return f(this.error)
+  }
+
+  catchTags<Handlers extends CatchTagsHandlersFor<E>>(
+    handlers: Handlers,
+  ): Result<
+    T | InferOkTypes<CatchTagsHandlerResultUnion<Handlers>>,
+    E | InferErrTypes<CatchTagsHandlerResultUnion<Handlers>>
+  > {
+    if (this.error instanceof TaggedError) {
+      const keyedHandlers = handlers as CatchTagsHandlers
+      const handler = keyedHandlers[this.error._tag] as
+        | ((error: TaggedErrorUnion) => Result<unknown, unknown>)
+        | undefined
+      if (handler !== undefined) {
+        return handler(this.error as TaggedErrorUnion) as Result<
+          T | InferOkTypes<CatchTagsHandlerResultUnion<Handlers>>,
+          E | InferErrTypes<CatchTagsHandlerResultUnion<Handlers>>
+        >
+      }
+    }
+
+    return err(this.error) as Result<
+      T | InferOkTypes<CatchTagsHandlerResultUnion<Handlers>>,
+      E | InferErrTypes<CatchTagsHandlerResultUnion<Handlers>>
+    >
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
