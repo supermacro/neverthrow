@@ -436,7 +436,10 @@ export class Err<T, E> implements IResult<T, E> {
     return err(f(this.error))
   }
 
-  andThrough<F>(_f: (t: T) => Result<unknown, F>): Result<T, E | F> {
+  andThrough<R extends Result<unknown, unknown>>(_f: (t: T) => R): Result<T, InferErrTypes<R> | E>
+  andThrough<F>(_f: (t: T) => Result<unknown, F>): Result<T, E | F>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  andThrough(_f: any): any {
     return err(this.error)
   }
 

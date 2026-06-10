@@ -284,6 +284,39 @@ type CreateTuple<L, V = string> =
         return ok('yo')
       })
     });
+
+    (function it(_ = 'Infers all error types when chained after a method that widens to Result (issue #663)') {
+      // Two distinct, nominally-incompatible error types
+      class ErrorA extends Error {
+        readonly _tag = 'ErrorA' as const
+      }
+      class ErrorB extends Error {
+        readonly _tag = 'ErrorB' as const
+      }
+
+      // Returns a *union* of Result subtypes (Err<_, ErrorA> | Err<_, ErrorB> | Ok<_, never>)
+      const assertPublishable = (snapshot: { title: string; description: string }) => {
+        if (!snapshot.title) {
+          return err(new ErrorA())
+        }
+        if (!snapshot.description) {
+          return err(new ErrorB())
+        }
+        return ok(undefined)
+      }
+
+      type Expectation = Result<{ title: string; description: string }, ErrorA | ErrorB>
+
+      // The `.andThen((s) => ok(s))` call widens the receiver to `Result<T, never>`, which
+      // forced overload resolution onto `Err`'s (previously single) `andThrough` signature
+      // and dropped all but the first member's error type. See issue #663.
+      const result: Expectation = ok({
+        title: 'title',
+        description: 'description',
+      })
+        .andThen((s) => ok(s))
+        .andThrough(assertPublishable)
+    });
   });
 
   (function describe(_ = 'orElse') {
