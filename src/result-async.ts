@@ -94,20 +94,20 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   bind<N extends string, B, F>(
     name: N,
     f: (t: T) => Result<B, F> | ResultAsync<B, F>,
-  ): ResultAsync<T & { readonly [K in N]: B }, E | F> {
+  ): ResultAsync<T & { readonly [K in N]: B }, E | F>
+  bind(name: string, f: (t: T) => Result<unknown, unknown> | ResultAsync<unknown, unknown>): ResultAsync<unknown, unknown> {
     return new ResultAsync(
       this._promise.then(async (res) => {
         if (res.isErr()) {
-          return new Err(res.error) as unknown as Result<T & { readonly [K in N]: B }, E | F>
+          return new Err(res.error)
         }
 
         const newRes = await f(res.value)
         if (newRes.isErr()) {
-          return new Err(newRes.error) as unknown as Result<T & { readonly [K in N]: B }, E | F>
+          return new Err(newRes.error)
         }
 
-        const merged = { ...(res.value as unknown as Record<string, unknown>), [name as string]: newRes.value }
-        return new Ok(merged) as unknown as Result<T & { readonly [K in N]: B }, E | F>
+        return new Ok({ ...(res.value as unknown as Record<string, unknown>), [name]: newRes.value })
       }),
     )
   }
@@ -115,15 +115,15 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   let<N extends string, B>(
     name: N,
     f: (t: T) => B,
-  ): ResultAsync<T & { readonly [K in N]: B }, E> {
+  ): ResultAsync<T & { readonly [K in N]: B }, E>
+  let(name: string, f: (t: T) => unknown): ResultAsync<unknown, unknown> {
     return new ResultAsync(
       this._promise.then(async (res) => {
         if (res.isErr()) {
-          return new Err(res.error) as unknown as Result<T & { readonly [K in N]: B }, E>
+          return new Err(res.error)
         }
 
-        const merged = { ...(res.value as unknown as Record<string, unknown>), [name as string]: f(res.value) }
-        return new Ok(merged) as unknown as Result<T & { readonly [K in N]: B }, E>
+        return new Ok({ ...(res.value as unknown as Record<string, unknown>), [name]: f(res.value) })
       }),
     )
   }
