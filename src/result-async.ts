@@ -95,7 +95,10 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     name: N,
     f: (t: T) => Result<B, F> | ResultAsync<B, F>,
   ): ResultAsync<T & { readonly [K in N]: B }, E | F>
-  bind(name: string, f: (t: T) => Result<unknown, unknown> | ResultAsync<unknown, unknown>): ResultAsync<unknown, unknown> {
+  bind(
+    name: string,
+    f: (t: T) => Result<unknown, unknown> | ResultAsync<unknown, unknown>,
+  ): ResultAsync<unknown, unknown> {
     return new ResultAsync(
       this._promise.then(async (res) => {
         if (res.isErr()) {
@@ -107,15 +110,15 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
           return new Err(newRes.error)
         }
 
-        return new Ok({ ...(res.value as unknown as Record<string, unknown>), [name]: newRes.value })
+        return new Ok({
+          ...((res.value as unknown) as Record<string, unknown>),
+          [name]: newRes.value,
+        })
       }),
     )
   }
 
-  let<N extends string, B>(
-    name: N,
-    f: (t: T) => B,
-  ): ResultAsync<T & { readonly [K in N]: B }, E>
+  let<N extends string, B>(name: N, f: (t: T) => B): ResultAsync<T & { readonly [K in N]: B }, E>
   let(name: string, f: (t: T) => unknown): ResultAsync<unknown, unknown> {
     return new ResultAsync(
       this._promise.then(async (res) => {
@@ -123,7 +126,10 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
           return new Err(res.error)
         }
 
-        return new Ok({ ...(res.value as unknown as Record<string, unknown>), [name]: f(res.value) })
+        return new Ok({
+          ...((res.value as unknown) as Record<string, unknown>),
+          [name]: f(res.value),
+        })
       }),
     )
   }

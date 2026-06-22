@@ -284,10 +284,7 @@ interface IResult<T, E> {
     f: (t: T) => Result<B, F>,
   ): Result<T & { readonly [K in N]: B }, E | F>
 
-  let<N extends string, B>(
-    name: N,
-    f: (t: T) => B,
-  ): Result<T & { readonly [K in N]: B }, E>
+  let<N extends string, B>(name: N, f: (t: T) => B): Result<T & { readonly [K in N]: B }, E>
 
   /**
    * @deprecated will be removed in 9.0.0.
@@ -390,15 +387,12 @@ export class Ok<T, E> implements IResult<T, E> {
     if (result.isErr()) {
       return err(result.error)
     }
-    return ok({ ...(this.value as unknown as Record<string, unknown>), [name]: result.value })
+    return ok({ ...((this.value as unknown) as Record<string, unknown>), [name]: result.value })
   }
 
-  let<N extends string, B>(
-    name: N,
-    f: (t: T) => B,
-  ): Result<T & { readonly [K in N]: B }, E>
+  let<N extends string, B>(name: N, f: (t: T) => B): Result<T & { readonly [K in N]: B }, E>
   let(name: string, f: (t: T) => unknown): Result<unknown, unknown> {
-    return ok({ ...(this.value as unknown as Record<string, unknown>), [name]: f(this.value) })
+    return ok({ ...((this.value as unknown) as Record<string, unknown>), [name]: f(this.value) })
   }
 
   asyncAndThen<U, F>(f: (t: T) => ResultAsync<U, F>): ResultAsync<U, E | F> {
@@ -513,10 +507,7 @@ export class Err<T, E> implements IResult<T, E> {
     return err(this.error)
   }
 
-  let<N extends string, B>(
-    name: N,
-    f: (t: T) => B,
-  ): Result<T & { readonly [K in N]: B }, E>
+  let<N extends string, B>(name: N, f: (t: T) => B): Result<T & { readonly [K in N]: B }, E>
   let(_name: string, _f: (t: T) => unknown): Result<unknown, unknown> {
     return err(this.error)
   }
