@@ -86,6 +86,51 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     ) as CombineResultsWithAllErrorsArrayAsync<T>
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  static get Do(): ResultAsync<{}, never> {
+    return okAsync({})
+  }
+
+  bind<N extends string, B, F>(
+    name: N,
+    f: (t: T) => Result<B, F> | ResultAsync<B, F>,
+  ): ResultAsync<T & { readonly [K in N]: B }, E | F> {
+    return new ResultAsync(
+      this._promise.then(async (res) => {
+        if (res.isErr()) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return new Err(res.error) as any
+        }
+
+        const newRes = await f(res.value)
+        if (newRes.isErr()) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return new Err(newRes.error) as any
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return new Ok({ ...(res.value as any), [name as string]: newRes.value }) as any
+      }),
+    )
+  }
+
+  let<N extends string, B>(
+    name: N,
+    f: (t: T) => B,
+  ): ResultAsync<T & { readonly [K in N]: B }, E> {
+    return new ResultAsync(
+      this._promise.then(async (res) => {
+        if (res.isErr()) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return new Err(res.error) as any
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return new Ok({ ...(res.value as any), [name as string]: f(res.value) }) as any
+      }),
+    )
+  }
+
   map<A>(f: (t: T) => A | Promise<A>): ResultAsync<A, E> {
     return new ResultAsync(
       this._promise.then(async (res: Result<T, E>) => {
