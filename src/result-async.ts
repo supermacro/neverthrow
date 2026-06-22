@@ -98,18 +98,16 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     return new ResultAsync(
       this._promise.then(async (res) => {
         if (res.isErr()) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return new Err(res.error) as any
+          return new Err(res.error) as unknown as Result<T & { readonly [K in N]: B }, E | F>
         }
 
         const newRes = await f(res.value)
         if (newRes.isErr()) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return new Err(newRes.error) as any
+          return new Err(newRes.error) as unknown as Result<T & { readonly [K in N]: B }, E | F>
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return new Ok({ ...(res.value as any), [name as string]: newRes.value }) as any
+        const merged = { ...(res.value as unknown as Record<string, unknown>), [name as string]: newRes.value }
+        return new Ok(merged) as unknown as Result<T & { readonly [K in N]: B }, E | F>
       }),
     )
   }
@@ -121,12 +119,11 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     return new ResultAsync(
       this._promise.then(async (res) => {
         if (res.isErr()) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return new Err(res.error) as any
+          return new Err(res.error) as unknown as Result<T & { readonly [K in N]: B }, E>
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return new Ok({ ...(res.value as any), [name as string]: f(res.value) }) as any
+        const merged = { ...(res.value as unknown as Record<string, unknown>), [name as string]: f(res.value) }
+        return new Ok(merged) as unknown as Result<T & { readonly [K in N]: B }, E>
       }),
     )
   }

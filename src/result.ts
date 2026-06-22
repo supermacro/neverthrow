@@ -385,24 +385,20 @@ export class Ok<T, E> implements IResult<T, E> {
     name: N,
     f: (t: T) => Result<B, F>,
   ): Result<T & { readonly [K in N]: B }, E | F>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bind(name: string, f: (t: T) => Result<unknown, unknown>): any {
+  bind(name: string, f: (t: T) => Result<unknown, unknown>): Result<unknown, unknown> {
     const result = f(this.value)
     if (result.isErr()) {
       return err(result.error)
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return ok({ ...(this.value as any), [name]: result.value })
+    return ok({ ...(this.value as unknown as Record<string, unknown>), [name]: result.value })
   }
 
   let<N extends string, B>(
     name: N,
     f: (t: T) => B,
   ): Result<T & { readonly [K in N]: B }, E>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let(name: string, f: (t: T) => unknown): any {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return ok({ ...(this.value as any), [name]: f(this.value) })
+  let(name: string, f: (t: T) => unknown): Result<unknown, unknown> {
+    return ok({ ...(this.value as unknown as Record<string, unknown>), [name]: f(this.value) })
   }
 
   asyncAndThen<U, F>(f: (t: T) => ResultAsync<U, F>): ResultAsync<U, E | F> {
@@ -513,8 +509,7 @@ export class Err<T, E> implements IResult<T, E> {
     name: N,
     f: (t: T) => Result<B, F>,
   ): Result<T & { readonly [K in N]: B }, E | F>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bind(_name: string, _f: (t: T) => Result<unknown, unknown>): any {
+  bind(_name: string, _f: (t: T) => Result<unknown, unknown>): Result<unknown, unknown> {
     return err(this.error)
   }
 
@@ -522,8 +517,7 @@ export class Err<T, E> implements IResult<T, E> {
     name: N,
     f: (t: T) => B,
   ): Result<T & { readonly [K in N]: B }, E>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let(_name: string, _f: (t: T) => unknown): any {
+  let(_name: string, _f: (t: T) => unknown): Result<unknown, unknown> {
     return err(this.error)
   }
 
