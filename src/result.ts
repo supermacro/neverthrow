@@ -383,16 +383,18 @@ export class Ok<T, E> implements IResult<T, E> {
     f: (t: T) => Result<B, F>,
   ): Result<T & { readonly [K in N]: B }, E | F>
   bind(name: string, f: (t: T) => Result<unknown, unknown>): Result<unknown, unknown> {
-    const result = f(this.value)
-    if (result.isErr()) {
-      return err(result.error)
-    }
-    return ok({ ...((this.value as unknown) as Record<string, unknown>), [name]: result.value })
+    return f(this.value).map((val) => ({
+      ...((this.value as unknown) as Record<string, unknown>),
+      [name]: val,
+    }))
   }
 
   let<N extends string, B>(name: N, f: (t: T) => B): Result<T & { readonly [K in N]: B }, E>
   let(name: string, f: (t: T) => unknown): Result<unknown, unknown> {
-    return ok({ ...((this.value as unknown) as Record<string, unknown>), [name]: f(this.value) })
+    return ok({
+      ...((this.value as unknown) as Record<string, unknown>),
+      [name]: f(this.value),
+    })
   }
 
   asyncAndThen<U, F>(f: (t: T) => ResultAsync<U, F>): ResultAsync<U, E | F> {

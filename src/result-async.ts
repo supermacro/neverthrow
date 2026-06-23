@@ -99,39 +99,20 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     name: string,
     f: (t: T) => Result<unknown, unknown> | ResultAsync<unknown, unknown>,
   ): ResultAsync<unknown, unknown> {
-    return new ResultAsync(
-      this._promise.then(async (res) => {
-        if (res.isErr()) {
-          return new Err(res.error)
-        }
-
-        const newRes = await f(res.value)
-        if (newRes.isErr()) {
-          return new Err(newRes.error)
-        }
-
-        return new Ok({
-          ...((res.value as unknown) as Record<string, unknown>),
-          [name]: newRes.value,
-        })
-      }),
+    return this.andThen((val) =>
+      f(val).map((newVal) => ({
+        ...((val as unknown) as Record<string, unknown>),
+        [name]: newVal,
+      })),
     )
   }
 
   let<N extends string, B>(name: N, f: (t: T) => B): ResultAsync<T & { readonly [K in N]: B }, E>
   let(name: string, f: (t: T) => unknown): ResultAsync<unknown, unknown> {
-    return new ResultAsync(
-      this._promise.then(async (res) => {
-        if (res.isErr()) {
-          return new Err(res.error)
-        }
-
-        return new Ok({
-          ...((res.value as unknown) as Record<string, unknown>),
-          [name]: f(res.value),
-        })
-      }),
-    )
+    return this.map((val) => ({
+      ...((val as unknown) as Record<string, unknown>),
+      [name]: f(val),
+    }))
   }
 
   map<A>(f: (t: T) => A | Promise<A>): ResultAsync<A, E> {
