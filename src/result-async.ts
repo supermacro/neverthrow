@@ -86,6 +86,35 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     ) as CombineResultsWithAllErrorsArrayAsync<T>
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  static get Do(): ResultAsync<{}, never> {
+    return okAsync({})
+  }
+
+  bind<N extends string, B, F>(
+    name: N,
+    f: (t: T) => Result<B, F> | ResultAsync<B, F>,
+  ): ResultAsync<T & { readonly [K in N]: B }, E | F>
+  bind(
+    name: string,
+    f: (t: T) => Result<unknown, unknown> | ResultAsync<unknown, unknown>,
+  ): ResultAsync<unknown, unknown> {
+    return this.andThen((val) =>
+      f(val).map((newVal) => ({
+        ...((val as unknown) as Record<string, unknown>),
+        [name]: newVal,
+      })),
+    )
+  }
+
+  let<N extends string, B>(name: N, f: (t: T) => B): ResultAsync<T & { readonly [K in N]: B }, E>
+  let(name: string, f: (t: T) => unknown): ResultAsync<unknown, unknown> {
+    return this.map((val) => ({
+      ...((val as unknown) as Record<string, unknown>),
+      [name]: f(val),
+    }))
+  }
+
   map<A>(f: (t: T) => A | Promise<A>): ResultAsync<A, E> {
     return new ResultAsync(
       this._promise.then(async (res: Result<T, E>) => {

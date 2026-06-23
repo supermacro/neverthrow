@@ -1295,3 +1295,208 @@ describe('ResultAsync', () => {
     })
   })
 })
+
+describe('Result.Do / bind / let', () => {
+  it('Accumulates values with bind', () => {
+    const result = Result.Do()
+      .bind('x', () => ok(1))
+      .bind('y', ({ x }) => ok(x + 1))
+
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toEqual({ x: 1, y: 2 })
+  })
+
+  it('Short-circuits on first Err', () => {
+    const result = Result.Do()
+      .bind('x', () => ok(1))
+      .bind('y', () => err('fail' as const))
+      .bind('z', () => ok(3))
+
+    expect(result.isErr()).toBe(true)
+    expect(result._unsafeUnwrapErr()).toEqual('fail')
+  })
+
+  it('Does not call subsequent callbacks after Err', () => {
+    const spy = vitest.fn(() => ok(3))
+
+    Result.Do()
+      .bind('x', () => ok(1))
+      .bind('y', () => err('fail'))
+      .bind('z', spy)
+
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  it('Adds pure values with let', () => {
+    const result = Result.Do()
+      .bind('x', () => ok(10))
+      .let('doubled', ({ x }) => x * 2)
+
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toEqual({ x: 10, doubled: 20 })
+  })
+
+  it('Combines bind and let', () => {
+    const result = Result.Do()
+      .bind('name', () => ok('Alice'))
+      .bind('age', () => ok(30))
+      .let('greeting', ({ name, age }) => `${name} is ${age}`)
+
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toEqual({
+      name: 'Alice',
+      age: 30,
+      greeting: 'Alice is 30',
+    })
+  })
+
+  it('let short-circuits when already Err', () => {
+    const result = Result.Do()
+      .bind('x', () => err('fail' as const))
+      .let('y', () => 42)
+
+    expect(result.isErr()).toBe(true)
+    expect(result._unsafeUnwrapErr()).toEqual('fail')
+  })
+
+  it('Accumulates different error types as union', () => {
+    const getUser = (): Result<{ name: string }, 'user-not-found'> => ok({ name: 'Alice' })
+    const getRole = (_user: { name: string }): Result<string, 'role-error'> => ok('admin')
+
+    const result = Result.Do()
+      .bind('user', () => getUser())
+      .bind('role', ({ user }) => getRole(user))
+
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toEqual({ user: { name: 'Alice' }, role: 'admin' })
+  })
+
+  it('Short-circuits mid-chain with correct error', () => {
+    const result = Result.Do()
+      .bind('a', () => ok(1))
+      .bind('b', () => err('mid-error' as const))
+      .let('c', ({ a }) => a * 10)
+      .bind('d', () => ok(4))
+
+    expect(result.isErr()).toBe(true)
+    expect(result._unsafeUnwrapErr()).toEqual('mid-error')
+  })
+
+  it('Do returns an empty object', () => {
+    const result = Result.Do()
+
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toEqual({})
+  })
+
+  it('Chains map after bind', () => {
+    const result = Result.Do()
+      .bind('x', () => ok(2))
+      .bind('y', () => ok(3))
+      .map(({ x, y }) => x * y)
+
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toEqual(6)
+  })
+
+  it('Chains andThen after bind', () => {
+    const result = Result.Do()
+      .bind('x', () => ok(5))
+      .andThen(({ x }) => ok(x * 2))
+
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toEqual(10)
+  })
+})
+
+describe('ResultAsync.Do / bind / let', () => {
+  it('Accumulates values with bind', async () => {
+    const result = await ResultAsync.Do
+      .bind('x', () => okAsync(1))
+      .bind('y', ({ x }) => okAsync(x + 1))
+
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toEqual({ x: 1, y: 2 })
+  })
+
+  it('Short-circuits on first Err', async () => {
+    const result = await ResultAsync.Do
+      .bind('x', () => okAsync(1))
+      .bind('y', () => errAsync('fail' as const))
+      .bind('z', () => okAsync(3))
+
+    expect(result.isErr()).toBe(true)
+    expect(result._unsafeUnwrapErr()).toEqual('fail')
+  })
+
+  it('Does not call subsequent callbacks after Err', async () => {
+    const spy = vitest.fn(() => okAsync(3))
+
+    await ResultAsync.Do
+      .bind('x', () => okAsync(1))
+      .bind('y', () => errAsync('fail'))
+      .bind('z', spy)
+
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  it('Adds pure values with let', async () => {
+    const result = await ResultAsync.Do
+      .bind('x', () => okAsync(10))
+      .let('doubled', ({ x }) => x * 2)
+
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toEqual({ x: 10, doubled: 20 })
+  })
+
+  it('Combines bind and let', async () => {
+    const result = await ResultAsync.Do
+      .bind('name', () => okAsync('Bob'))
+      .bind('age', () => okAsync(25))
+      .let('label', ({ name, age }) => `${name}:${age}`)
+
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toEqual({
+      name: 'Bob',
+      age: 25,
+      label: 'Bob:25',
+    })
+  })
+
+  it('let short-circuits when already Err', async () => {
+    const result = await ResultAsync.Do
+      .bind('x', () => errAsync('fail' as const))
+      .let('y', () => 42)
+
+    expect(result.isErr()).toBe(true)
+    expect(result._unsafeUnwrapErr()).toEqual('fail')
+  })
+
+  it('Accepts sync Result in bind', async () => {
+    const result = await ResultAsync.Do
+      .bind('x', () => ok(1))
+      .bind('y', ({ x }) => okAsync(x + 1))
+
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toEqual({ x: 1, y: 2 })
+  })
+
+  it('Chains map after bind', async () => {
+    const result = await ResultAsync.Do
+      .bind('x', () => okAsync(2))
+      .bind('y', () => okAsync(3))
+      .map(({ x, y }) => x * y)
+
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toEqual(6)
+  })
+
+  it('Chains andThen after bind', async () => {
+    const result = await ResultAsync.Do
+      .bind('x', () => okAsync(5))
+      .andThen(({ x }) => okAsync(x * 2))
+
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toEqual(10)
+  })
+})

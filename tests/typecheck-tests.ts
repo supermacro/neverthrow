@@ -2603,5 +2603,109 @@ declare function transpose<
 
 //#endregion
 
+(function describe(_ = 'Result.Do / bind / let') {
+  (function it(_ = 'Infers accumulated type through bind chain') {
+    type Expectation = Result<{} & { readonly x: number } & { readonly y: string }, 'e1' | 'e2'>
+
+    const result: Expectation = Result.Do()
+      .bind('x', () => ok<number, 'e1'>(1))
+      .bind('y', () => ok<string, 'e2'>('hello'))
+
+    Test.checks([
+      Test.check<typeof result, Expectation, Test.Pass>(),
+    ])
+  });
+
+  (function it(_ = 'Infers let type without adding to error union') {
+    type Expectation = Result<{} & { readonly x: number } & { readonly doubled: number }, 'e1'>
+
+    const result: Expectation = Result.Do()
+      .bind('x', () => ok<number, 'e1'>(1))
+      .let('doubled', ({ x }) => x * 2)
+
+    Test.checks([
+      Test.check<typeof result, Expectation, Test.Pass>(),
+    ])
+  });
+
+  (function it(_ = 'Callback receives accumulated context') {
+    Result.Do()
+      .bind('x', () => ok(1))
+      .bind('y', ({ x }) => {
+        const _check: number = x
+        return ok(x + 1)
+      })
+      .let('z', ({ x, y }) => {
+        const _checkX: number = x
+        const _checkY: number = y
+        return x + y
+      })
+  });
+
+  (function it(_ = 'map receives accumulated context') {
+    type Expectation = Result<number, 'e1' | 'e2'>
+
+    const result: Expectation = Result.Do()
+      .bind('x', () => ok<number, 'e1'>(1))
+      .bind('y', () => ok<number, 'e2'>(2))
+      .map(({ x, y }) => x + y)
+
+    Test.checks([
+      Test.check<typeof result, Expectation, Test.Pass>(),
+    ])
+  });
+});
+
+(function describe(_ = 'ResultAsync.Do / bind / let') {
+  (function it(_ = 'Infers accumulated type through bind chain') {
+    type Expectation = ResultAsync<{} & { readonly x: number } & { readonly y: string }, 'e1' | 'e2'>
+
+    const result: Expectation = ResultAsync.Do
+      .bind('x', () => okAsync<number, 'e1'>(1))
+      .bind('y', () => okAsync<string, 'e2'>('hello'))
+
+    Test.checks([
+      Test.check<typeof result, Expectation, Test.Pass>(),
+    ])
+  });
+
+  (function it(_ = 'Accepts sync Result in bind') {
+    type Expectation = ResultAsync<{} & { readonly x: number } & { readonly y: string }, 'e1' | 'e2'>
+
+    const result: Expectation = ResultAsync.Do
+      .bind('x', () => ok<number, 'e1'>(1))
+      .bind('y', () => okAsync<string, 'e2'>('hello'))
+
+    Test.checks([
+      Test.check<typeof result, Expectation, Test.Pass>(),
+    ])
+  });
+
+  (function it(_ = 'Infers let type') {
+    type Expectation = ResultAsync<{} & { readonly x: number } & { readonly doubled: number }, 'e1'>
+
+    const result: Expectation = ResultAsync.Do
+      .bind('x', () => okAsync<number, 'e1'>(1))
+      .let('doubled', ({ x }) => x * 2)
+
+    Test.checks([
+      Test.check<typeof result, Expectation, Test.Pass>(),
+    ])
+  });
+
+  (function it(_ = 'map receives accumulated context') {
+    type Expectation = ResultAsync<number, 'e1' | 'e2'>
+
+    const result: Expectation = ResultAsync.Do
+      .bind('x', () => okAsync<number, 'e1'>(1))
+      .bind('y', () => okAsync<number, 'e2'>(2))
+      .map(({ x, y }) => x + y)
+
+    Test.checks([
+      Test.check<typeof result, Expectation, Test.Pass>(),
+    ])
+  });
+});
+
 // create dummy values with a desired type
 const input = <T>(): T => 123 as any

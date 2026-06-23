@@ -57,6 +57,10 @@ export namespace Result {
   ): CombineResultsWithAllErrorsArray<T> {
     return combineResultListWithAllErrors(resultList) as CombineResultsWithAllErrorsArray<T>
   }
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  export function Do(): Result<{}, never> {
+    return ok({})
+  }
 }
 
 export type Result<T, E> = Ok<T, E> | Err<T, E>
@@ -275,6 +279,13 @@ interface IResult<T, E> {
    */
   match<A, B = A>(ok: (t: T) => A, err: (e: E) => B): A | B
 
+  bind<N extends string, B, F>(
+    name: N,
+    f: (t: T) => Result<B, F>,
+  ): Result<T & { readonly [K in N]: B }, E | F>
+
+  let<N extends string, B>(name: N, f: (t: T) => B): Result<T & { readonly [K in N]: B }, E>
+
   /**
    * @deprecated will be removed in 9.0.0.
    *
@@ -365,6 +376,25 @@ export class Ok<T, E> implements IResult<T, E> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
   orElse(_f: any): any {
     return ok(this.value)
+  }
+
+  bind<N extends string, B, F>(
+    name: N,
+    f: (t: T) => Result<B, F>,
+  ): Result<T & { readonly [K in N]: B }, E | F>
+  bind(name: string, f: (t: T) => Result<unknown, unknown>): Result<unknown, unknown> {
+    return f(this.value).map((val) => ({
+      ...((this.value as unknown) as Record<string, unknown>),
+      [name]: val,
+    }))
+  }
+
+  let<N extends string, B>(name: N, f: (t: T) => B): Result<T & { readonly [K in N]: B }, E>
+  let(name: string, f: (t: T) => unknown): Result<unknown, unknown> {
+    return ok({
+      ...((this.value as unknown) as Record<string, unknown>),
+      [name]: f(this.value),
+    })
   }
 
   asyncAndThen<U, F>(f: (t: T) => ResultAsync<U, F>): ResultAsync<U, E | F> {
@@ -469,6 +499,19 @@ export class Err<T, E> implements IResult<T, E> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
   orElse(f: any): any {
     return f(this.error)
+  }
+
+  bind<N extends string, B, F>(
+    name: N,
+    f: (t: T) => Result<B, F>,
+  ): Result<T & { readonly [K in N]: B }, E | F>
+  bind(_name: string, _f: (t: T) => Result<unknown, unknown>): Result<unknown, unknown> {
+    return err(this.error)
+  }
+
+  let<N extends string, B>(name: N, f: (t: T) => B): Result<T & { readonly [K in N]: B }, E>
+  let(_name: string, _f: (t: T) => unknown): Result<unknown, unknown> {
+    return err(this.error)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
