@@ -13,8 +13,12 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Result {
   /**
-   * Wraps a function with a try catch, creating a new function with the same
-   * arguments but returning `Ok` if successful, `Err` if the function throws
+   * Wraps a function with a try/catch, creating a new function with the same
+   * arguments but returning `Ok` if successful, `Err` if the function throws.
+   *
+   * Useful when interfacing with third-party code that throws. Because the
+   * types of thrown errors cannot be known, prefer passing `errorFn` to map
+   * the thrown value to a known error type.
    *
    * @param fn function to wrap with ok on success or err on failure
    * @param errorFn when an error is thrown, this will wrap the error result if provided
@@ -34,6 +38,17 @@ export namespace Result {
     }
   }
 
+  /**
+   * Combines a list of `Result`s into a single `Result`.
+   *
+   * If all results are `Ok`, returns an `Ok` containing a list of all values.
+   * If any result is an `Err`, short-circuits and returns the first `Err`.
+   *
+   * Works on both homogeneous and heterogeneous lists (but not mixed with
+   * `ResultAsync`). Conceptually similar to `Promise.all`.
+   *
+   * @param resultList list of `Result`s to combine
+   */
   export function combine<
     T extends readonly [Result<unknown, unknown>, ...Result<unknown, unknown>[]]
   >(resultList: T): CombineResults<T>
@@ -46,6 +61,15 @@ export namespace Result {
     return combineResultList(resultList) as CombineResults<T>
   }
 
+  /**
+   * Like {@link Result.combine} but without short-circuiting.
+   *
+   * Instead of returning only the first error, returns a list of all error
+   * values from failed results. There is no guarantee about the length of the
+   * error list if only some results fail.
+   *
+   * @param resultList list of `Result`s to combine
+   */
   export function combineWithAllErrors<
     T extends readonly [Result<unknown, unknown>, ...Result<unknown, unknown>[]]
   >(resultList: T): CombineResultsWithAllErrorsArray<T>
@@ -61,12 +85,22 @@ export namespace Result {
 
 export type Result<T, E> = Ok<T, E> | Err<T, E>
 
+/**
+ * Constructs an `Ok` variant of `Result`.
+ *
+ * @param value the success value to wrap
+ */
 export function ok<T, E = never>(value: T): Ok<T, E>
 export function ok<T extends void = void, E = never>(value: void): Ok<void, E>
 export function ok<T, E = never>(value: T): Ok<T, E> {
   return new Ok(value)
 }
 
+/**
+ * Constructs an `Err` variant of `Result`.
+ *
+ * @param err the error value to wrap
+ */
 export function err<T = never, E extends string = string>(err: E): Err<T, E>
 export function err<T = never, E = unknown>(err: E): Err<T, E>
 export function err<T = never, E extends void = void>(err: void): Err<T, void>
@@ -248,9 +282,25 @@ interface IResult<T, E> {
    * by applying an async function to a contained `Ok` value, leaving an `Err`
    * value untouched.
    *
+   * Similar to `map` except the mapping function must return a `Promise`, and
+   * `asyncMap` returns a `ResultAsync`.
+   *
    * @param f An async function to apply an `OK` value
    */
   asyncMap<U>(f: (t: T) => Promise<U>): ResultAsync<U, E>
+
+  /**
+   * Similar to `andThrough` except you must return a `ResultAsync`.
+   *
+   * You can then chain the result using the `ResultAsync` APIs.
+   *
+   * @param f The function that returns a `ResultAsync` to apply to the current
+   * value
+   */
+  asyncAndThrough<R extends ResultAsync<unknown, unknown>>(
+    f: (t: T) => R,
+  ): ResultAsync<T, InferAsyncErrTypes<R> | E>
+  asyncAndThrough<F>(f: (t: T) => ResultAsync<unknown, F>): ResultAsync<T, E | F>
 
   /**
    * Unwrap the `Ok` value, or return the default if there is an `Err`
@@ -520,6 +570,11 @@ export class Err<T, E> implements IResult<T, E> {
   }
 }
 
+/**
+ * Top-level export of {@link Result.fromThrowable}.
+ *
+ * Wraps a throwing function so it returns `Ok` on success or `Err` on throw.
+ */
 export const fromThrowable = Result.fromThrowable
 
 //#region Combine - Types
