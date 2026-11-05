@@ -35,7 +35,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
 
   static fromPromise<T, E>(promise: PromiseLike<T>, errorFn: (e: unknown) => E): ResultAsync<T, E>
   static fromPromise<T, E>(promise: Promise<T>, errorFn: (e: unknown) => E): ResultAsync<T, E> {
-    const newPromise = promise
+    const newPromise = Promise.resolve(promise)
       .then((value: T) => new Ok<T, E>(value))
       .catch((e) => new Err<T, E>(errorFn(e)))
 

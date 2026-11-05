@@ -1200,6 +1200,20 @@ describe('ResultAsync', () => {
   })
 
   describe('fromPromise', () => {
+    it('Accepts PromiseLike inputs whose then method does not return a Promise', async () => {
+      const thenable = <T>(promise: Promise<T>): PromiseLike<T> => ({
+        then(onfulfilled, onrejected) {
+          return thenable(promise.then(onfulfilled, onrejected))
+        },
+      })
+
+      const result = await ResultAsync.fromPromise(thenable(Promise.resolve(12)), String)
+      expect(result).toEqual(ok(12))
+
+      const rejected = await ResultAsync.fromPromise(thenable(Promise.reject('No!')), String)
+      expect(rejected).toEqual(err('No!'))
+    })
+
     it('Accepts an error handler as a second argument', async () => {
       const res = ResultAsync.fromPromise(Promise.reject('No!'), (e) => new Error('Oops: ' + e))
 
