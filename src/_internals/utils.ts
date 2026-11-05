@@ -52,11 +52,9 @@ export const combineResultList = <T, E>(
  * or fails if one (or more) of the inner results are Err values
  */
 export const combineResultAsyncList = <T, E>(
-  asyncResultList: readonly ResultAsync<T, E>[],
+  promiseList: readonly Promise<Result<T, E>>[],
 ): ResultAsync<readonly T[], E> =>
-  ResultAsync.fromSafePromise(Promise.all(asyncResultList)).andThen(
-    combineResultList,
-  ) as ResultAsync<T[], E>
+  new ResultAsync(Promise.all(promiseList).then(combineResultList)) as ResultAsync<T[], E>
 
 /**
  * Give a list of all the errors we find
@@ -80,8 +78,9 @@ export const combineResultListWithAllErrors = <T, E>(
 }
 
 export const combineResultAsyncListWithAllErrors = <T, E>(
-  asyncResultList: readonly ResultAsync<T, E>[],
+  promiseList: readonly Promise<Result<T, E>>[],
 ): ResultAsync<readonly T[], E[]> =>
-  ResultAsync.fromSafePromise(Promise.all(asyncResultList)).andThen(
-    combineResultListWithAllErrors,
-  ) as ResultAsync<T[], E[]>
+  new ResultAsync(Promise.all(promiseList).then(combineResultListWithAllErrors)) as ResultAsync<
+    T[],
+    E[]
+  >
