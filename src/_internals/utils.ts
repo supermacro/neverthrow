@@ -33,17 +33,16 @@ export type InferAsyncErrTypes<R> = R extends ResultAsync<unknown, infer E> ? E 
 export const combineResultList = <T, E>(
   resultList: readonly Result<T, E>[],
 ): Result<readonly T[], E> => {
-  let acc = ok([]) as Result<T[], E>
+  const values: T[] = new Array(resultList.length)
 
-  for (const result of resultList) {
+  for (let i = 0; i < resultList.length; i++) {
+    const result = resultList[i]
     if (result.isErr()) {
-      acc = err(result.error)
-      break
-    } else {
-      acc.map((list) => list.push(result.value))
+      return err(result.error)
     }
+    values[i] = result.value
   }
-  return acc
+  return ok(values)
 }
 
 /* This is the typesafe version of Promise.all
