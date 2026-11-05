@@ -326,7 +326,7 @@ export class Ok<T, E> implements IResult<T, E> {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mapErr<U>(_f: (e: E) => U): Result<T, U> {
-    return ok(this.value)
+    return (this as unknown) as Ok<T, U>
   }
 
   andThen<R extends Result<unknown, unknown>>(
@@ -342,7 +342,8 @@ export class Ok<T, E> implements IResult<T, E> {
   andThrough<F>(f: (t: T) => Result<unknown, F>): Result<T, E | F>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
   andThrough(f: any): any {
-    return f(this.value).map((_value: unknown) => this.value)
+    const result = f(this.value)
+    return result.isErr() ? result : this
   }
 
   andTee(f: (t: T) => unknown): Result<T, E> {
@@ -351,11 +352,11 @@ export class Ok<T, E> implements IResult<T, E> {
     } catch (e) {
       // Tee doesn't care about the error
     }
-    return ok<T, E>(this.value)
+    return this
   }
 
   orTee(_f: (t: E) => unknown): Result<T, E> {
-    return ok<T, E>(this.value)
+    return this
   }
 
   orElse<R extends Result<unknown, unknown>>(
@@ -364,7 +365,7 @@ export class Ok<T, E> implements IResult<T, E> {
   orElse<U, A>(_f: (e: E) => Result<U, A>): Result<U | T, A>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
   orElse(_f: any): any {
-    return ok(this.value)
+    return this
   }
 
   asyncAndThen<U, F>(f: (t: T) => ResultAsync<U, F>): ResultAsync<U, E | F> {
@@ -429,7 +430,7 @@ export class Err<T, E> implements IResult<T, E> {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   map<A>(_f: (t: T) => A): Result<A, E> {
-    return err(this.error)
+    return (this as unknown) as Err<A, E>
   }
 
   mapErr<U>(f: (e: E) => U): Result<T, U> {
@@ -437,11 +438,11 @@ export class Err<T, E> implements IResult<T, E> {
   }
 
   andThrough<F>(_f: (t: T) => Result<unknown, F>): Result<T, E | F> {
-    return err(this.error)
+    return this
   }
 
   andTee(_f: (t: T) => unknown): Result<T, E> {
-    return err(this.error)
+    return this
   }
 
   orTee(f: (t: E) => unknown): Result<T, E> {
@@ -450,7 +451,7 @@ export class Err<T, E> implements IResult<T, E> {
     } catch (e) {
       // Tee doesn't care about the error
     }
-    return err<T, E>(this.error)
+    return this
   }
 
   andThen<R extends Result<unknown, unknown>>(
@@ -459,7 +460,7 @@ export class Err<T, E> implements IResult<T, E> {
   andThen<U, F>(_f: (t: T) => Result<U, F>): Result<U, E | F>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
   andThen(_f: any): any {
-    return err(this.error)
+    return this
   }
 
   orElse<R extends Result<unknown, unknown>>(
