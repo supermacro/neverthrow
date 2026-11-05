@@ -476,7 +476,12 @@ export class Err<T, E> implements IResult<T, E> {
     return errAsync<U, E>(this.error)
   }
 
-  asyncAndThrough<F>(_f: (t: T) => ResultAsync<unknown, F>): ResultAsync<T, E | F> {
+  asyncAndThrough<R extends ResultAsync<unknown, unknown>>(
+    _f: (t: T) => R,
+  ): ResultAsync<T, InferAsyncErrTypes<R> | E>
+  asyncAndThrough<F>(_f: (t: T) => ResultAsync<unknown, F>): ResultAsync<T, E | F>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  asyncAndThrough(_f: (t: T) => ResultAsync<unknown, unknown>): any {
     return errAsync<T, E>(this.error)
   }
 
