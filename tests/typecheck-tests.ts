@@ -2605,3 +2605,18 @@ declare function transpose<
 
 // create dummy values with a desired type
 const input = <T>(): T => 123 as any
+
+;(function asyncAndThroughInfersUnionErrors() {
+  const check = (value: number) => value > 0
+    ? errAsync<unknown, string>('positive')
+    : errAsync<unknown, number>(0)
+  const failure = err<number, 'original'>('original')
+  const input: Result<number, 'original'> = Math.random() > 0.5 ? ok(1) : failure
+  const fromError = failure.asyncAndThrough(check)
+  const fromResult = input.asyncAndThrough(check)
+  type Expected = ResultAsync<number, string | number>
+  Test.checks([
+    Test.check<typeof fromError, Expected, Test.Pass>(),
+    Test.check<typeof fromResult, Expected, Test.Pass>(),
+  ])
+});
