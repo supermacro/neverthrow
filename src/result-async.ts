@@ -19,6 +19,11 @@ import {
   InferOkTypes,
 } from './_internals/utils'
 
+const isPromiseLike = <T>(value: T | PromiseLike<T>): value is PromiseLike<T> =>
+  value !== null &&
+  (typeof value === 'object' || typeof value === 'function') &&
+  typeof (value as PromiseLike<T>).then === 'function'
+
 export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   private _promise: Promise<Result<T, E>>
 
@@ -88,12 +93,15 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
 
   map<A>(f: (t: T) => A | Promise<A>): ResultAsync<A, E> {
     return new ResultAsync(
-      this._promise.then(async (res: Result<T, E>) => {
+      this._promise.then((res: Result<T, E>) => {
         if (res.isErr()) {
-          return new Err<A, E>(res.error)
+          return (res as unknown) as Err<A, E>
         }
 
-        return new Ok<A, E>(await f(res.value))
+        const newValue = f(res.value)
+        return isPromiseLike(newValue)
+          ? newValue.then((value) => new Ok<A, E>(value))
+          : new Ok<A, E>(newValue)
       }),
     )
   }
@@ -148,12 +156,15 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
 
   mapErr<U>(f: (e: E) => U | Promise<U>): ResultAsync<T, U> {
     return new ResultAsync(
-      this._promise.then(async (res: Result<T, E>) => {
+      this._promise.then((res: Result<T, E>) => {
         if (res.isOk()) {
-          return new Ok<T, U>(res.value)
+          return (res as unknown) as Ok<T, U>
         }
 
-        return new Err<T, U>(await f(res.error))
+        const newError = f(res.error)
+        return isPromiseLike(newError)
+          ? newError.then((error) => new Err<T, U>(error))
+          : new Err<T, U>(newError)
       }),
     )
   }
@@ -170,7 +181,7 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     return new ResultAsync(
       this._promise.then((res) => {
         if (res.isErr()) {
-          return new Err<never, E>(res.error)
+          return res
         }
 
         const newValue = f(res.value)
@@ -189,12 +200,13 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
   orElse(f: any): any {
     return new ResultAsync(
-      this._promise.then(async (res: Result<T, E>) => {
+      this._promise.then((res: Result<T, E>) => {
         if (res.isErr()) {
-          return f(res.error)
+          const newValue = f(res.error)
+          return newValue instanceof ResultAsync ? newValue._promise : newValue
         }
 
-        return new Ok<T, unknown>(res.value)
+        return res
       }),
     )
   }
