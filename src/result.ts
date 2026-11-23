@@ -124,11 +124,26 @@ export function safeTry<T, E>(
     | (() => Generator<Err<never, E>, Result<T, E>>)
     | (() => AsyncGenerator<Err<never, E>, Result<T, E>>),
 ): Result<T, E> | ResultAsync<T, E> {
-  const n = body().next()
+  const gen = body()
+  const n = gen.next()
   if (n instanceof Promise) {
-    return new ResultAsync(n.then((r) => r.value))
+    const asyncGen = gen as AsyncGenerator<Err<never, E>, Result<T, E>>
+    const closeAsync = (
+      r: IteratorResult<Err<never, E>, Result<T, E>>,
+    ): Result<T, E> | Promise<Result<T, E>> => {
+      if (r.done) {
+        return r.value
+      }
+      return asyncGen.return(r.value).then(closeAsync)
+    }
+    return new ResultAsync(n.then(closeAsync))
   }
-  return n.value
+  const syncGen = gen as Generator<Err<never, E>, Result<T, E>>
+  let current = n
+  while (!current.done) {
+    current = syncGen.return(current.value)
+  }
+  return current.value
 }
 
 interface IResult<T, E> {
