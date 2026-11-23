@@ -359,3 +359,173 @@ describe("it yields and works without safeUnwrap", () => {
 		expect(result._unsafeUnwrap()).toBe(okValue + okValue);
 	});
 })
+
+describe("Runs finally blocks when short-circuiting on an Err", () => {
+	test("With synchronous yield* err()", () => {
+		const events: string[] = [];
+		const originalErr = err<number, string>("boom");
+
+		const result = safeTry(function* () {
+			try {
+				const v = yield* originalErr;
+				events.push("after-yield");
+				return ok(v);
+			} finally {
+				events.push("sync-cleanup");
+			}
+		});
+
+		expect(events).toEqual(["sync-cleanup"]);
+		expect(result).toBe(originalErr);
+		expect(result._unsafeUnwrapErr()).toBe("boom");
+	});
+
+	test("With synchronous yield* err().safeUnwrap()", () => {
+		let cleanedUp = false;
+
+		const result = safeTry(function* () {
+			try {
+				const v = yield* err<number, string>("boom").safeUnwrap();
+				return ok(v);
+			} finally {
+				cleanedUp = true;
+			}
+		});
+
+		expect(cleanedUp).toBe(true);
+		expect(result).toBeInstanceOf(Err);
+		expect(result._unsafeUnwrapErr()).toBe("boom");
+	});
+
+	test("With async yield* errAsync() and awaited cleanup in finally", async () => {
+		const events: string[] = [];
+
+		const result = await safeTry(async function* () {
+			try {
+				const v = yield* errAsync<number, string>("boom");
+				events.push("after-yield");
+				return ok(v);
+			} finally {
+				await new Promise<void>((resolve) => setTimeout(resolve, 10));
+				events.push("async-cleanup");
+			}
+		});
+
+		expect(events).toEqual(["async-cleanup"]);
+		expect(result).toBeInstanceOf(Err);
+		expect(result._unsafeUnwrapErr()).toBe("boom");
+	});
+
+	test("With sync err() and errAsync().safeUnwrap() inside async generator", async () => {
+		const events: string[] = [];
+
+		const resSyncErr = await safeTry(async function* () {
+			try {
+				const v = yield* err<number, string>("sync-boom");
+				return ok(v);
+			} finally {
+				events.push("cleanup-sync-err");
+			}
+		});
+
+		const resSafeUnwrap = await safeTry(async function* () {
+			try {
+				const v = yield* errAsync<number, string>("unwrap-boom").safeUnwrap();
+				return ok(v);
+			} finally {
+				events.push("cleanup-safe-unwrap");
+			}
+		});
+
+		expect(events).toEqual(["cleanup-sync-err", "cleanup-safe-unwrap"]);
+		expect(resSyncErr._unsafeUnwrapErr()).toBe("sync-boom");
+		expect(resSafeUnwrap._unsafeUnwrapErr()).toBe("unwrap-boom");
+	});
+
+	test("Runs nested finally blocks from inner to outer", () => {
+		const order: string[] = [];
+
+		const result = safeTry(function* () {
+			try {
+				try {
+					const v = yield* err<number, string>("boom");
+					return ok(v);
+				} finally {
+					order.push("inner");
+				}
+			} finally {
+				order.push("outer");
+			}
+		});
+
+		expect(order).toEqual(["inner", "outer"]);
+		expect(result._unsafeUnwrapErr()).toBe("boom");
+	});
+
+	test("Closes outer finally even if inner finally yields another Err", async () => {
+		const syncOrder: string[] = [];
+		const syncResult = safeTry<number, string>(function* () {
+			try {
+				try {
+					const v = yield* err<number, string>("work-err");
+					return ok(v);
+				} finally {
+					syncOrder.push("inner-before-yield");
+					yield* err<number, string>("cleanup-err");
+					syncOrder.push("inner-after-yield");
+				}
+			} finally {
+				syncOrder.push("outer");
+			}
+		});
+
+		expect(syncOrder).toEqual(["inner-before-yield", "outer"]);
+		expect(syncResult._unsafeUnwrapErr()).toBe("cleanup-err");
+
+		const asyncOrder: string[] = [];
+		const asyncResult = await safeTry<number, string>(async function* () {
+			try {
+				try {
+					const v = yield* errAsync<number, string>("work-err");
+					return ok(v);
+				} finally {
+					asyncOrder.push("inner-before-yield");
+					yield* errAsync<number, string>("cleanup-err");
+					asyncOrder.push("inner-after-yield");
+				}
+			} finally {
+				asyncOrder.push("outer");
+			}
+		});
+
+		expect(asyncOrder).toEqual(["inner-before-yield", "outer"]);
+		expect(asyncResult._unsafeUnwrapErr()).toBe("cleanup-err");
+	});
+
+	test("Runs finally exactly once on normal return without short-circuit", async () => {
+		let syncCount = 0;
+		const syncRes = safeTry(function* () {
+			try {
+				const v = yield* ok<number, string>(42);
+				return ok(v);
+			} finally {
+				syncCount += 1;
+			}
+		});
+
+		let asyncCount = 0;
+		const asyncRes = await safeTry(async function* () {
+			try {
+				const v = yield* okAsync<number, string>(42);
+				return ok(v);
+			} finally {
+				asyncCount += 1;
+			}
+		});
+
+		expect(syncCount).toBe(1);
+		expect(syncRes._unsafeUnwrap()).toBe(42);
+		expect(asyncCount).toBe(1);
+		expect(asyncRes._unsafeUnwrap()).toBe(42);
+	});
+})
